@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Meeting_Project</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="question">Question</string>
+    <string name="agree">Agree</string>
+    <string name="neutral">Neutral</string>
+    <string name="disagree">Disagree</string>
+    <string name="next">Next</string>
+
+</resources>
