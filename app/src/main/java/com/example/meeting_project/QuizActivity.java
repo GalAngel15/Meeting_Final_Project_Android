@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.button.MaterialButton;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +27,7 @@ public class QuizActivity extends AppCompatActivity {
     private List<AnswerSubmission.Answer> answers = new ArrayList<>();
     private int currentQuestion = 0;
     private String selectedGender = "Male"; // בחר מגדר ברירת מחדל, ניתן להוסיף ממשק לבחירה
+    private MaterialButton nextButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +36,7 @@ public class QuizActivity extends AppCompatActivity {
 
         questionTextView = findViewById(R.id.questionTextView);
         answersGroup = findViewById(R.id.answersGroup);
+        nextButton= findViewById(R.id.nextButton);
 
         fetchQuestions();
     }
@@ -40,7 +44,8 @@ public class QuizActivity extends AppCompatActivity {
     private void fetchQuestions() {
         PersonalityApi apiService = ApiClient.getRetrofitInstance().create(PersonalityApi.class);
 
-        apiService.getQuestions().enqueue(new Callback<List<Question>>() {
+        Call<List<Question>> call = apiService.getQuestions();
+        call.enqueue(new Callback<List<Question>>() {
             @Override
             public void onResponse(Call<List<Question>> call, Response<List<Question>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -77,10 +82,12 @@ public class QuizActivity extends AppCompatActivity {
                 radioButton.setTag(option.getValue()); // שמור את הערך של כל תשובה
                 answersGroup.addView(radioButton);
             }
-
-            Log.d(TAG, "Displaying question: " + question.getText());
+            Log.d(TAG, "ans Id" + question.getId());
+            //Log.d(TAG, "Displaying question: " + question.getText());
             answersGroup.clearCheck(); // ודא שאף תשובה לא מסומנת
         } else {
+
+            Log.e(TAG, "ERROR ERROR ERROR " + currentQuestion + ":" + answers.size());
             submitAnswers();
         }
     }
@@ -92,12 +99,17 @@ public class QuizActivity extends AppCompatActivity {
             return;
         }
         if (currentQuestion < questions.size()) {
+            if(currentQuestion < questions.size()-1)
+                nextButton.setText("Next");
+            else
+                nextButton.setText("Submit");
             RadioButton selectedRadioButton = findViewById(selectedId);
             int responseValue = (int) selectedRadioButton.getTag(); // קבל את הערך של התשובה (int)
             Question current = questions.get(currentQuestion);
 
             answers.add(new AnswerSubmission.Answer(current.getId(), responseValue));
-
+            Log.d(TAG, "ans Id" + current.getId());
+            Log.e(TAG, "numAnswer:" + answers.size());
             currentQuestion++;
             displayNextQuestion();
         } else {
@@ -115,7 +127,14 @@ public class QuizActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<SubmitResponse> call, Response<SubmitResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(QuizActivity.this, "Your personality result: " + response.body().getResult(), Toast.LENGTH_LONG).show();
+                    SubmitResponse result = response.body();
+                    String personalityType = result.getNiceName();
+                    List<Trait> traits = result.getTraits();
+
+                    Toast.makeText(QuizActivity.this, "Your personality type: " + personalityType, Toast.LENGTH_LONG).show();
+                    Log.e("Final Answer", "type" + personalityType + "\n traits: " + traits.toString());
+
+
                 } else {
                     Toast.makeText(QuizActivity.this, "Failed to submit answers", Toast.LENGTH_SHORT).show();
                 }
