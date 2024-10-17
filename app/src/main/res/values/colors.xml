@@ -2,4 +2,22 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="return_button">#00BCD4</color>
+    <color name="hints">#CC6D6D6D</color>
+    <color name="commonColor">#062FF0</color>
+    <color name="colorPrimary">#E40202</color>
+    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorAccent">#03DAC5</color>
+    <color name="textColor">#FFFFFF</color>
+    <color name="background">#FFFFFF</color>
+    <color name="backgroundButton">#6200EE</color>
+    <color name="oppositeBackground">#000000</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="backgroundText">#737373</color>
+    <color name="textButton">#ECF400</color>
+    <color name="red">#FF0000</color>
+    <color name="pink">#C36EE2</color>
+    <color name="heart_color">#D32F2F</color>
+
+
 </resources>

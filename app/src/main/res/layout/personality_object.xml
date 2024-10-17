@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView2"
+        android:layout_width="@dimen/small_poster_width"
+        android:layout_height="@dimen/small_poster_height"
+        android:layout_marginVertical="@dimen/poster_vertical_margin"
+        android:layout_marginStart="@dimen/poster_vertical_margin"
+        android:elevation="@dimen/poster_elevation"
+        app:cardCornerRadius="@dimen/poster_corner_radius"
+        app:cardElevation="@dimen/poster_elevation"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/store_CARD_data"
+        app:layout_constraintStart_toStartOf="@id/store_CARD_data"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/iv_store_logo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            tools:src="@drawable/type_logo_placeholder" />
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/store_CARD_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="@dimen/data_end_margin"
+        android:layout_marginStart="@dimen/data_start_margin"
+        android:layout_marginEnd="@dimen/data_end_margin"
+        android:elevation="@dimen/data_elevation"
+        app:cardCornerRadius="@dimen/poster_corner_radius"
+        app:cardElevation="@dimen/data_elevation"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/data_start_margin"
+            android:layout_marginEnd="@dimen/data_end_margin">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_store_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="@dimen/data_end_margin"
+                android:layout_marginTop="@dimen/data_end_margin"
+                android:layout_marginEnd="@dimen/data_end_margin"
+                android:maxLines="1"
+                android:minLines="1"
+                android:textSize="@dimen/title_text_size"
+                android:textStyle="bold"
+                tools:text="Personality Type" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_store_clubs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_store_name"
+                android:layout_alignStart="@id/tv_store_name"
+                android:layout_marginTop="@dimen/data_end_margin"
+                android:layout_marginEnd="@dimen/data_end_margin"
+                android:layout_marginBottom="@dimen/data_end_margin"
+                android:maxLines="3"
+                android:minLines="3"
+                android:textSize="@dimen/data_text_size"
+                tools:text="פירוט... " />
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

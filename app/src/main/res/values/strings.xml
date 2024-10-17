@@ -8,4 +8,13 @@
     <string name="disagree">Disagree</string>
     <string name="next">Next</string>
 
+    <string name="welcome_user">Welcome, %1$s!</string>
+    <string name="logged_out">Logged out</string>
+    <string name="plan_deleted">Plan deleted</string>
+    <string name="plan_delete_failed">Failed to delete plan</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="full_name">Full Name</string>
+
 </resources>
