@@ -17,4 +17,7 @@
     <string name="confirm_password">Confirm Password</string>
     <string name="full_name">Full Name</string>
 
+    <string name="error_incorrect_login_fields">One or more fields are incorrect</string>
+
+
 </resources>

@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.meeting_project.QuizActivity;
 import com.example.meeting_project.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
@@ -96,7 +97,7 @@ public class LoginActivity extends AppCompatActivity {
         if (user != null) {
             checkTextView.setVisibility(TextView.INVISIBLE);
             Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
-            navigateToMyPlans();
+            navigateToPersonalQ();
         }
     }
 
@@ -106,15 +107,15 @@ public class LoginActivity extends AppCompatActivity {
         checkTextView.setTextColor(getResources().getColor(R.color.red, null));
     }
 
-    private void navigateToMyPlans() {
-        Intent intent = new Intent(LoginActivity.this, MyPlansActivity.class);
+    private void navigateToPersonalQ() {
+        Intent intent = new Intent(LoginActivity.this, QuizActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear the activity stack
         startActivity(intent);
         finish();
     }
 
     private void navigateToVisitPage() {
-        Intent intent = new Intent(LoginActivity.this, VisitPageActivity.class);
+        Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
         startActivity(intent);
         finish();
     }

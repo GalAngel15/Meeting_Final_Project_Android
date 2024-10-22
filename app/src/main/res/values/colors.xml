@@ -18,6 +18,8 @@
     <color name="red">#FF0000</color>
     <color name="pink">#C36EE2</color>
     <color name="heart_color">#D32F2F</color>
+    <color name="inactiveButtonColor">#FF8E70F8</color> <!-- צבע רקע דיפולטי -->
+    <color name="activeButtonColor">#673AB7</color> <!-- צבע רקע כאשר הכפתור נבחר -->
 
 
 </resources>

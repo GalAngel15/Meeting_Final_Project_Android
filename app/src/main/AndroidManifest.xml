@@ -14,23 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Meeting_Project"
         tools:targetApi="31">
-        <activity
-            android:name=".activities.NevigationActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.PersonalitiesActivity"
-            android:exported="false" />
+
         <activity
             android:name=".activities.WelcomeActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.RegisterActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.LoginActivity"
-            android:exported="false" />
-        <activity
-            android:name=".QuizActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -38,6 +24,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".Managers.NevigationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.PersonalitiesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".QuizActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
