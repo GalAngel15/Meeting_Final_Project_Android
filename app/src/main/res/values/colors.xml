@@ -20,6 +20,14 @@
     <color name="heart_color">#D32F2F</color>
     <color name="inactiveButtonColor">#FF8E70F8</color> <!-- צבע רקע דיפולטי -->
     <color name="activeButtonColor">#673AB7</color> <!-- צבע רקע כאשר הכפתור נבחר -->
+    <!-- צבעי הרקע -->
+    <color name="light_purple">#F2ECFF</color> <!-- רקע כללי -->
+    <color name="purple">#6B24F7</color> <!-- טקסט ראשי וכותרת -->
+    <color name="dark_purple">#4A0D99</color> <!-- רקע כפתור תחתון -->
+
+    <!-- צבעי כפתורים -->
+    <color name="button_purple">#8B3DFF</color> <!-- כפתור "Login" -->
+    <color name="button_dark_purple">#5E1FB3</color> <!-- כפתור "Registration" -->
 
 
 </resources>
