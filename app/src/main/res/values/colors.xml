@@ -28,6 +28,8 @@
     <!-- צבעי כפתורים -->
     <color name="button_purple">#8B3DFF</color> <!-- כפתור "Login" -->
     <color name="button_dark_purple">#5E1FB3</color> <!-- כפתור "Registration" -->
+    <color name="light_gray">#858084</color> <!-- כפתור "Registration" -->
+
 
 
 </resources>
