@@ -34,7 +34,6 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:src="@drawable/profile_placeholder"
-        android:background="@drawable/ellipse_824"
         android:scaleType="centerInside"
         app:layout_constraintTop_toBottomOf="@id/textViewRegisterTitle"
         app:layout_constraintStart_toStartOf="parent"
