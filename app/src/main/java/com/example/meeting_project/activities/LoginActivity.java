@@ -37,8 +37,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private void initViews() {
         login_BTN_login = findViewById(R.id.buttonLoginLoginPage);
-        emailInputLayout = findViewById(R.id.login_EDT_mail);
-        passwordInputLayout = findViewById(R.id.login_EDT_Password);
+        emailInputLayout = findViewById(R.id.email);
+        passwordInputLayout = findViewById(R.id.password);
         checkTextView = findViewById(R.id.checkTextView);
         progressBar = findViewById(R.id.progressBar);
         btnReturn = findViewById(R.id.btnReturnToVisitPage);
