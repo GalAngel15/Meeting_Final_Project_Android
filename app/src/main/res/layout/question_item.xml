@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    android:layout_marginBottom="16dp"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- טקסט השאלה -->
+        <TextView
+            android:id="@+id/textViewQuestion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:paddingBottom="10dp"
+            android:text="Your Question Here"/>
+
+        <!-- תשובות: עיגולים פרוסים על כל המסך -->
+        <RadioGroup
+            android:id="@+id/radioGroupAnswers"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:weightSum="7">
+
+            <RadioButton
+                android:id="@+id/answer1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/radio_selector_red_big"
+                android:layout_marginHorizontal="4dp"/>
+
+            <RadioButton
+                android:id="@+id/answer2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/radio_selector_red_medium"
+                android:layout_marginHorizontal="4dp"/>
+
+            <RadioButton
+                android:id="@+id/answer3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/radio_selector_red_small"
+                android:layout_marginHorizontal="4dp"/>
+
+            <RadioButton
+                android:id="@+id/answer4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/radio_selector_neutral"
+                android:layout_marginHorizontal="4dp"/>
+
+            <RadioButton
+                android:id="@+id/answer5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/radio_selector_green_small"
+                android:layout_marginHorizontal="4dp"/>
+
+            <RadioButton
+                android:id="@+id/answer6"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/radio_selector_green_medium"
+                android:layout_marginHorizontal="4dp"/>
+
+            <RadioButton
+                android:id="@+id/answer7"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/radio_selector_green_big"
+                android:layout_marginHorizontal="4dp"/>
+        </RadioGroup>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

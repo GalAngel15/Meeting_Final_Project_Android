@@ -30,6 +30,7 @@
     <color name="button_dark_purple">#5E1FB3</color> <!-- כפתור "Registration" -->
     <color name="light_gray">#858084</color> <!-- כפתור "Registration" -->
 
-
+    <color name="green">#2ECC71</color>
+    <color name="gray">#BDBDBD</color>
 
 </resources>
