@@ -11,7 +11,8 @@
     <!-- כפתור חזרה -->
     <include
         android:id="@+id/btnReturnToVisitPage"
-        layout="@layout/custom_button" />
+        layout="@layout/custom_button"
+        />
 
     <!-- כותרת "הרשמה" -->
     <TextView
@@ -52,7 +53,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="20dp"
-        android:padding="10dp"/>
+        android:layout_marginBottom="20dp"
+        android:padding="10dp"
+        />
 
     <TextView
         android:id="@+id/full_name_label"
@@ -63,7 +66,7 @@
         android:textColor="@color/purple"
         app:layout_constraintBottom_toTopOf="@id/full_name"
         app:layout_constraintStart_toStartOf="@id/full_name"
-        android:layout_marginBottom="5dp"/>
+        android:layout_marginTop="20dp"/>
 
     <EditText
         android:id="@+id/email"
@@ -75,7 +78,8 @@
         app:layout_constraintTop_toBottomOf="@id/full_name"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:padding="10dp"/>
 
     <TextView
@@ -87,7 +91,7 @@
         android:textColor="@color/purple"
         app:layout_constraintBottom_toTopOf="@id/email"
         app:layout_constraintStart_toStartOf="@id/email"
-        android:layout_marginBottom="5dp"/>
+        android:layout_marginTop="20dp"/>
 
     <EditText
         android:id="@+id/phone"
@@ -99,7 +103,8 @@
         app:layout_constraintTop_toBottomOf="@id/email"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:padding="10dp"/>
 
     <TextView
@@ -111,7 +116,7 @@
         android:textColor="@color/purple"
         app:layout_constraintBottom_toTopOf="@id/phone"
         app:layout_constraintStart_toStartOf="@id/phone"
-        android:layout_marginBottom="5dp"/>
+        android:layout_marginTop="20dp"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/password"
@@ -124,7 +129,8 @@
         app:layout_constraintTop_toBottomOf="@id/phone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:padding="10dp"
         app:endIconMode="password_toggle">
 
@@ -142,7 +148,7 @@
         android:textColor="@color/purple"
         app:layout_constraintBottom_toTopOf="@id/password"
         app:layout_constraintStart_toStartOf="@id/password"
-        android:layout_marginBottom="5dp"/>
+        android:layout_marginTop="20dp"/>
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/confirm_password"
         android:layout_width="0dp"
@@ -154,7 +160,8 @@
         app:layout_constraintTop_toBottomOf="@id/password"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:padding="10dp"
         app:endIconMode="password_toggle">
 
@@ -172,7 +179,7 @@
         android:textColor="@color/purple"
         app:layout_constraintTop_toBottomOf="@id/confirm_password"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="15dp"/>
+        android:layout_marginTop="20dp"/>
     <RadioGroup
         android:id="@+id/gender_group"
         android:layout_width="wrap_content"
@@ -180,7 +187,7 @@
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/gender_label"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="8dp">
 
         <RadioButton
             android:id="@+id/male"
