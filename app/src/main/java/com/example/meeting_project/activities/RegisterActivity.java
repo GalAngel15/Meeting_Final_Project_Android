@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.meeting_project.QuizActivity;
+import com.example.meeting_project.activity_quiz_2;
 import com.example.meeting_project.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
@@ -118,7 +119,8 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void navigateToQuizPage() {
         Toast.makeText(RegisterActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(RegisterActivity.this, QuizActivity.class);
+        //Intent intent = new Intent(RegisterActivity.this, QuizActivity.class);
+        Intent intent = new Intent(RegisterActivity.this, activity_quiz_2.class);
         startActivity(intent);
         finish();
     }

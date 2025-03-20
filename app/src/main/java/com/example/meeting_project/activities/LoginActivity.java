@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,13 +15,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.meeting_project.QuizActivity;
 import com.example.meeting_project.R;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
-    private TextInputLayout emailInputLayout, passwordInputLayout;
+    private EditText emailInputLayout;
+    private TextInputEditText passwordInputLayout;
     private TextView checkTextView;
     private MaterialButton login_BTN_login, btnReturn;
     private ProgressBar progressBar;
@@ -47,8 +50,8 @@ public class LoginActivity extends AppCompatActivity {
     private void initButtons() {
         login_BTN_login.setOnClickListener(v -> {
             login_BTN_login.setEnabled(false); // Disable button to prevent double click
-            String email = emailInputLayout.getEditText().getText().toString().trim();
-            String password = passwordInputLayout.getEditText().getText().toString().trim();
+            String email = emailInputLayout.getText().toString().trim();
+            String password = passwordInputLayout.getText().toString().trim();
             if (validateInputs(email, password)) {
                 loginUser(email, password);
             } else {

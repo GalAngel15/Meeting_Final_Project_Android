@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -121,4 +122,13 @@ public class activity_quiz_2 extends AppCompatActivity {
             }
         });
     }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        TextView questionTextView = findViewById(R.id.textViewQuestion);
+        if (questionTextView != null) {
+            questionTextView.setCustomSelectionActionModeCallback(null);
+        }
+    }
+
 }
