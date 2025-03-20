@@ -7,17 +7,26 @@ import android.view.ViewGroup;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.meeting_project.R;
+
 import com.example.meeting_project.Question;
+import com.example.meeting_project.R;
+
 import java.util.List;
 
 public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.QuestionViewHolder> {
-    private List<Question> questionList;
+    private List<Question> questions;
+    private OnAnswerSelectedListener listener;
 
-    public QuestionAdapter(List<Question> questionList) {
-        this.questionList = questionList;
+    public interface OnAnswerSelectedListener {
+        void onAnswerSelected(String questionId, int value);
+    }
+
+    public QuestionAdapter(List<Question> questions, OnAnswerSelectedListener listener) {
+        this.questions = questions;
+        this.listener = listener;
     }
 
     @NonNull
@@ -29,35 +38,29 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
     @Override
     public void onBindViewHolder(@NonNull QuestionViewHolder holder, int position) {
-        Question question = questionList.get(position);
+        Question question = questions.get(position);
         holder.textViewQuestion.setText(question.getText());
 
-        // שמירת מצב נבחר
-        holder.radioGroupAnswers.setOnCheckedChangeListener(null); // מניעת קריאות כפולות
+        holder.radioGroupAnswers.setOnCheckedChangeListener(null);
         holder.radioGroupAnswers.clearCheck();
 
-        if (question.getSelectedAnswer() != -1) {
-            ((RadioButton) holder.radioGroupAnswers.getChildAt(question.getSelectedAnswer())).setChecked(true);
+        for (int i = 0; i < question.getOptions().size(); i++) {
+            int value = question.getOptions().get(i).getValue();
+            ((RadioButton) holder.radioGroupAnswers.getChildAt(i)).setTag(value);
         }
 
-        // כאשר המשתמש בוחר תשובה
         holder.radioGroupAnswers.setOnCheckedChangeListener((group, checkedId) -> {
-            RadioButton selectedButton = group.findViewById(checkedId);
-            if (selectedButton != null) {
-                int responseValue = group.indexOfChild(selectedButton); // קבלת אינדקס נבחר
-                question.setSelectedAnswer(responseValue);
+            RadioButton selectedRadioButton = group.findViewById(checkedId);
+            if (selectedRadioButton != null) {
+                int responseValue = (int) selectedRadioButton.getTag();
+                listener.onAnswerSelected(question.getId(), responseValue);
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return questionList.size();
-    }
-
-    public void setQuestions(List<Question> newQuestions) {
-        this.questionList = newQuestions;
-        notifyDataSetChanged();
+        return questions.size();
     }
 
     public static class QuestionViewHolder extends RecyclerView.ViewHolder {

@@ -16,7 +16,7 @@
         android:theme="@style/Theme.Meeting_Project"
         tools:targetApi="31">
         <activity
-            android:name=".activity_quiz_2"
+            android:name=".Activity_quiz_2"
             android:exported="false" />
         <activity
             android:name=".activities.HomeActivity"
