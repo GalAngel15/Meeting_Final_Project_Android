@@ -88,6 +88,7 @@ public class Activity_quiz_2 extends AppCompatActivity {
             recyclerViewQuestions.setAdapter(questionAdapter);
             recyclerViewQuestions.setLayoutManager(new LinearLayoutManager(this));
         }else {
+            questionAdapter.updateQuestions(currentQuestions);
             questionAdapter.notifyDataSetChanged();
         }
 

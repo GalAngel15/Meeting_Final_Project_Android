@@ -119,8 +119,8 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void navigateToQuizPage() {
         Toast.makeText(RegisterActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(RegisterActivity.this, QuizActivity.class);
-        //Intent intent = new Intent(RegisterActivity.this, Activity_quiz_2.class);
+        //Intent intent = new Intent(RegisterActivity.this, QuizActivity.class);
+        Intent intent = new Intent(RegisterActivity.this, Activity_quiz_2.class);
         startActivity(intent);
         finish();
     }

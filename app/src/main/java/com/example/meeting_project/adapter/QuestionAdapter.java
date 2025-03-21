@@ -28,6 +28,10 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
         this.questions = questions;
         this.listener = listener;
     }
+    public void updateQuestions(List<Question> newQuestions) {
+        this.questions = newQuestions;
+        notifyDataSetChanged();
+    }
 
     @NonNull
     @Override
