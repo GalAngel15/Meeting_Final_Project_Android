@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.meeting_project.adapter.QuestionAdapter;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ import retrofit2.Response;
 
 public class Activity_quiz_2 extends AppCompatActivity {
     private static final String TAG = "Activity_quiz_2";
-
+    private LinearProgressIndicator progressBarQuiz;
     private RecyclerView recyclerViewQuestions;
     private QuestionAdapter questionAdapter;
     private MaterialButton nextButton;
@@ -35,9 +36,7 @@ public class Activity_quiz_2 extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quiz2);
-
-        recyclerViewQuestions = findViewById(R.id.recyclerViewQuestions);
-        nextButton = findViewById(R.id.buttonNext);
+        findView();
         recyclerViewQuestions.setLayoutManager(new LinearLayoutManager(this));
 
         fetchQuestions();
@@ -50,6 +49,17 @@ public class Activity_quiz_2 extends AppCompatActivity {
                 submitAnswers();
             }
         });
+    }
+
+    private void findView() {
+        progressBarQuiz = findViewById(R.id.progressBarQuiz);
+        recyclerViewQuestions = findViewById(R.id.recyclerViewQuestions);
+        nextButton = findViewById(R.id.buttonNext);
+    }
+    private void updateProgressBar() {
+        int totalPages = (int) Math.ceil((double) allQuestions.size() / QUESTIONS_PER_PAGE);
+        int progressPercent = (int) (((double) (currentPage + 1) / totalPages) * 100);
+        progressBarQuiz.setProgress(progressPercent);
     }
 
     private void fetchQuestions() {
@@ -97,6 +107,7 @@ public class Activity_quiz_2 extends AppCompatActivity {
         } else {
             nextButton.setText("Next");
         }
+        updateProgressBar();
     }
 
     private void submitAnswers() {

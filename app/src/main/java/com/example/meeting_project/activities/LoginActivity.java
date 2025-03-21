@@ -12,11 +12,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.meeting_project.QuizActivity;
+import com.example.meeting_project.Activity_quiz_2;
 import com.example.meeting_project.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -111,7 +110,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void navigateToPersonalQ() {
-        Intent intent = new Intent(LoginActivity.this, QuizActivity.class);
+        Intent intent = new Intent(LoginActivity.this, Activity_quiz_2.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear the activity stack
         startActivity(intent);
         finish();
