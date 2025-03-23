@@ -1,5 +1,5 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_checked="true">
+<item android:state_checked="true">
         <shape android:shape="oval">
             <solid android:color="@color/red"/>
             <size android:width="24dp" android:height="24dp"/>
@@ -14,3 +14,4 @@
         </shape>
     </item>
 </selector>
+

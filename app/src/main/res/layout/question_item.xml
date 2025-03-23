@@ -39,65 +39,79 @@
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/answer1"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:background="@drawable/radio_selector_red_big"
-                android:layout_marginHorizontal="4dp"/>
+                android:drawableTop="@drawable/radio_selector_red_big"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text=""/>
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/answer2"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:background="@drawable/radio_selector_red_medium"
-                android:layout_marginHorizontal="4dp"/>
+                android:drawableTop="@drawable/radio_selector_red_medium"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text=""/>
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/answer3"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:background="@drawable/radio_selector_red_small"
-                android:layout_marginHorizontal="4dp"/>
+                android:drawableTop="@drawable/radio_selector_red_small"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text=""/>
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/answer4"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:background="@drawable/radio_selector_neutral"
-                android:layout_marginHorizontal="4dp"/>
+                android:drawableTop="@drawable/radio_selector_neutral"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text=""/>
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/answer5"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:background="@drawable/radio_selector_green_small"
-                android:layout_marginHorizontal="4dp"/>
+                android:drawableTop="@drawable/radio_selector_green_small"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text=""/>
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/answer6"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:background="@drawable/radio_selector_green_medium"
-                android:layout_marginHorizontal="4dp"/>
+                android:drawableTop="@drawable/radio_selector_green_medium"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text=""/>
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/answer7"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:background="@drawable/radio_selector_green_big"
-                android:layout_marginHorizontal="4dp"/>
+                android:drawableTop="@drawable/radio_selector_green_big"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text=""/>
 
         </RadioGroup>
 
