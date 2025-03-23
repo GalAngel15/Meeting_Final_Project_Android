@@ -39,7 +39,7 @@
         app:layout_constraintTop_toBottomOf="@id/textViewRegisterTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="5dp"/>
 
     <!-- שדות טקסט -->
     <EditText
@@ -121,7 +121,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/password"
         android:layout_width="0dp"
-        android:layout_height="55dp"
+        android:layout_height="60dp"
         android:hint="Enter your password"
         android:inputType="textPassword"
         android:textSize="16sp"
@@ -137,7 +137,6 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
     <TextView
@@ -153,7 +152,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/confirm_password"
         android:layout_width="0dp"
-        android:layout_height="55dp"
+        android:layout_height="60dp"
         android:hint="Enter your password again"
         android:inputType="textPassword"
         android:textSize="16sp"
