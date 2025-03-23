@@ -13,10 +13,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:gravity="center_horizontal">
+        android:padding="16dp">
 
-        <!-- טקסט השאלה מיושר למרכז -->
+        <!-- טקסט השאלה -->
         <TextView
             android:id="@+id/textViewQuestion"
             android:layout_width="wrap_content"
@@ -24,37 +23,27 @@
             android:textSize="16sp"
             android:textColor="@color/black"
             android:textStyle="bold"
-            android:paddingBottom="12dp"
             android:gravity="center"
-            android:text="You regularly make new friends."/>
+            android:paddingBottom="10dp"
+            android:text="Your Question Here"/>
 
-        <!-- שורת תשובות -->
-        <LinearLayout
+        <!-- תשובות: עיגולים פרוסים על כל המסך -->
+        <RadioGroup
+            android:id="@+id/radioGroupAnswers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginTop="8dp"
-            android:weightSum="9">
+            android:layout_marginTop="10dp"
+            android:weightSum="7">
 
-            <!-- Agree -->
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Agree"
-                android:textSize="10sp"
-                android:textColor="@color/green"
-                android:gravity="center"/>
-
-            <!-- 7 כפתורי תשובה -->
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/answer1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:drawableTop="@drawable/radio_selector_green_big"
+                android:drawableTop="@drawable/radio_selector_red_big"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text=""/>
@@ -65,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:drawableTop="@drawable/radio_selector_green_medium"
+                android:drawableTop="@drawable/radio_selector_red_medium"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text=""/>
@@ -76,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:drawableTop="@drawable/radio_selector_green_small"
+                android:drawableTop="@drawable/radio_selector_red_small"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text=""/>
@@ -98,7 +87,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:drawableTop="@drawable/radio_selector_red_small"
+                android:drawableTop="@drawable/radio_selector_green_small"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text=""/>
@@ -109,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:drawableTop="@drawable/radio_selector_red_medium"
+                android:drawableTop="@drawable/radio_selector_green_medium"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text=""/>
@@ -120,21 +109,12 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:button="@null"
-                android:drawableTop="@drawable/radio_selector_red_big"
+                android:drawableTop="@drawable/radio_selector_green_big"
                 android:gravity="center"
                 android:padding="8dp"
                 android:text=""/>
 
-            <!-- Disagree -->
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Disagree"
-                android:textSize="10sp"
-                android:textColor="@color/red"
-                android:gravity="center"/>
-        </LinearLayout>
+        </RadioGroup>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
