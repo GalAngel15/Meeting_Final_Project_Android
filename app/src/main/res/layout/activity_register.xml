@@ -61,7 +61,7 @@
         android:id="@+id/full_name_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="שם מלא"
+        android:text="Full name"
         android:textSize="14sp"
         android:textColor="@color/purple"
         app:layout_constraintBottom_toTopOf="@id/full_name"
@@ -86,7 +86,7 @@
         android:id="@+id/email_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="אימייל"
+        android:text="Email"
         android:textSize="14sp"
         android:textColor="@color/purple"
         app:layout_constraintBottom_toTopOf="@id/email"
@@ -111,7 +111,7 @@
         android:id="@+id/phone_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="טלפון"
+        android:text="Phone number"
         android:textSize="14sp"
         android:textColor="@color/purple"
         app:layout_constraintBottom_toTopOf="@id/phone"
@@ -143,11 +143,21 @@
         android:id="@+id/password_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="סיסמא"
+        android:text="Password"
         android:textSize="14sp"
         android:textColor="@color/purple"
         app:layout_constraintBottom_toTopOf="@id/password"
         app:layout_constraintStart_toStartOf="@id/password"
+        android:layout_marginTop="20dp"/>
+    <TextView
+        android:id="@+id/confirm_password_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Confirm Password"
+        android:textSize="14sp"
+        android:textColor="@color/purple"
+        app:layout_constraintBottom_toTopOf="@id/confirm_password"
+        app:layout_constraintStart_toStartOf="@id/confirm_password"
         android:layout_marginTop="20dp"/>
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/confirm_password"
@@ -174,7 +184,7 @@
         android:id="@+id/gender_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="מגדר"
+        android:text="Gender"
         android:textSize="14sp"
         android:textColor="@color/purple"
         app:layout_constraintTop_toBottomOf="@id/confirm_password"
@@ -193,7 +203,7 @@
             android:id="@+id/male"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="גבר"
+            android:text="Male"
             android:textColor="@color/purple"
             android:buttonTint="@color/purple"/>
 
@@ -201,7 +211,7 @@
             android:id="@+id/female"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="אישה"
+            android:text="Female"
             android:textColor="@color/purple"
             android:buttonTint="@color/purple"/>
     </RadioGroup>
