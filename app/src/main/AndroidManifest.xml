@@ -40,9 +40,6 @@
             android:name=".activities.PersonalitiesActivity"
             android:exported="false" />
         <activity
-            android:name=".QuizActivity"
-            android:exported="false" />
-        <activity
             android:name=".activities.RegisterActivity"
             android:exported="false" />
         <activity

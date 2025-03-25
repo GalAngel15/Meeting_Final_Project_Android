@@ -2,40 +2,50 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="#F2F0F9"
+    android:padding="24dp">
 
-
-    <!-- תיבת הטקסט המרכזית -->
+    <!-- תיבת ViewPager בתוך כרטיס מעוגל -->
     <LinearLayout
-        android:id="@+id/question_box"
-        android:layout_width="wrap_content"
+        android:id="@+id/container_card"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/light_purple"
-        android:padding="20dp"
         android:layout_centerInParent="true"
-        android:orientation="vertical">
+        android:background="@drawable/rounded_white_card"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:elevation="4dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="כל שאלה שתענו עליה תקרב אתכם לאנשים שבאמת מתאימים לכם - באופי, בערכים ובדרך החיים.\n\nכמה רגעים של כנות עכשיו - שנים של אהבה בעתיד.\n\nמוכנים להתחיל? ענו על השאלון וגלו מי מחכה לכם ממש מעבר לפינה."
-            android:textSize="16sp"
-            android:textColor="#000"
-            android:textAlignment="center"/>
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:clipToPadding="false"
+            android:clipChildren="false"
+            android:overScrollMode="never" />
     </LinearLayout>
 
-    <!-- כפתור התחל שאלון -->
+    <!-- עיגולים תחתונים (אינדיקטור) -->
+    <LinearLayout
+        android:id="@+id/dotsIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@id/container_card"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="12dp" />
+
+    <!-- כפתור -->
     <Button
         android:id="@+id/btn_start_quiz"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="התחל שאלון"
+        android:text="התחל שאלון!"
         android:textSize="18sp"
         android:textColor="#FFFFFF"
         android:background="@drawable/button_rounded_purple"
-        android:layout_below="@id/question_box"
+        android:layout_below="@id/dotsIndicator"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        />
+        android:layout_marginTop="16dp" />
 
 </RelativeLayout>
