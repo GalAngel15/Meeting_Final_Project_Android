@@ -18,6 +18,7 @@
     <string name="full_name">Full Name</string>
 
     <string name="error_incorrect_login_fields">One or more fields are incorrect</string>
+    <string name="api_base_url">https://16personalities-api-production.up.railway.app/</string>
 
 
 </resources>
