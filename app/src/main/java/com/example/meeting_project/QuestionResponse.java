@@ -3,9 +3,9 @@ package com.example.meeting_project;
 import java.util.List;
 
 public class QuestionResponse {
-    private List<Question> questions;
+    private List<QuestionMBTI> questionMBTIS;
 
-    public List<Question> getQuestions() {
-        return questions;
+    public List<QuestionMBTI> getQuestions() {
+        return questionMBTIS;
     }
 }

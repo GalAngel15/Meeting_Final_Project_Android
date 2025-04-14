@@ -11,7 +11,7 @@ public interface PersonalityApi {
 
     // קריאה לקבלת השאלות מה-API
     @GET("/api/personality/questions")
-    Call<List<Question>> getQuestions();
+    Call<List<QuestionMBTI>> getQuestions();
 
     // קריאה לשליחת תשובות השאלון ל-API
     @POST("/api/personality/submit")
