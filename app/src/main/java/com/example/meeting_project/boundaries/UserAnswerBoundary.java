@@ -12,6 +12,10 @@ public class UserAnswerBoundary {
         this.questionId = questionId;
         this.answer = answer;
     }
+    public UserAnswerBoundary(String questionId, String answer) {
+        this.questionId = questionId;
+        this.answer = answer;
+    }
 
     public Long getId() {
         return id;

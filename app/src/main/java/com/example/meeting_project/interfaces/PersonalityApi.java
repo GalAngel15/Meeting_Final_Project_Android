@@ -1,4 +1,8 @@
-package com.example.meeting_project;
+package com.example.meeting_project.interfaces;
+
+import com.example.meeting_project.AnswerSubmission;
+import com.example.meeting_project.QuestionMBTI;
+import com.example.meeting_project.SubmitResponse;
 
 import java.util.List;
 

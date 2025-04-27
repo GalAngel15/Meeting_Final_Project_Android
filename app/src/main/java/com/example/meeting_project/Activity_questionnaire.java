@@ -1,0 +1,129 @@
+package com.example.meeting_project;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.meeting_project.adapter.QuestionIntroAdapter;
+import com.example.meeting_project.boundaries.QuestionsBoundary;
+import com.example.meeting_project.boundaries.UserAnswerBoundary;
+import com.example.meeting_project.interfaces.QuestionsApi;
+import com.google.android.material.button.MaterialButton;
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class Activity_questionnaire extends AppCompatActivity {
+
+    private RecyclerView recyclerViewQuestions;
+    private QuestionIntroAdapter questionAdapter;
+    private MaterialButton nextButton;
+    private List<QuestionsBoundary> allQuestions = new ArrayList<>();
+    private List<UserAnswerBoundary> answers = new ArrayList<>();
+    private int currentPage = 0;
+    private static final int QUESTIONS_PER_PAGE = 5;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_questionnaire);
+        findViews();
+        fetchQuestions();
+
+        nextButton.setOnClickListener(v -> {
+            if (!didAnswerAllCurrentQuestions()) {
+                Toast.makeText(this, "Please answer all questions", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if ((currentPage + 1) < Math.ceil((double) allQuestions.size() / QUESTIONS_PER_PAGE)) {
+                currentPage++;
+                loadQuestionsForCurrentPage();
+            } else {
+                submitAnswers();
+            }
+        });
+    }
+
+    private void findViews() {
+        recyclerViewQuestions = findViewById(R.id.recyclerViewIntroQuestions);
+        nextButton = findViewById(R.id.buttonNextIntro);
+        recyclerViewQuestions.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    private void fetchQuestions() {
+        QuestionsApi apiService = ApiClient.getRetrofitInstance().create(QuestionsApi.class);
+        Call<List<QuestionsBoundary>> call = apiService.getAllQuestions();
+        call.enqueue(new Callback<List<QuestionsBoundary>>() {
+            @Override
+            public void onResponse(Call<List<QuestionsBoundary>> call, Response<List<QuestionsBoundary>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    allQuestions = response.body();
+                    loadQuestionsForCurrentPage();
+                } else {
+                    Toast.makeText(Activity_questionnaire.this, "Failed to load intro questions", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<QuestionsBoundary>> call, Throwable t) {
+                Toast.makeText(Activity_questionnaire.this, "API Call Failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadQuestionsForCurrentPage() {
+        List<QuestionsBoundary> currentQuestions = getCurrentQuestions();
+        if (questionAdapter == null) {
+            questionAdapter = new QuestionIntroAdapter(currentQuestions, (questionId, answerText) -> {
+                // שמירה או עדכון תשובות
+                updateAnswers(questionId, answerText);
+            });
+            recyclerViewQuestions.setAdapter(questionAdapter);
+        } else {
+            questionAdapter.updateQuestions(currentQuestions);
+        }
+
+        // שינוי טקסט כפתור:
+        if (currentPage + 1 == Math.ceil((double) allQuestions.size() / QUESTIONS_PER_PAGE)) {
+            nextButton.setText("Submit");
+        } else {
+            nextButton.setText("Next");
+        }
+    }
+
+    private List<QuestionsBoundary> getCurrentQuestions() {
+        int start = currentPage * QUESTIONS_PER_PAGE;
+        int end = Math.min(start + QUESTIONS_PER_PAGE, allQuestions.size());
+        return allQuestions.subList(start, end);
+    }
+
+    private boolean didAnswerAllCurrentQuestions() {
+        int expectedAnswers = (currentPage + 1) * QUESTIONS_PER_PAGE;
+        return answers.size() >= expectedAnswers;
+    }
+
+    private void updateAnswers(String questionId, String answerText) {
+        // מחיקה אם כבר קיים
+        for (int i = answers.size() - 1; i >= 0; i--) {
+            if (answers.get(i).getQuestionId().equals(questionId)) {
+                answers.remove(i);
+                break;
+            }
+        }
+        answers.add(new UserAnswerBoundary(questionId, answerText));
+    }
+
+    private void submitAnswers() {
+        // טיפול בשליחת תשובות לשרת
+        Log.d("INTRO_QUIZ", "Answers: " + new Gson().toJson(answers));
+    }
+}
