@@ -8,7 +8,7 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.meeting_project.Activity_quiz_2;
+import com.example.meeting_project.Activity_quiz_mbti;
 import com.example.meeting_project.R;
 import com.example.meeting_project.activities.PersonalitiesActivity;
 import com.google.android.material.button.MaterialButton;
@@ -46,7 +46,7 @@ public class NevigationActivity extends AppCompatActivity {
 
             Intent intent;
             if (v.getId() == R.id.navigation_home) {
-                intent = new Intent(activity, Activity_quiz_2.class);
+                intent = new Intent(activity, Activity_quiz_mbti.class);
             } else if (v.getId() == R.id.navigation_profile) {
                 intent = new Intent(activity, PersonalitiesActivity.class);
             }else {

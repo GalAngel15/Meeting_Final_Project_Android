@@ -7,16 +7,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.meeting_project.Activity_quiz_2;
+import com.example.meeting_project.Activity_quiz_mbti;
 import com.example.meeting_project.R;
 import com.example.meeting_project.adapter.TextBoxAdapter;
 
@@ -90,7 +85,7 @@ public class TutorialForQuestions extends AppCompatActivity {
     }
     private void navigateToQuizPage() {
         //Intent intent = new Intent(RegisterActivity.this, QuizActivity.class);
-        Intent intent = new Intent(TutorialForQuestions.this, Activity_quiz_2.class);
+        Intent intent = new Intent(TutorialForQuestions.this, Activity_quiz_mbti.class);
         startActivity(intent);
         finish();
     }

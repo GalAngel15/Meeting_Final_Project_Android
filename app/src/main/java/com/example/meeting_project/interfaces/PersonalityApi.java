@@ -1,7 +1,7 @@
 package com.example.meeting_project.interfaces;
 
 import com.example.meeting_project.AnswerSubmission;
-import com.example.meeting_project.QuestionMBTI;
+import com.example.meeting_project.Question;
 import com.example.meeting_project.SubmitResponse;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public interface PersonalityApi {
 
     // קריאה לקבלת השאלות מה-API
     @GET("/api/personality/questions")
-    Call<List<QuestionMBTI>> getQuestions();
+    Call<List<Question>> getQuestions();
 
     // קריאה לשליחת תשובות השאלון ל-API
     @POST("/api/personality/submit")

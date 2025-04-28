@@ -1,6 +1,6 @@
 package com.example.meeting_project;
 
-public class OptionMBTI {
+public class Option {
     private String text;
     private int value;
 

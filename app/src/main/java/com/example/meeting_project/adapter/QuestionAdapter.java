@@ -11,25 +11,25 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.meeting_project.QuestionMBTI;
+import com.example.meeting_project.Question;
 import com.example.meeting_project.R;
 
 import java.util.List;
 
 public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.QuestionViewHolder> {
-    private List<QuestionMBTI> questionMBTIS;
+    private List<Question> questions;
     private OnAnswerSelectedListener listener;
 
     public interface OnAnswerSelectedListener {
         void onAnswerSelected(String questionId, int value);
     }
 
-    public QuestionAdapter(List<QuestionMBTI> questionMBTIS, OnAnswerSelectedListener listener) {
-        this.questionMBTIS = questionMBTIS;
+    public QuestionAdapter(List<Question> questions, OnAnswerSelectedListener listener) {
+        this.questions = questions;
         this.listener = listener;
     }
-    public void updateQuestions(List<QuestionMBTI> newQuestionMBTIS) {
-        this.questionMBTIS = newQuestionMBTIS;
+    public void updateQuestions(List<Question> newQuestions) {
+        this.questions = newQuestions;
         notifyDataSetChanged();
     }
 
@@ -42,14 +42,14 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
 
     @Override
     public void onBindViewHolder(@NonNull QuestionViewHolder holder, int position) {
-        QuestionMBTI questionMBTI = questionMBTIS.get(position);
-        holder.textViewQuestion.setText(questionMBTI.getText());
+        Question question = questions.get(position);
+        holder.textViewQuestion.setText(question.getText());
 
         holder.radioGroupAnswers.setOnCheckedChangeListener(null);
         holder.radioGroupAnswers.clearCheck();
 
-        for (int i = 0; i < questionMBTI.getOptions().size(); i++) {
-            int value = questionMBTI.getOptions().get(i).getValue();
+        for (int i = 0; i < question.getOptions().size(); i++) {
+            int value = question.getOptions().get(i).getValue();
             ((RadioButton) holder.radioGroupAnswers.getChildAt(i)).setTag(value);
         }
 
@@ -57,14 +57,14 @@ public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.Questi
             RadioButton selectedRadioButton = group.findViewById(checkedId);
             if (selectedRadioButton != null) {
                 int responseValue = (int) selectedRadioButton.getTag();
-                listener.onAnswerSelected(questionMBTI.getId(), responseValue);
+                listener.onAnswerSelected(question.getId(), responseValue);
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return questionMBTIS.size();
+        return questions.size();
     }
 
     public static class QuestionViewHolder extends RecyclerView.ViewHolder {

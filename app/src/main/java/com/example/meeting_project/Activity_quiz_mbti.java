@@ -22,13 +22,13 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class Activity_quiz_2 extends AppCompatActivity {
+public class Activity_quiz_mbti extends AppCompatActivity {
     private static final String TAG = "Activity_quiz_2";
     private LinearProgressIndicator progressBarQuiz;
     private RecyclerView recyclerViewQuestions;
     private QuestionAdapter questionAdapter;
     private MaterialButton nextButton;
-    private List<QuestionMBTI> allQuestionMBTIS = new ArrayList<>();
+    private List<Question> allQuestions = new ArrayList<>();
     private List<AnswerSubmission.Answer> answers = new ArrayList<>();
     private int currentPage = 0;
     private static final int QUESTIONS_PER_PAGE = 4;
@@ -49,7 +49,7 @@ public class Activity_quiz_2 extends AppCompatActivity {
                 return;
             }
 
-            if (currentPage+1 < (allQuestionMBTIS.size() / QUESTIONS_PER_PAGE)) {
+            if (currentPage+1 < (allQuestions.size() / QUESTIONS_PER_PAGE)) {
                 currentPage++;
                 loadQuestionsForCurrentPage();
             } else {
@@ -69,46 +69,46 @@ public class Activity_quiz_2 extends AppCompatActivity {
         nextButton = findViewById(R.id.buttonNext);
     }
     private void updateProgressBar() {
-        int totalPages = (int) Math.ceil((double) allQuestionMBTIS.size() / QUESTIONS_PER_PAGE);
+        int totalPages = (int) Math.ceil((double) allQuestions.size() / QUESTIONS_PER_PAGE);
         int progressPercent = (int) (((double) (currentPage + 1) / totalPages) * 100);
         progressBarQuiz.setProgress(progressPercent);
     }
 
     private void fetchQuestions() {
         PersonalityApi apiService = ApiClient.getRetrofitInstance().create(PersonalityApi.class);
-        Call<List<QuestionMBTI>> call = apiService.getQuestions();
-        call.enqueue(new Callback<List<QuestionMBTI>>() {
+        Call<List<Question>> call = apiService.getQuestions();
+        call.enqueue(new Callback<List<Question>>() {
             @Override
-            public void onResponse(@NonNull Call<List<QuestionMBTI>> call, @NonNull Response<List<QuestionMBTI>> response) {
+            public void onResponse(@NonNull Call<List<Question>> call, @NonNull Response<List<Question>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    allQuestionMBTIS = response.body();
+                    allQuestions = response.body();
                     loadQuestionsForCurrentPage();
                 } else {
-                    Toast.makeText(Activity_quiz_2.this, "Failed to load questions", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Activity_quiz_mbti.this, "Failed to load questions", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<QuestionMBTI>> call, @NonNull Throwable t) {
-                Toast.makeText(Activity_quiz_2.this, "API Call Failed", Toast.LENGTH_SHORT).show();
+            public void onFailure(@NonNull Call<List<Question>> call, @NonNull Throwable t) {
+                Toast.makeText(Activity_quiz_mbti.this, "API Call Failed", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private List<QuestionMBTI> getCurrentQuestions() {
+    private List<Question> getCurrentQuestions() {
         int start = currentPage * QUESTIONS_PER_PAGE;
-        int end = Math.min(start + QUESTIONS_PER_PAGE, allQuestionMBTIS.size());
-        return allQuestionMBTIS.subList(start, end);
+        int end = Math.min(start + QUESTIONS_PER_PAGE, allQuestions.size());
+        return allQuestions.subList(start, end);
     }
 
     private void loadQuestionsForCurrentPage() {
-        if (allQuestionMBTIS ==null || allQuestionMBTIS.isEmpty()){
+        if (allQuestions ==null || allQuestions.isEmpty()){
             Log.e(TAG, "No question available");
             return;
         }
-        List<QuestionMBTI> currentQuestionMBTIS = getCurrentQuestions();
+        List<Question> currentQuestions = getCurrentQuestions();
         if (questionAdapter==null){
-            questionAdapter = new QuestionAdapter(currentQuestionMBTIS, (questionId, value) -> {
+            questionAdapter = new QuestionAdapter(currentQuestions, (questionId, value) -> {
                 for (int i = answers.size()-1; i >= Math.max(0, answers.size() - QUESTIONS_PER_PAGE) ; i--) { //Remove duplicate answers
                     if (answers.get(i).getId().equals(questionId)){
                         answers.remove(i);
@@ -120,11 +120,11 @@ public class Activity_quiz_2 extends AppCompatActivity {
             recyclerViewQuestions.setAdapter(questionAdapter);
             recyclerViewQuestions.setLayoutManager(new LinearLayoutManager(this));
         }else {
-            questionAdapter.updateQuestions(currentQuestionMBTIS);
+            questionAdapter.updateQuestions(currentQuestions);
             questionAdapter.notifyDataSetChanged();
         }
 
-        if (currentPage+1 == (allQuestionMBTIS.size() / QUESTIONS_PER_PAGE)) {
+        if (currentPage+1 == (allQuestions.size() / QUESTIONS_PER_PAGE)) {
             nextButton.setText("Submit");
         } else {
             nextButton.setText("Next");
@@ -158,11 +158,11 @@ public class Activity_quiz_2 extends AppCompatActivity {
 
                     SubmitResponse result = response.body();
                     String personalityType = result.getNiceName();
-                    Toast.makeText(Activity_quiz_2.this, "Your personality type: " + personalityType, Toast.LENGTH_LONG).show();
+                    Toast.makeText(Activity_quiz_mbti.this, "Your personality type: " + personalityType, Toast.LENGTH_LONG).show();
                 } else {
                     Log.w("QUIZ", "Response body is null");
 
-                    Toast.makeText(Activity_quiz_2.this, "Failed to submit answers", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Activity_quiz_mbti.this, "Failed to submit answers", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -170,7 +170,7 @@ public class Activity_quiz_2 extends AppCompatActivity {
             public void onFailure(@NonNull Call<SubmitResponse> call, @NonNull Throwable t) {
                 Log.e("QUIZ", "API call failed", t);
 
-                Toast.makeText(Activity_quiz_2.this, "API Call Failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(Activity_quiz_mbti.this, "API Call Failed", Toast.LENGTH_SHORT).show();
             }
         });
     }

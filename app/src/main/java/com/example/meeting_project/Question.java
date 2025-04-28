@@ -2,10 +2,10 @@ package com.example.meeting_project;
 
 import java.util.List;
 
-public class QuestionMBTI {
+public class Question {
     private String id;
     private String text;
-    private List<OptionMBTI> optionMBTIS;
+    private List<Option> options;
     private int selectedAnswer = -1;
 
     public String getId() {
@@ -16,8 +16,8 @@ public class QuestionMBTI {
         return text;
     }
 
-    public List<OptionMBTI> getOptions() {
-        return optionMBTIS;
+    public List<Option> getOptions() {
+        return options;
     }
     public void setSelectedAnswer(int selectedAnswer) {
         this.selectedAnswer = selectedAnswer;
