@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.meeting_project.adapter.QuestionAdapter;
+import com.example.meeting_project.apiClients.MbtiTest_ApiClient;
 import com.example.meeting_project.interfaces.PersonalityApi;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
@@ -75,7 +76,7 @@ public class Activity_quiz_mbti extends AppCompatActivity {
     }
 
     private void fetchQuestions() {
-        PersonalityApi apiService = ApiClient.getRetrofitInstance().create(PersonalityApi.class);
+        PersonalityApi apiService = MbtiTest_ApiClient.getRetrofitInstance().create(PersonalityApi.class);
         Call<List<Question>> call = apiService.getQuestions();
         call.enqueue(new Callback<List<Question>>() {
             @Override
@@ -137,7 +138,7 @@ public class Activity_quiz_mbti extends AppCompatActivity {
             Log.d("QUIZ", "Answer - questionId: " + a.getId() + ", value: " + a.getValue());
         }
 
-        PersonalityApi apiService = ApiClient.getRetrofitInstance().create(PersonalityApi.class);
+        PersonalityApi apiService = MbtiTest_ApiClient.getRetrofitInstance().create(PersonalityApi.class);
         String json = new Gson().toJson(new AnswerSubmission(answers, selectedGender));
 
 // פיצול לוג ל־1000 תווים כל פעם

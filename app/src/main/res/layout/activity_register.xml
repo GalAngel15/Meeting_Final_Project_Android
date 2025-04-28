@@ -68,6 +68,7 @@
         app:layout_constraintStart_toStartOf="@id/full_name"
         android:layout_marginTop="20dp"/>
 
+
     <EditText
         android:id="@+id/email"
         android:layout_width="0dp"

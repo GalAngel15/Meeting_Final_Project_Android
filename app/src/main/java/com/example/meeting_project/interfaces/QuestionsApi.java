@@ -12,7 +12,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
-
+//the questions of the server
 public interface QuestionsApi {
     // נקודת קצה: GET /questions/all
     @GET("/questions/all")
