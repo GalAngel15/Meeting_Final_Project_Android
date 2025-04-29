@@ -17,6 +17,7 @@ import com.example.meeting_project.R;
 import com.example.meeting_project.boundaries.QuestionsBoundary;
 
 import java.util.List;
+//the questions of the server
 
 public class QuestionIntroAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 

@@ -17,6 +17,7 @@ import com.example.meeting_project.R;
 import java.util.List;
 
 public class QuestionAdapter extends RecyclerView.Adapter<QuestionAdapter.QuestionViewHolder> {
+    //the mbti qustions api - personality type
     private List<Question> questions;
     private OnAnswerSelectedListener listener;
 

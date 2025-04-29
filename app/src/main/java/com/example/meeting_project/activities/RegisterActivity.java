@@ -11,7 +11,8 @@ import android.widget.Toast;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.meeting_project.apiClients.MbtiTest_ApiClient;
+
+import com.example.meeting_project.Activity_questionnaire;
 import com.example.meeting_project.R;
 import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
@@ -115,11 +116,11 @@ public class RegisterActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         updateUserProfile(username);
+                        saveUserToDatabase(email, username, password, gender);
                     } else {
                         handleRegistrationError(task.getException());
                     }
                 });
-        saveUserToDatabase(email, username, password, gender);
     }
 
     private void saveUserToDatabase(String email, String username,String password,String gender) {
@@ -160,8 +161,9 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                Log.e("REGISTER", "API call failed: ", t);
+                Log.e("REGISTER", "API call failed: " + t.getMessage(), t);
             }
+
         });
     }
 
@@ -175,7 +177,7 @@ public class RegisterActivity extends AppCompatActivity {
             user.updateProfile(profileUpdates)
                     .addOnCompleteListener(profileTask -> {
                         if (profileTask.isSuccessful()) {
-                            navigateToQuizPage();
+                            navigateToMbtiQuizPage();
                         } else {
                             showToast("Profile update failed: " + profileTask.getException().getMessage());
                         }
@@ -183,9 +185,9 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    private void navigateToQuizPage() {
+    private void navigateToMbtiQuizPage() {
         Toast.makeText(RegisterActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
-        //Intent intent = new Intent(RegisterActivity.this, QuizActivity.class);
+        //Intent intent = new Intent(RegisterActivity.this, Activity_questionnaire.class);
         //Intent intent = new Intent(RegisterActivity.this, Activity_quiz_2.class);
         Intent intent = new Intent(RegisterActivity.this, TutorialForQuestions.class);
         startActivity(intent);

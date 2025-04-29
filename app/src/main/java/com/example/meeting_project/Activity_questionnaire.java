@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.meeting_project.adapter.QuestionIntroAdapter;
-import com.example.meeting_project.apiClients.MbtiTest_ApiClient;
+import com.example.meeting_project.apiClients.Question_ApiClient;
 import com.example.meeting_project.boundaries.QuestionsBoundary;
 import com.example.meeting_project.boundaries.UserAnswerBoundary;
 import com.example.meeting_project.interfaces.QuestionsApi;
@@ -61,7 +61,7 @@ public class Activity_questionnaire extends AppCompatActivity {
     }
 
     private void fetchQuestions() {
-        QuestionsApi apiService = MbtiTest_ApiClient.getRetrofitInstance().create(QuestionsApi.class);
+        QuestionsApi apiService = Question_ApiClient.getRetrofitInstance().create(QuestionsApi.class);
         Call<List<QuestionsBoundary>> call = apiService.getAllQuestions();
         call.enqueue(new Callback<List<QuestionsBoundary>>() {
             @Override
