@@ -1,5 +1,7 @@
 package com.example.meeting_project.boundaries;
 
+import com.example.meeting_project.enums.Gender;
+
 public class UserPreferencesBoundary {
     private Long id;
     private Long userId;

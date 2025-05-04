@@ -17,6 +17,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import retrofit2.Call;
@@ -68,6 +69,11 @@ public class Activity_questionnaire extends AppCompatActivity {
             public void onResponse(Call<List<QuestionsBoundary>> call, Response<List<QuestionsBoundary>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     allQuestions = response.body();
+                    for (QuestionsBoundary question : allQuestions) {
+                        if (question.getPossibleAnswers() != null && !question.getPossibleAnswers().isEmpty()) {
+                            String joinedAnswers = String.join(",", question.getPossibleAnswers());
+                            question.setPossibleAnswers(Arrays.asList(joinedAnswers.split(",")));                        }
+                    }
                     loadQuestionsForCurrentPage();
                 } else {
                     Toast.makeText(Activity_questionnaire.this, "Failed to load intro questions", Toast.LENGTH_SHORT).show();
@@ -84,16 +90,12 @@ public class Activity_questionnaire extends AppCompatActivity {
     private void loadQuestionsForCurrentPage() {
         List<QuestionsBoundary> currentQuestions = getCurrentQuestions();
         if (questionAdapter == null) {
-            questionAdapter = new QuestionIntroAdapter(currentQuestions, (questionId, answerText) -> {
-                // שמירה או עדכון תשובות
-                updateAnswers(questionId, answerText);
-            });
+            questionAdapter = new QuestionIntroAdapter(currentQuestions, this::updateAnswers);
             recyclerViewQuestions.setAdapter(questionAdapter);
         } else {
             questionAdapter.updateQuestions(currentQuestions);
         }
 
-        // שינוי טקסט כפתור:
         if (currentPage + 1 == Math.ceil((double) allQuestions.size() / QUESTIONS_PER_PAGE)) {
             nextButton.setText("Submit");
         } else {
@@ -108,8 +110,18 @@ public class Activity_questionnaire extends AppCompatActivity {
     }
 
     private boolean didAnswerAllCurrentQuestions() {
-        int expectedAnswers = (currentPage + 1) * QUESTIONS_PER_PAGE;
-        return answers.size() >= expectedAnswers;
+        List<QuestionsBoundary> currentQuestions = getCurrentQuestions();
+        for (QuestionsBoundary q : currentQuestions) {
+            boolean answered = false;
+            for (UserAnswerBoundary a : answers) {
+                if (a.getQuestionId().equals(q.getId())) {
+                    answered = true;
+                    break;
+                }
+            }
+            if (!answered) return false;
+        }
+        return true;
     }
 
     private void updateAnswers(String questionId, String answerText) {

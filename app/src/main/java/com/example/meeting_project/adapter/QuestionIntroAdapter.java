@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.meeting_project.R;
 import com.example.meeting_project.boundaries.QuestionsBoundary;
+import com.example.meeting_project.enums.QuestionType;
 
 import java.util.List;
 //the questions of the server
@@ -40,7 +41,8 @@ public class QuestionIntroAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     @Override
     public int getItemViewType(int position) {
-        return questions.get(position).getQuestionType().equals("multiple choice") ? 0 : 1;
+        QuestionType type = questions.get(position).getQuestionType();
+        return type != null && type.equals(QuestionType.MULTIPLE_CHOICE) ? 0 : 1; // 0 for multiple choice, 1 for open question
     }
 
     @NonNull
@@ -83,10 +85,13 @@ public class QuestionIntroAdapter extends RecyclerView.Adapter<RecyclerView.View
         void bind(QuestionsBoundary question) {
             questionText.setText(question.getQuestionText());
             radioGroup.removeAllViews();
-            for (String option : question.getPossibleAnswers()) {
-                RadioButton radioButton = new RadioButton(itemView.getContext());
-                radioButton.setText(option);
-                radioGroup.addView(radioButton);
+            List<String> options = question.getPossibleAnswers();
+            if (options != null) {
+                for (String option : options) {
+                    RadioButton radioButton = new RadioButton(itemView.getContext());
+                    radioButton.setText(option.trim());
+                    radioGroup.addView(radioButton);
+                }
             }
             radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
                 RadioButton selected = group.findViewById(checkedId);

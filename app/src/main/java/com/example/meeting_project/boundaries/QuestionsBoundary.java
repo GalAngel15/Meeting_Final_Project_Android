@@ -1,15 +1,17 @@
 package com.example.meeting_project.boundaries;
 
+import com.example.meeting_project.enums.QuestionType;
+
 import java.util.List;
 
 public class QuestionsBoundary {
     private String id;
     private String questionText; //the question
-    private String questionType; //open or amultiple choice
+    private QuestionType questionType; //open or amultiple choice
     private String questionCategory;//the topic of the question
     private List<String> possibleAnswers;
 
-    public QuestionsBoundary(String id, String questionText, String questionCategory, String questionType, List<String> possibleAnswers) {
+    public QuestionsBoundary(String id, String questionText, String questionCategory, QuestionType questionType, List<String> possibleAnswers) {
         this.id = id;
         this.questionText = questionText;
         this.questionCategory = questionCategory;
@@ -35,11 +37,11 @@ public class QuestionsBoundary {
         return this;
     }
 
-    public String getQuestionType() {
+    public QuestionType getQuestionType() {
         return questionType;
     }
 
-    public QuestionsBoundary setQuestionType(String questionType) {
+    public QuestionsBoundary setQuestionType(QuestionType questionType) {
         this.questionType = questionType;
         return this;
     }

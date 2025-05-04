@@ -1,5 +1,6 @@
 package com.example.meeting_project;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.meeting_project.activities.RegisterActivity;
 import com.example.meeting_project.adapter.QuestionAdapter;
 import com.example.meeting_project.apiClients.MbtiTest_ApiClient;
 import com.example.meeting_project.interfaces.PersonalityApi;
@@ -160,6 +162,7 @@ public class Activity_quiz_mbti extends AppCompatActivity {
                     SubmitResponse result = response.body();
                     String personalityType = result.getNiceName();
                     Toast.makeText(Activity_quiz_mbti.this, "Your personality type: " + personalityType, Toast.LENGTH_LONG).show();
+                    navigateToQuizPage();
                 } else {
                     Log.w("QUIZ", "Response body is null");
 
@@ -174,6 +177,12 @@ public class Activity_quiz_mbti extends AppCompatActivity {
                 Toast.makeText(Activity_quiz_mbti.this, "API Call Failed", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void navigateToQuizPage() {
+        Intent intent = new Intent(Activity_quiz_mbti.this, Activity_questionnaire.class);
+        startActivity(intent);
+        finish();
     }
 
 }
