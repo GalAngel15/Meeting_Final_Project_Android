@@ -2,6 +2,7 @@ package com.example.meeting_project;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.meeting_project.activities.RegisterActivity;
+import com.example.meeting_project.activities.activity_personality_result;
 import com.example.meeting_project.adapter.QuestionAdapter;
 import com.example.meeting_project.apiClients.MbtiTest_ApiClient;
 import com.example.meeting_project.interfaces.PersonalityApi;
@@ -162,6 +164,7 @@ public class Activity_quiz_mbti extends AppCompatActivity {
                     SubmitResponse result = response.body();
                     String personalityType = result.getNiceName();
                     Toast.makeText(Activity_quiz_mbti.this, "Your personality type: " + personalityType, Toast.LENGTH_LONG).show();
+                    //navigateToResultMbtiPage(result);
                     navigateToQuizPage();
                 } else {
                     Log.w("QUIZ", "Response body is null");
@@ -177,6 +180,15 @@ public class Activity_quiz_mbti extends AppCompatActivity {
                 Toast.makeText(Activity_quiz_mbti.this, "API Call Failed", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void navigateToResultMbtiPage(SubmitResponse result) {
+        Gson gson = new Gson();
+        String submitResponseJson = gson.toJson(result);
+        Intent intent = new Intent(this, activity_personality_result.class);
+        intent.putExtra("submitResponse", submitResponseJson);  // חשוב ש-SubmitResponse יהיה Parcelable
+        startActivity(intent);
+        finish();
     }
 
     private void navigateToQuizPage() {

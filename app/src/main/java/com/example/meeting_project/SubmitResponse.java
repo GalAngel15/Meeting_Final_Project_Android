@@ -1,7 +1,7 @@
 package com.example.meeting_project;
 
 import java.util.List;
-
+//for mbti quiz
 public class SubmitResponse {
     private String niceName;
     private String fullCode;
