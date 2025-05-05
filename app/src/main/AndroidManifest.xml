@@ -16,7 +16,7 @@
         android:theme="@style/Theme.Meeting_Project"
         tools:targetApi="31">
         <activity
-            android:name=".activities.activity_personality_result"
+            android:name=".activities.Activity_personality_result"
             android:exported="false" />
         <activity
             android:name=".Activity_questionnaire"

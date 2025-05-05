@@ -1,17 +1,11 @@
 package com.example.meeting_project.activities;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.meeting_project.R;
@@ -21,7 +15,7 @@ import com.google.gson.Gson;
 
 import java.util.List;
 
-public class activity_personality_result extends AppCompatActivity {
+public class Activity_personality_result extends AppCompatActivity {
 
     private TextView tvNiceName, tvSnippet;
     private ImageView ivAvatar;
@@ -47,28 +41,41 @@ public class activity_personality_result extends AppCompatActivity {
         }
     }
     private void showScales(List<String> scales) {
+        scalesContainer.removeAllViews();
         for (String scale : scales) {
             TextView tv = new TextView(this);
             tv.setText("- " + scale);
+            tv.setTextSize(16);
             scalesContainer.addView(tv);
         }
     }
 
     private void showTraits(List<Trait> traits) {
+        traitsContainer.removeAllViews();
         for (Trait trait : traits) {
+            LinearLayout traitLayout = new LinearLayout(this);
+            traitLayout.setOrientation(LinearLayout.VERTICAL);
+            traitLayout.setPadding(0, 16, 0, 16);
+
             TextView tvTitle = new TextView(this);
-            tvTitle.setText(trait.getLabel() + " - " + trait.getTrait() + " (" + trait.getPct() + "%)");
-            traitsContainer.addView(tvTitle);
+            tvTitle.setText(trait.getLabel() + " (" + trait.getPct() + "%)");
+            tvTitle.setTextSize(18);
+            tvTitle.setTypeface(null, android.graphics.Typeface.BOLD);
 
             ImageView iv = new ImageView(this);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(150, 150);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(200, 200);
             iv.setLayoutParams(lp);
             Glide.with(this).load(trait.getImageSrc()).into(iv);
-            traitsContainer.addView(iv);
 
             TextView tvDesc = new TextView(this);
             tvDesc.setText(trait.getSnippet());
-            traitsContainer.addView(tvDesc);
+            tvDesc.setTextSize(14);
+
+            traitLayout.addView(tvTitle);
+            traitLayout.addView(iv);
+            traitLayout.addView(tvDesc);
+
+            traitsContainer.addView(traitLayout);
         }
     }
     private void iniyViews() {
