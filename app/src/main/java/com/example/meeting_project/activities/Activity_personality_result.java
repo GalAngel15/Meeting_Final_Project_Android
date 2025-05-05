@@ -1,5 +1,7 @@
 package com.example.meeting_project.activities;
 
+import android.graphics.drawable.PictureDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -12,8 +14,10 @@ import com.example.meeting_project.R;
 import com.example.meeting_project.SubmitResponse;
 import com.example.meeting_project.Trait;
 import com.google.gson.Gson;
-
 import java.util.List;
+
+import android.graphics.drawable.PictureDrawable;
+
 
 public class Activity_personality_result extends AppCompatActivity {
 
@@ -35,7 +39,8 @@ public class Activity_personality_result extends AppCompatActivity {
         if (response != null) {
             tvNiceName.setText(response.getNiceName() + " (" + response.getFullCode() + ")");
             tvSnippet.setText(response.getSnippet());
-            Glide.with(this).load(response.getAvatarSrcStatic()).into(ivAvatar);
+            // Load SVG image using Glide
+            Glide.with(this).load(Uri.parse(response.getAvatarSrcStatic())).into(ivAvatar);
             showScales(response.getScales());
             showTraits(response.getTraits());
         }
