@@ -1,4 +1,4 @@
-package com.example.meeting_project;
+package com.example.meeting_project.objectOfMbtiTest;
 
 public class Option {
     private String text;

@@ -1,4 +1,4 @@
-package com.example.meeting_project;
+package com.example.meeting_project.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,10 +10,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.meeting_project.activities.Activity_personality_result;
+import com.example.meeting_project.R;
 import com.example.meeting_project.adapter.QuestionAdapter;
+import com.example.meeting_project.apiClients.MbtiService_ApiClient;
 import com.example.meeting_project.apiClients.MbtiTest_ApiClient;
+import com.example.meeting_project.apiClients.Question_ApiClient;
+import com.example.meeting_project.boundaries.MbtiBoundary;
+import com.example.meeting_project.enums.PersonalityType;
+import com.example.meeting_project.interfaces.MbtiServiceApi;
 import com.example.meeting_project.interfaces.PersonalityApi;
+import com.example.meeting_project.interfaces.QuestionsApi;
+import com.example.meeting_project.objectOfMbtiTest.AnswerSubmission;
+import com.example.meeting_project.objectOfMbtiTest.Question;
+import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.gson.Gson;
@@ -164,6 +173,7 @@ public class Activity_quiz_mbti extends AppCompatActivity {
                     SubmitResponse result = response.body();
                     String personalityType = result.getNiceName();
                     Toast.makeText(Activity_quiz_mbti.this, "Your personality type: " + personalityType, Toast.LENGTH_LONG).show();
+                    seveMbtiResultToService(result);
                     navigateToResultMbtiPage(result);
                     //navigateToQuizPage();
                 } else {
@@ -181,7 +191,47 @@ public class Activity_quiz_mbti extends AppCompatActivity {
             }
         });
     }
+    private void seveMbtiResultToService(SubmitResponse result) {
+        String fullCode = result.getFullCode();  // לדוגמה "ISTP-A"
+        String personalityTypeCode = fullCode.split("-")[0];  // מקבלים "ISTP"
 
+        PersonalityType personalityTypeEnum = null;
+        try {
+            personalityTypeEnum = PersonalityType.valueOf(personalityTypeCode);
+        } catch (IllegalArgumentException e) {
+            Log.e("MBTI", "Invalid personality type: " + personalityTypeCode);
+            Toast.makeText(this, "Invalid personality type: " + personalityTypeCode, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String characteristicsJson = new Gson().toJson(result);
+
+        MbtiBoundary newProfile = new MbtiBoundary(
+                null,
+                null,
+                personalityTypeEnum,
+                characteristicsJson
+        );
+
+        MbtiServiceApi apiService = MbtiService_ApiClient.getRetrofitInstance().create(MbtiServiceApi.class);
+        apiService.createProfile(newProfile).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                if (response.isSuccessful()) {
+                    Log.d("MBTI", "Created: " + response.body());
+                } else {
+                    Log.e("MBTI", "Server Error: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                Log.e("MBTI", "Create Error: " + t.getMessage());
+            }
+        });
+    }
+
+    // ניווט לדף התוצאה
     private void navigateToResultMbtiPage(SubmitResponse result) {
         Gson gson = new Gson();
         String submitResponseJson = gson.toJson(result);

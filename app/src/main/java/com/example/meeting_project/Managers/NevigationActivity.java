@@ -8,7 +8,7 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.meeting_project.Activity_quiz_mbti;
+import com.example.meeting_project.activities.Activity_quiz_mbti;
 import com.example.meeting_project.R;
 import com.example.meeting_project.activities.PersonalitiesActivity;
 import com.google.android.material.button.MaterialButton;

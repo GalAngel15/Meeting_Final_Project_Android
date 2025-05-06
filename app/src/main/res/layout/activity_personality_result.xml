@@ -52,6 +52,13 @@
             android:layout_marginTop="16dp"
             android:text="Traits:" />
 
+        <Button
+            android:id="@+id/btnNextTest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="next test" />
+
         <LinearLayout
             android:id="@+id/traitsContainer"
             android:orientation="vertical"

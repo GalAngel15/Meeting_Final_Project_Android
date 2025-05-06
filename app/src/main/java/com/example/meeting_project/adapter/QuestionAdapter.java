@@ -11,7 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.meeting_project.Question;
+import com.example.meeting_project.objectOfMbtiTest.Question;
 import com.example.meeting_project.R;
 
 import java.util.List;

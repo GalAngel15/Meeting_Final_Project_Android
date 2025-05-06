@@ -12,7 +12,6 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.meeting_project.Activity_questionnaire;
 import com.example.meeting_project.R;
 import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;

@@ -1,4 +1,4 @@
-package com.example.meeting_project;
+package com.example.meeting_project.objectOfMbtiTest;
 
 import java.util.List;
 

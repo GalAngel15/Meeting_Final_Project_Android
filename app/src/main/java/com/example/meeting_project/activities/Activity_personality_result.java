@@ -1,8 +1,10 @@
 package com.example.meeting_project.activities;
 
-import android.graphics.drawable.PictureDrawable;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -11,12 +13,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.meeting_project.R;
-import com.example.meeting_project.SubmitResponse;
-import com.example.meeting_project.Trait;
+import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
+import com.example.meeting_project.objectOfMbtiTest.Trait;
 import com.google.gson.Gson;
 import java.util.List;
-
-import android.graphics.drawable.PictureDrawable;
 
 
 public class Activity_personality_result extends AppCompatActivity {
@@ -24,11 +24,13 @@ public class Activity_personality_result extends AppCompatActivity {
     private TextView tvNiceName, tvSnippet;
     private ImageView ivAvatar;
     private LinearLayout scalesContainer, traitsContainer;
+    private Button btnNextTest;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_personality_result);
         iniyViews();
+        setBtnClick();
         // קבל את ה־JSON
         String json = getIntent().getStringExtra("submitResponseJson");
 
@@ -44,6 +46,17 @@ public class Activity_personality_result extends AppCompatActivity {
             showScales(response.getScales());
             showTraits(response.getTraits());
         }
+    }
+
+    private void setBtnClick() {
+        btnNextTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Activity_personality_result.this, Activity_questionnaire.class);
+
+                startActivity(intent);
+            }
+        });
     }
     private void showScales(List<String> scales) {
         scalesContainer.removeAllViews();
@@ -89,6 +102,7 @@ public class Activity_personality_result extends AppCompatActivity {
         ivAvatar = findViewById(R.id.ivAvatar);
         scalesContainer = findViewById(R.id.scalesContainer);
         traitsContainer = findViewById(R.id.traitsContainer);
+        btnNextTest = findViewById(R.id.btnNextTest);
     }
 
 }

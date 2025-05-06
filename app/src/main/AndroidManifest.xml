@@ -19,13 +19,13 @@
             android:name=".activities.Activity_personality_result"
             android:exported="false" />
         <activity
-            android:name=".Activity_questionnaire"
+            android:name=".activities.Activity_questionnaire"
             android:exported="false" />
         <activity
             android:name=".activities.TutorialForQuestions"
             android:exported="false" />
         <activity
-            android:name=".Activity_quiz_mbti"
+            android:name=".activities.Activity_quiz_mbti"
             android:exported="false" />
         <activity
             android:name=".activities.HomeActivity"

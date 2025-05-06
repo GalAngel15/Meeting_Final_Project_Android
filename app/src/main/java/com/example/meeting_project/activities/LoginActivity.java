@@ -12,7 +12,6 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.meeting_project.Activity_quiz_mbti;
 import com.example.meeting_project.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;

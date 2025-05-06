@@ -1,4 +1,4 @@
-package com.example.meeting_project;
+package com.example.meeting_project.activities;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.meeting_project.R;
 import com.example.meeting_project.adapter.QuestionIntroAdapter;
 import com.example.meeting_project.apiClients.Question_ApiClient;
 import com.example.meeting_project.boundaries.QuestionsBoundary;

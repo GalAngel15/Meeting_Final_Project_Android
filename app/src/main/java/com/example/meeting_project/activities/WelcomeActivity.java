@@ -7,8 +7,6 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.meeting_project.Activity_questionnaire;
-import com.example.meeting_project.Activity_quiz_mbti;
 import com.example.meeting_project.R;
 
 public class WelcomeActivity extends AppCompatActivity {

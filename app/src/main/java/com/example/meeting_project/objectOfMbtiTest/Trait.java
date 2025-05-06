@@ -1,4 +1,4 @@
-package com.example.meeting_project;
+package com.example.meeting_project.objectOfMbtiTest;
 
 public class Trait {
     private String key;
