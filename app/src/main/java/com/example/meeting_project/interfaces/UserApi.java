@@ -1,6 +1,7 @@
 package com.example.meeting_project.interfaces;
 
 import com.example.meeting_project.boundaries.UserBoundary;
+import com.example.meeting_project.boundaries.UserResponse;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface UserApi {
 
     // יצירת משתמש חדש (POST /users/create)
     @POST("/users/create")
-    Call<String> createUser(@Body UserBoundary user);
+    Call<UserResponse> createUser(@Body UserBoundary user);
 
     // קבלת משתמש לפי ID (GET /users/{id})
     @GET("/users/{id}")

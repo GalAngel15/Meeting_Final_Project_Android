@@ -16,6 +16,7 @@ import com.example.meeting_project.R;
 import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
+import com.example.meeting_project.boundaries.UserResponse;
 import com.example.meeting_project.interfaces.UserApi;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
@@ -134,38 +135,29 @@ public class RegisterActivity extends AppCompatActivity {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setEmail(email);
-        user.setGender(gender); // כאן הוספנו את המין!
-        user.setPhoneNumber(null); // אפשר להוסיף בהמשך
-        user.setPassword(password); // אין צורך להעביר סיסמה לשרת, מנוהלת בפיירבייס
-        user.setMbtiId(null); // אפשר להוסיף בהמשך אחרי מבחן האישיות
-        user.setProfilePhotoUrl(null); // אפשר להוסיף בהמשך
-        user.setLocation(null); // אפשר להוסיף בהמשך
-        user.setDateOfBirth(null); // אפשר להוסיף בהמשך
-        user.setLikedUserIds(null);
-        user.setMatchedUserIds(null);
-        user.setPreferences(null); // אפשר להוסיף בהמשך
+        user.setGender(gender);
+        user.setPassword(password);
 
         // קריאה ל-UserApi
         UserApi apiService = User_ApiClient.getRetrofitInstance().create(UserApi.class);
-        Call<String> call = apiService.createUser(user);
+        Call<UserResponse> call = apiService.createUser(user);
 
-        call.enqueue(new Callback<String>() {
+        call.enqueue(new Callback<UserResponse>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                if (response.isSuccessful()) {
-                    Log.d("REGISTER", "User saved to database successfully");
-                    FirebaseUser firebaseUser = mAuth.getCurrentUser();
-                    if (firebaseUser != null) {
-                        String uid = firebaseUser.getUid();
-                        UserSessionManager.saveUserId(RegisterActivity.this, uid);
-                    }
+            public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    UserResponse userResponse = response.body();
+                    String userIdFromServer = userResponse.getId();
+                    Log.d("REGISTER", "User saved to database with ID: " + userIdFromServer);
+                    UserSessionManager.saveUserId(RegisterActivity.this, userIdFromServer);
+                    navigateToMbtiQuizPage();
                 } else {
                     Log.e("REGISTER", "Failed to save user to database: " + response.message());
                 }
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(Call<UserResponse> call, Throwable t) {
                 Log.e("REGISTER", "API call failed: " + t.getMessage(), t);
             }
 
