@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.meeting_project.R;
+import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.adapter.QuestionAdapter;
 import com.example.meeting_project.apiClients.MbtiService_ApiClient;
 import com.example.meeting_project.apiClients.MbtiTest_ApiClient;
@@ -49,6 +50,12 @@ public class Activity_quiz_mbti extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (UserSessionManager.getUserId(this) == null) {
+            Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_quiz2);
         findView();
         recyclerViewQuestions.setLayoutManager(new LinearLayoutManager(this));
@@ -192,6 +199,12 @@ public class Activity_quiz_mbti extends AppCompatActivity {
         });
     }
     private void seveMbtiResultToService(SubmitResponse result) {
+        String userId = UserSessionManager.getUserId(this);
+        if (userId == null) {
+            Log.e("MBTI", "No userId found in session");
+            Toast.makeText(this, "No userId found, please log in again.", Toast.LENGTH_SHORT).show();
+            return;
+        }
         String fullCode = result.getFullCode();  // לדוגמה "ISTP-A"
         String personalityTypeCode = fullCode.split("-")[0];  // מקבלים "ISTP"
 
@@ -208,7 +221,7 @@ public class Activity_quiz_mbti extends AppCompatActivity {
 
         MbtiBoundary newProfile = new MbtiBoundary(
                 null,
-                null,
+                userId,
                 personalityTypeEnum,
                 characteristicsJson
         );

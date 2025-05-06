@@ -13,6 +13,7 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.meeting_project.R;
+import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.interfaces.UserApi;
@@ -153,6 +154,11 @@ public class RegisterActivity extends AppCompatActivity {
             public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {
                     Log.d("REGISTER", "User saved to database successfully");
+                    FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                    if (firebaseUser != null) {
+                        String uid = firebaseUser.getUid();
+                        UserSessionManager.saveUserId(RegisterActivity.this, uid);
+                    }
                 } else {
                     Log.e("REGISTER", "Failed to save user to database: " + response.message());
                 }
