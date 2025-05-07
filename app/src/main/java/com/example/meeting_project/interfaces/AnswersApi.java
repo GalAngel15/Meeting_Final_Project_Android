@@ -9,7 +9,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 import retrofit2.http.Path;
-
+//save answer of the questions of the server
 public interface AnswersApi {
 
     // שמירת תשובה בודדת (POST /answers/save?userId=...&questionId=...&answer=...)

@@ -1,5 +1,6 @@
 package com.example.meeting_project.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -9,10 +10,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.meeting_project.R;
+import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.adapter.QuestionIntroAdapter;
 import com.example.meeting_project.apiClients.Question_ApiClient;
 import com.example.meeting_project.boundaries.QuestionsBoundary;
 import com.example.meeting_project.boundaries.UserAnswerBoundary;
+import com.example.meeting_project.interfaces.AnswersApi;
 import com.example.meeting_project.interfaces.QuestionsApi;
 import com.google.android.material.button.MaterialButton;
 import com.google.gson.Gson;
@@ -38,6 +41,12 @@ public class Activity_questionnaire extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (UserSessionManager.getUserId(this) == null) {
+            Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+            return;
+        }
         setContentView(R.layout.activity_questionnaire);
         findViews();
         fetchQuestions();
@@ -138,6 +147,37 @@ public class Activity_questionnaire extends AppCompatActivity {
 
     private void submitAnswers() {
         // טיפול בשליחת תשובות לשרת
+        String userId = UserSessionManager.getUserId(this);
+        if (userId == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        AnswersApi answersApi = Question_ApiClient.getRetrofitInstance().create(AnswersApi.class);
+
+        for (UserAnswerBoundary answer : answers) {
+            Call<String> call = answersApi.saveUserAnswer(userId, answer.getQuestionId(), answer.getAnswer());
+            call.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(Call<String> call, Response<String> response) {
+                    if (response.isSuccessful()) {
+                        Log.d("SUBMIT_ANSWER", "Answer submitted successfully for question: " + answer.getQuestionId());
+                    } else {
+                        Log.e("SUBMIT_ANSWER", "Failed to submit answer for question: " + answer.getQuestionId());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call, Throwable t) {
+                    Log.e("SUBMIT_ANSWER", "Error submitting answer for question: " + answer.getQuestionId(), t);
+                }
+            });
+        }
+
+        Toast.makeText(this, "Answers submitted", Toast.LENGTH_SHORT).show();
         Log.d("INTRO_QUIZ", "Answers: " + new Gson().toJson(answers));
+        Intent intent = new Intent(Activity_questionnaire.this, HomeActivity.class);
+        startActivity(intent);
+        finish();
     }
 }
