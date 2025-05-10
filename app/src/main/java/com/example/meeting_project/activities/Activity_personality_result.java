@@ -1,8 +1,9 @@
 package com.example.meeting_project.activities;
 
 import android.content.Intent;
-import android.net.Uri;
+import android.graphics.drawable.PictureDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -12,6 +13,9 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
+import com.example.meeting_project.GlideAdapter.GlideApp;
+import com.example.meeting_project.GlideAdapter.SvgSoftwareLayerSetter;
 import com.example.meeting_project.R;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.example.meeting_project.objectOfMbtiTest.Trait;
@@ -29,7 +33,7 @@ public class Activity_personality_result extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_personality_result);
-        iniyViews();
+        initViews();
         setBtnClick();
         // קבל את ה־JSON
         String json = getIntent().getStringExtra("submitResponseJson");
@@ -41,11 +45,35 @@ public class Activity_personality_result extends AppCompatActivity {
         if (response != null) {
             tvNiceName.setText(response.getNiceName() + " (" + response.getFullCode() + ")");
             tvSnippet.setText(response.getSnippet());
-            // Load SVG image using Glide
-            Glide.with(this).load(Uri.parse(response.getAvatarSrcStatic())).into(ivAvatar);
+
+            Log.d("AvatarDebug", "Avatar URL: " + response.getAvatarSrcStatic());
+            // Load SVG image
+            loadSvgImage(response.getAvatarSrcStatic(), ivAvatar);
+
             showScales(response.getScales());
             showTraits(response.getTraits());
         }
+
+//        if (response != null) {
+//            tvNiceName.setText(response.getNiceName() + " (" + response.getFullCode() + ")");
+//            tvSnippet.setText(response.getSnippet());
+//            // Load SVG image using Glide
+//            Glide.with(this).load(Uri.parse(response.getAvatarSrcStatic())).into(ivAvatar);
+//            showScales(response.getScales());
+//            showTraits(response.getTraits());
+//        }
+    }
+
+    private void loadSvgImage(String url, ImageView imageView) {
+        RequestBuilder<PictureDrawable> requestBuilder = GlideApp.with(this)
+                .as(PictureDrawable.class)
+                .listener(new SvgSoftwareLayerSetter());
+
+        requestBuilder
+                .load(url)
+                .centerInside()
+                .error(R.drawable.ic_error) // Replace with your error drawable
+                .into(imageView);
     }
 
     private void setBtnClick() {
@@ -83,7 +111,7 @@ public class Activity_personality_result extends AppCompatActivity {
             ImageView iv = new ImageView(this);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(200, 200);
             iv.setLayoutParams(lp);
-            Glide.with(this).load(trait.getImageSrc()).into(iv);
+            Glide.with(this).load(trait.getImageSrc()).into(iv); // submit respons with the function getAvatarSrcStatic
 
             TextView tvDesc = new TextView(this);
             tvDesc.setText(trait.getSnippet());
@@ -96,7 +124,7 @@ public class Activity_personality_result extends AppCompatActivity {
             traitsContainer.addView(traitLayout);
         }
     }
-    private void iniyViews() {
+    private void initViews() {
         tvNiceName = findViewById(R.id.tvNiceName);
         tvSnippet = findViewById(R.id.tvSnippet);
         ivAvatar = findViewById(R.id.ivAvatar);
