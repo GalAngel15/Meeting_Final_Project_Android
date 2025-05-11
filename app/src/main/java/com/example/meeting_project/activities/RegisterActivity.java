@@ -1,5 +1,6 @@
 package com.example.meeting_project.activities;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -25,15 +26,20 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 public class RegisterActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
-    private EditText editTextUsername, editTextEmail;
+    private EditText editTextUsername, editTextEmail, editTextPhone;
     private TextInputLayout editTextPassword, editTextConfirmPassword;
     private MaterialButton buttonRegister, btnReturn;
     private RadioGroup genderGroup;
+    private EditText editTextBirthdate;
+    private Calendar selectedBirthdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +56,12 @@ public class RegisterActivity extends AppCompatActivity {
         editTextEmail = findViewById(R.id.email);
         editTextPassword = findViewById(R.id.password);
         editTextConfirmPassword = findViewById(R.id.confirm_password);
+        editTextPhone = findViewById(R.id.phone);
         buttonRegister = findViewById(R.id.register_button);
         btnReturn = findViewById(R.id.btnReturnToVisitPage);
         genderGroup = findViewById(R.id.gender_group);
+        editTextBirthdate = findViewById(R.id.birthdate);
+        selectedBirthdate = Calendar.getInstance();
     }
     private String getSelectedGender() {
         int selectedId = genderGroup.getCheckedRadioButtonId();
@@ -66,11 +75,49 @@ public class RegisterActivity extends AppCompatActivity {
     private void initButtons() {
         buttonRegister.setOnClickListener(v -> setupRegisterButton());
         btnReturn.setOnClickListener(v -> navigateToVisitPage());
+        editTextBirthdate.setOnClickListener(v -> showDatePickerDialog());
+    }
+    private void showDatePickerDialog() {
+        Calendar today = Calendar.getInstance();
+        int year = today.get(Calendar.YEAR);
+        int month = today.get(Calendar.MONTH);
+        int day = today.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    Calendar chosen = Calendar.getInstance();
+                    chosen.set(selectedYear, selectedMonth, selectedDay);
+
+                    if (!isValidBirthdate(chosen)) {
+                        showToast("You must be at least 18 years old and birthdate cannot be in the future");
+                        return;
+                    }
+
+                    selectedBirthdate = chosen;
+                    String formattedDate = String.format("%02d/%02d/%04d", selectedDay, selectedMonth + 1, selectedYear);
+                    editTextBirthdate.setText(formattedDate);
+                },
+                year, month, day);
+
+        datePickerDialog.show();
+    }
+    private boolean isValidBirthdate(Calendar birthdate) {
+        Calendar today = Calendar.getInstance();
+
+        if (birthdate.after(today)) {
+            return false;
+        }
+
+        Calendar eighteenYearsAgo = Calendar.getInstance();
+        eighteenYearsAgo.add(Calendar.YEAR, -18);
+
+        return !birthdate.after(eighteenYearsAgo); // חייב להיות בן 18 ומעלה
     }
 
     private void setupRegisterButton() {
         String username = editTextUsername.getText().toString().trim();
         String email = editTextEmail.getText().toString().trim();
+        String phone = editTextPhone.getText().toString().trim();
         String password = editTextPassword.getEditText().getText().toString().trim();
         String confirmPassword = editTextConfirmPassword.getEditText().getText().toString().trim();
         String gender = getSelectedGender();
@@ -79,12 +126,18 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        if (validateInputs(username, email, password, confirmPassword)) {
-            registerUser(email, password, username, gender);
+        if (validateInputs(username, email, password, confirmPassword, phone)) {
+            registerUser(email, password, username, gender, phone);
+        }
+        String birthdateStr = editTextBirthdate.getText().toString().trim();
+        if (TextUtils.isEmpty(birthdateStr)) {
+            editTextBirthdate.setError("Birthdate is required");
+            editTextBirthdate.requestFocus();
+            return;
         }
     }
 
-    private boolean validateInputs(String username, String email, String password, String confirmPassword) {
+    private boolean validateInputs(String username, String email, String password, String confirmPassword, String phone) {
         if (TextUtils.isEmpty(username)) {
             editTextUsername.setError("Username is required");
             editTextUsername.requestFocus();
@@ -108,27 +161,33 @@ public class RegisterActivity extends AppCompatActivity {
             editTextConfirmPassword.requestFocus();
             return false;
         }
+        if (TextUtils.isEmpty(phone) || !Patterns.PHONE.matcher(phone).matches()) {
+            editTextPhone.setError("Valid phone number is required");
+            editTextPhone.requestFocus();
+            return false;
+        }
 
         return true;
     }
 
-    private void registerUser(String email, String password, String username,String gender) {
+    private void registerUser(String email, String password, String username,String gender, String phone) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         updateUserProfile(username);
-                        saveUserToDatabase(email, username, password, gender);
+                        saveUserToDatabase(email, username, password, gender, phone);
                     } else {
                         handleRegistrationError(task.getException());
                     }
                 });
     }
 
-    private void saveUserToDatabase(String email, String username,String password,String gender) {
+    private void saveUserToDatabase(String email, String username,String password,String gender, String phone) {
         // נניח שאת מפרקת את ה-username לשם פרטי ושם משפחה (אפשר להתאים)
         String[] nameParts = username.split(" ", 2);
         String firstName = nameParts.length > 0 ? nameParts[0] : "";
         String lastName = nameParts.length > 1 ? nameParts[1] : "";
+        java.sql.Date sqlBirthdate = new java.sql.Date(selectedBirthdate.getTimeInMillis());
 
         // יצירת אובייקט UserBoundary
         UserBoundary user = new UserBoundary();
@@ -137,6 +196,8 @@ public class RegisterActivity extends AppCompatActivity {
         user.setEmail(email);
         user.setGender(gender);
         user.setPassword(password);
+        user.setPhoneNumber(phone);
+        user.setDateOfBirth(sqlBirthdate);
 
         // קריאה ל-UserApi
         UserApi apiService = User_ApiClient.getRetrofitInstance().create(UserApi.class);
