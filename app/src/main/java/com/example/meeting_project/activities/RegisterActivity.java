@@ -2,15 +2,20 @@ package com.example.meeting_project.activities;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 import android.util.Log;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.meeting_project.R;
@@ -19,6 +24,7 @@ import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.boundaries.UserResponse;
 import com.example.meeting_project.interfaces.UserApi;
+import com.example.meeting_project.managers.ImageUploadManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,6 +46,18 @@ public class RegisterActivity extends AppCompatActivity {
     private RadioGroup genderGroup;
     private EditText editTextBirthdate;
     private Calendar selectedBirthdate;
+    private ImageView btnUploadImage;
+    private Uri selectedImageUri = null;
+
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
+            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
+                if (uri != null) {
+                    selectedImageUri = uri;
+                    btnUploadImage.setImageURI(uri); // מציג בתצוגה
+                } else {
+                    Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +80,7 @@ public class RegisterActivity extends AppCompatActivity {
         genderGroup = findViewById(R.id.gender_group);
         editTextBirthdate = findViewById(R.id.birthdate);
         selectedBirthdate = Calendar.getInstance();
+        btnUploadImage = findViewById(R.id.profile_placeholder);
     }
     private String getSelectedGender() {
         int selectedId = genderGroup.getCheckedRadioButtonId();
@@ -76,6 +95,7 @@ public class RegisterActivity extends AppCompatActivity {
         buttonRegister.setOnClickListener(v -> setupRegisterButton());
         btnReturn.setOnClickListener(v -> navigateToVisitPage());
         editTextBirthdate.setOnClickListener(v -> showDatePickerDialog());
+        btnUploadImage.setOnClickListener(v -> uploadImages());
     }
     private void showDatePickerDialog() {
         Calendar today = Calendar.getInstance();
@@ -173,8 +193,27 @@ public class RegisterActivity extends AppCompatActivity {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        updateUserProfile(username);
-                        saveUserToDatabase(email, username, password, gender, phone);
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (selectedImageUri != null && user != null) {
+                            ImageUploadManager.uploadProfileImage(this, selectedImageUri, user.getUid(), new ImageUploadManager.UploadCallback() {
+                                @Override
+                                public void onSuccess(String imageUrl) {
+                                    updateUserProfile(username, imageUrl);
+                                    saveUserToDatabase(email, username, password, gender, phone, imageUrl);
+                                    navigateToMbtiQuizPage();
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+
+                                }
+                            });
+                        }else {
+                            updateUserProfile(username);
+                            saveUserToDatabase(email, username, password, gender, phone);
+                        }
+//                        updateUserProfile(username);
+//                        saveUserToDatabase(email, username, password, gender, phone);
                     } else {
                         handleRegistrationError(task.getException());
                     }
@@ -209,7 +248,6 @@ public class RegisterActivity extends AppCompatActivity {
                     String userIdFromServer = userResponse.getId();
                     Log.d("REGISTER", "User saved to database with ID: " + userIdFromServer);
                     UserSessionManager.saveUserId(RegisterActivity.this, userIdFromServer);
-                    navigateToMbtiQuizPage();
                 } else {
                     Log.e("REGISTER", "Failed to save user to database: " + response.message());
                 }
@@ -223,6 +261,48 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+    private void saveUserToDatabase(String email, String username,String password,String gender, String phone,String imageUrl) {
+        // נניח שאת מפרקת את ה-username לשם פרטי ושם משפחה (אפשר להתאים)
+        String[] nameParts = username.split(" ", 2);
+        String firstName = nameParts.length > 0 ? nameParts[0] : "";
+        String lastName = nameParts.length > 1 ? nameParts[1] : "";
+
+        // יצירת אובייקט UserBoundary
+        UserBoundary user = new UserBoundary();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setGender(gender);
+        user.setPassword(password);
+        user.setPhoneNumber(phone);
+        java.sql.Date sqlBirthdate = new java.sql.Date(selectedBirthdate.getTimeInMillis());
+        user.setDateOfBirth(sqlBirthdate);
+        user.setProfilePhotoUrl(imageUrl); // אם יש לך שדה כזה
+
+        // קריאה ל-UserApi
+        UserApi apiService = User_ApiClient.getRetrofitInstance().create(UserApi.class);
+        Call<UserResponse> call = apiService.createUser(user);
+
+        call.enqueue(new Callback<UserResponse>() {
+            @Override
+            public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    UserResponse userResponse = response.body();
+                    String userIdFromServer = userResponse.getId();
+                    Log.d("REGISTER", "User saved to database with ID: " + userIdFromServer);
+                    UserSessionManager.saveUserId(RegisterActivity.this, userIdFromServer);
+                } else {
+                    Log.e("REGISTER", "Failed to save user to database: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserResponse> call, Throwable t) {
+                Log.e("REGISTER", "API call failed: " + t.getMessage(), t);
+            }
+
+        });
+    }
     private void updateUserProfile(String username) {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
@@ -236,6 +316,25 @@ public class RegisterActivity extends AppCompatActivity {
                             navigateToMbtiQuizPage();
                         } else {
                             showToast("Profile update failed: " + profileTask.getException().getMessage());
+                        }
+                    });
+        }
+    }
+
+    private void updateUserProfile(String username, String imageUrl) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            UserProfileChangeRequest.Builder builder = new UserProfileChangeRequest.Builder()
+                    .setDisplayName(username);
+
+            if (imageUrl != null) {
+                builder.setPhotoUri(Uri.parse(imageUrl));
+            }
+
+            user.updateProfile(builder.build())
+                    .addOnCompleteListener(task -> {
+                        if (!task.isSuccessful()) {
+                            showToast("Profile update failed");
                         }
                     });
         }
@@ -266,6 +365,12 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void showToast(String message) {
         Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void uploadImages() {
+        pickMedia.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build());
     }
 
 }

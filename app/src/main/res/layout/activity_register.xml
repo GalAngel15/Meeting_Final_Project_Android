@@ -13,8 +13,7 @@
     <!-- כפתור חזרה -->
     <include
         android:id="@+id/btnReturnToVisitPage"
-        layout="@layout/custom_button"
-        />
+        layout="@layout/custom_button" />
 
     <!-- כותרת "הרשמה" -->
     <TextView
