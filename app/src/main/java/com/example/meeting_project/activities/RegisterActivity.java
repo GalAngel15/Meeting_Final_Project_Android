@@ -26,8 +26,8 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
+import java.sql.Date;
 import java.util.Calendar;
-import java.util.Date;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -121,23 +121,18 @@ public class RegisterActivity extends AppCompatActivity {
         String password = editTextPassword.getEditText().getText().toString().trim();
         String confirmPassword = editTextConfirmPassword.getEditText().getText().toString().trim();
         String gender = getSelectedGender();
+        String birthdateStr = editTextBirthdate.getText().toString().trim();
         if (gender == null) {
             Toast.makeText(this, "Please select a gender", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (validateInputs(username, email, password, confirmPassword, phone)) {
-            registerUser(email, password, username, gender, phone);
-        }
-        String birthdateStr = editTextBirthdate.getText().toString().trim();
-        if (TextUtils.isEmpty(birthdateStr)) {
-            editTextBirthdate.setError("Birthdate is required");
-            editTextBirthdate.requestFocus();
-            return;
+        if (validateInputs(username, email, password, confirmPassword, phone,birthdateStr)) {
+            registerUser(email, password, username, gender, phone, birthdateStr);
         }
     }
 
-    private boolean validateInputs(String username, String email, String password, String confirmPassword, String phone) {
+    private boolean validateInputs(String username, String email, String password, String confirmPassword, String phone, String birthdateStr) {
         if (TextUtils.isEmpty(username)) {
             editTextUsername.setError("Username is required");
             editTextUsername.requestFocus();
@@ -166,28 +161,31 @@ public class RegisterActivity extends AppCompatActivity {
             editTextPhone.requestFocus();
             return false;
         }
-
+        if (TextUtils.isEmpty(birthdateStr)) {
+            editTextBirthdate.setError("Birthdate is required");
+            editTextBirthdate.requestFocus();
+            return false;
+        }
         return true;
     }
 
-    private void registerUser(String email, String password, String username,String gender, String phone) {
+    private void registerUser(String email, String password, String username,String gender, String phone,String birthdateStr) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         updateUserProfile(username);
-                        saveUserToDatabase(email, username, password, gender, phone);
+                        saveUserToDatabase(email, username, password, gender, phone, birthdateStr);
                     } else {
                         handleRegistrationError(task.getException());
                     }
                 });
     }
 
-    private void saveUserToDatabase(String email, String username,String password,String gender, String phone) {
+    private void saveUserToDatabase(String email, String username,String password,String gender, String phone, String birthdateStr) {
         // נניח שאת מפרקת את ה-username לשם פרטי ושם משפחה (אפשר להתאים)
         String[] nameParts = username.split(" ", 2);
         String firstName = nameParts.length > 0 ? nameParts[0] : "";
         String lastName = nameParts.length > 1 ? nameParts[1] : "";
-        java.sql.Date sqlBirthdate = new java.sql.Date(selectedBirthdate.getTimeInMillis());
 
         // יצירת אובייקט UserBoundary
         UserBoundary user = new UserBoundary();
@@ -197,8 +195,8 @@ public class RegisterActivity extends AppCompatActivity {
         user.setGender(gender);
         user.setPassword(password);
         user.setPhoneNumber(phone);
+        java.sql.Date sqlBirthdate = new java.sql.Date(selectedBirthdate.getTimeInMillis());
         user.setDateOfBirth(sqlBirthdate);
-
         // קריאה ל-UserApi
         UserApi apiService = User_ApiClient.getRetrofitInstance().create(UserApi.class);
         Call<UserResponse> call = apiService.createUser(user);
