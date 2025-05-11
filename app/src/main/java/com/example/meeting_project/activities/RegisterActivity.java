@@ -128,7 +128,7 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         if (validateInputs(username, email, password, confirmPassword, phone,birthdateStr)) {
-            registerUser(email, password, username, gender, phone, birthdateStr);
+            registerUser(email, password, username, gender, phone);
         }
     }
 
@@ -169,19 +169,19 @@ public class RegisterActivity extends AppCompatActivity {
         return true;
     }
 
-    private void registerUser(String email, String password, String username,String gender, String phone,String birthdateStr) {
+    private void registerUser(String email, String password, String username,String gender, String phone) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         updateUserProfile(username);
-                        saveUserToDatabase(email, username, password, gender, phone, birthdateStr);
+                        saveUserToDatabase(email, username, password, gender, phone);
                     } else {
                         handleRegistrationError(task.getException());
                     }
                 });
     }
 
-    private void saveUserToDatabase(String email, String username,String password,String gender, String phone, String birthdateStr) {
+    private void saveUserToDatabase(String email, String username,String password,String gender, String phone) {
         // נניח שאת מפרקת את ה-username לשם פרטי ושם משפחה (אפשר להתאים)
         String[] nameParts = username.split(" ", 2);
         String firstName = nameParts.length > 0 ? nameParts[0] : "";
