@@ -54,7 +54,7 @@ public interface UserApi {
 
     // עדכון תמונת פרופיל של משתמש (PUT /users/profile-photo/{userId}?photoUrl=...)
     @PUT("/users/profile-photo/{userId}")
-    Call<String> updateProfilePhoto(@Path("userId") String userId, @Query("photoUrl") String photoUrl);
+    Call<String> updateProfilePhoto(@Path("userId") String userId, @Query("photoUrl") List<String> galleryUrls);
 
     // עדכון סיסמה של משתמש (PUT /users/password/{userId}?password=...)
     @PUT("/users/password/{userId}")
