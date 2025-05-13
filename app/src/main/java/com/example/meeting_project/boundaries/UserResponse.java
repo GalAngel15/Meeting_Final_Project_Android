@@ -1,6 +1,6 @@
 package com.example.meeting_project.boundaries;
 
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
 public class UserResponse {
@@ -11,20 +11,20 @@ public class UserResponse {
     public String phoneNumber;
     public String gender;
     public String mbtiId;
-    public String profilePhotoUrl;
+    public List<String> galleryUrls;
     public String location;
     public Date dateOfBirth;
     public List<String> likedUserIds;
     public List<String> matchedUserIds;
     public UserPreferencesBoundary preferences;
 
-    public UserResponse(UserPreferencesBoundary preferences, List<String> matchedUserIds, List<String> likedUserIds, Date dateOfBirth, String location, String profilePhotoUrl, String mbtiId, String gender, String phoneNumber, String id, String firstName, String lastName, String email) {
+    public UserResponse(UserPreferencesBoundary preferences, List<String> matchedUserIds, List<String> likedUserIds, Date dateOfBirth, String location, List<String> galleryUrls, String mbtiId, String gender, String phoneNumber, String id, String firstName, String lastName, String email) {
         this.preferences = preferences;
         this.matchedUserIds = matchedUserIds;
         this.likedUserIds = likedUserIds;
         this.dateOfBirth = dateOfBirth;
         this.location = location;
-        this.profilePhotoUrl = profilePhotoUrl;
+        this.galleryUrls = galleryUrls;
         this.mbtiId = mbtiId;
         this.gender = gender;
         this.phoneNumber = phoneNumber;
@@ -74,12 +74,12 @@ public class UserResponse {
         this.location = location;
     }
 
-    public String getProfilePhotoUrl() {
-        return profilePhotoUrl;
+    public List<String> getProfilePhotoUrl() {
+        return galleryUrls;
     }
 
-    public void setProfilePhotoUrl(String profilePhotoUrl) {
-        this.profilePhotoUrl = profilePhotoUrl;
+    public void setProfilePhotoUrl(List<String> profilePhotoUrl) {
+        this.galleryUrls = profilePhotoUrl;
     }
 
     public String getMbtiId() {
