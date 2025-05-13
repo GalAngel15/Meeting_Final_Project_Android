@@ -33,7 +33,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,13 +49,23 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText editTextBirthdate;
     private Calendar selectedBirthdate;
     private ImageView btnUploadImage;
-    private Uri selectedImageUri = null;
+    //private Uri selectedImageUri = null;
+    private static final int MAX_IMAGES = 5;
+
+    private final ArrayList<Uri> selectedImageUris = new ArrayList<>();
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
-            registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
-                if (uri != null) {
-                    selectedImageUri = uri;
-                    btnUploadImage.setImageURI(uri); // מציג בתצוגה
+            registerForActivityResult(new ActivityResultContracts.PickMultipleVisualMedia(), uris -> {
+                if (uris != null && !uris.isEmpty()) {
+                    if (uris.size() > MAX_IMAGES) {
+                        Toast.makeText(this, "You can select up to " + MAX_IMAGES + " images", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    selectedImageUris.clear();
+                    selectedImageUris.addAll(uris);
+
+                    // לדוגמה: הצג את התמונה הראשונה כ-preview
+                    btnUploadImage.setImageURI(uris.get(0));
                 } else {
                     Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
                 }
@@ -147,7 +159,9 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
+        Log.e("REGISTER", "setupRegisterButton called");
         if (validateInputs(username, email, password, confirmPassword, phone,birthdateStr)) {
+            Log.e("REGISTER", "Inputs are valid");
             registerUser(email, password, username, gender, phone);
         }
     }
@@ -186,26 +200,33 @@ public class RegisterActivity extends AppCompatActivity {
             editTextBirthdate.requestFocus();
             return false;
         }
+        if (selectedImageUris == null || selectedImageUris.isEmpty()) {
+            showToast("Please select at least one image");
+            return false;
+        }
         return true;
     }
 
     private void registerUser(String email, String password, String username,String gender, String phone) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
+                    Log.e("REGISTER", "createUserWithEmail:onComplete:" + task.isSuccessful());
                     if (task.isSuccessful()) {
+                        Log.e("REGISTER", "User registered successfully");
                         FirebaseUser user = mAuth.getCurrentUser();
-                        if (selectedImageUri != null && user != null) {
-                            ImageUploadManager.uploadProfileImage(this, selectedImageUri, user.getUid(), new ImageUploadManager.UploadCallback() {
+                        if (!selectedImageUris.isEmpty() && user != null) {
+                            ImageUploadManager.uploadMultipleImages(this, selectedImageUris, user.getUid(), new ImageUploadManager.MultipleUploadCallback() {
                                 @Override
-                                public void onSuccess(String imageUrl) {
-                                    updateUserProfile(username, imageUrl);
-                                    saveUserToDatabase(email, username, password, gender, phone, imageUrl);
+                                public void onSuccess(ArrayList<String> imageUrls) {
+                                    Log.e("REGISTER", "Images uploaded successfully: " + imageUrls);
+                                    updateUserProfile(username, imageUrls);
+                                    saveUserToDatabase(email, username, password, gender, phone, imageUrls);
                                     navigateToMbtiQuizPage();
                                 }
 
                                 @Override
                                 public void onFailure(Exception e) {
-
+                                    showToast("Failed to upload images");
                                 }
                             });
                         }else {
@@ -261,7 +282,7 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    private void saveUserToDatabase(String email, String username,String password,String gender, String phone,String imageUrl) {
+    private void saveUserToDatabase(String email, String username,String password,String gender, String phone,List<String> imageUrls) {
         // נניח שאת מפרקת את ה-username לשם פרטי ושם משפחה (אפשר להתאים)
         String[] nameParts = username.split(" ", 2);
         String firstName = nameParts.length > 0 ? nameParts[0] : "";
@@ -275,21 +296,27 @@ public class RegisterActivity extends AppCompatActivity {
         user.setGender(gender);
         user.setPassword(password);
         user.setPhoneNumber(phone);
+
         java.sql.Date sqlBirthdate = new java.sql.Date(selectedBirthdate.getTimeInMillis());
         user.setDateOfBirth(sqlBirthdate);
-        user.setProfilePhotoUrl(imageUrl); // אם יש לך שדה כזה
+
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            user.setGalleryUrls(imageUrls); // ודא שיש שדה כזה במחלקה
+            user.setProfilePhotoUrl(imageUrls.get(0)); // אם יש לך שדה כזה
+        }
 
         // קריאה ל-UserApi
         UserApi apiService = User_ApiClient.getRetrofitInstance().create(UserApi.class);
         Call<UserResponse> call = apiService.createUser(user);
 
+        Log.e("REGISTER", "Saving user to database with email: " + email);
         call.enqueue(new Callback<UserResponse>() {
             @Override
             public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     UserResponse userResponse = response.body();
                     String userIdFromServer = userResponse.getId();
-                    Log.d("REGISTER", "User saved to database with ID: " + userIdFromServer);
+                    Log.e("REGISTER", "User saved to database with ID: " + userIdFromServer);
                     UserSessionManager.saveUserId(RegisterActivity.this, userIdFromServer);
                 } else {
                     Log.e("REGISTER", "Failed to save user to database: " + response.message());
@@ -321,14 +348,14 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    private void updateUserProfile(String username, String imageUrl) {
+    private void updateUserProfile(String username,  List<String> imageUrls) {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
             UserProfileChangeRequest.Builder builder = new UserProfileChangeRequest.Builder()
                     .setDisplayName(username);
 
-            if (imageUrl != null) {
-                builder.setPhotoUri(Uri.parse(imageUrl));
+            if (imageUrls != null) {
+                builder.setPhotoUri(Uri.parse(imageUrls.get(0))); // רק התמונה הראשונה מוצגת בפרופיל
             }
 
             user.updateProfile(builder.build())
@@ -372,5 +399,6 @@ public class RegisterActivity extends AppCompatActivity {
                 .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
                 .build());
     }
+
 
 }
