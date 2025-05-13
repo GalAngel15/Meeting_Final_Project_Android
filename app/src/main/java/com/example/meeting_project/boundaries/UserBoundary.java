@@ -3,6 +3,7 @@ package com.example.meeting_project.boundaries;
 import java.sql.Date;
 import java.util.List;
 
+
 public class UserBoundary {
 
     private String id;
@@ -15,6 +16,8 @@ public class UserBoundary {
 
     private String mbtiId;  // מחזיק את מזהה ה-MBTI בלבד
     private String profilePhotoUrl;
+    private List<String> galleryUrls;
+
     private String location;
     private Date dateOfBirth;
 
@@ -133,5 +136,11 @@ public class UserBoundary {
 
     public void setPreferences(UserPreferencesBoundary preferences) {
         this.preferences = preferences;
+    }
+    public List<String> getGalleryUrls() {
+        return galleryUrls;
+    }
+    public void setGalleryUrls(List<String> galleryUrls) {
+        this.galleryUrls = galleryUrls;
     }
 }

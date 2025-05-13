@@ -1,15 +1,21 @@
 package com.example.meeting_project.activities;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 import android.util.Log;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.meeting_project.R;
@@ -18,6 +24,7 @@ import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.boundaries.UserResponse;
 import com.example.meeting_project.interfaces.UserApi;
+import com.example.meeting_project.managers.ImageUploadManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,15 +32,46 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 public class RegisterActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
-    private EditText editTextUsername, editTextEmail;
+    private EditText editTextUsername, editTextEmail, editTextPhone;
     private TextInputLayout editTextPassword, editTextConfirmPassword;
     private MaterialButton buttonRegister, btnReturn;
     private RadioGroup genderGroup;
+    private EditText editTextBirthdate;
+    private Calendar selectedBirthdate;
+    private ImageView btnUploadImage;
+    //private Uri selectedImageUri = null;
+    private static final int MAX_IMAGES = 5;
+
+    private final ArrayList<Uri> selectedImageUris = new ArrayList<>();
+
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
+            registerForActivityResult(new ActivityResultContracts.PickMultipleVisualMedia(), uris -> {
+                if (uris != null && !uris.isEmpty()) {
+                    if (uris.size() > MAX_IMAGES) {
+                        Toast.makeText(this, "You can select up to " + MAX_IMAGES + " images", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    selectedImageUris.clear();
+                    selectedImageUris.addAll(uris);
+
+                    // לדוגמה: הצג את התמונה הראשונה כ-preview
+                    btnUploadImage.setImageURI(uris.get(0));
+                } else {
+                    Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,9 +88,13 @@ public class RegisterActivity extends AppCompatActivity {
         editTextEmail = findViewById(R.id.email);
         editTextPassword = findViewById(R.id.password);
         editTextConfirmPassword = findViewById(R.id.confirm_password);
+        editTextPhone = findViewById(R.id.phone);
         buttonRegister = findViewById(R.id.register_button);
         btnReturn = findViewById(R.id.btnReturnToVisitPage);
         genderGroup = findViewById(R.id.gender_group);
+        editTextBirthdate = findViewById(R.id.birthdate);
+        selectedBirthdate = Calendar.getInstance();
+        btnUploadImage = findViewById(R.id.profile_placeholder);
     }
     private String getSelectedGender() {
         int selectedId = genderGroup.getCheckedRadioButtonId();
@@ -66,25 +108,67 @@ public class RegisterActivity extends AppCompatActivity {
     private void initButtons() {
         buttonRegister.setOnClickListener(v -> setupRegisterButton());
         btnReturn.setOnClickListener(v -> navigateToVisitPage());
+        editTextBirthdate.setOnClickListener(v -> showDatePickerDialog());
+        btnUploadImage.setOnClickListener(v -> uploadImages());
+    }
+    private void showDatePickerDialog() {
+        Calendar today = Calendar.getInstance();
+        int year = today.get(Calendar.YEAR);
+        int month = today.get(Calendar.MONTH);
+        int day = today.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    Calendar chosen = Calendar.getInstance();
+                    chosen.set(selectedYear, selectedMonth, selectedDay);
+
+                    if (!isValidBirthdate(chosen)) {
+                        showToast("You must be at least 18 years old and birthdate cannot be in the future");
+                        return;
+                    }
+
+                    selectedBirthdate = chosen;
+                    String formattedDate = String.format("%02d/%02d/%04d", selectedDay, selectedMonth + 1, selectedYear);
+                    editTextBirthdate.setText(formattedDate);
+                },
+                year, month, day);
+
+        datePickerDialog.show();
+    }
+    private boolean isValidBirthdate(Calendar birthdate) {
+        Calendar today = Calendar.getInstance();
+
+        if (birthdate.after(today)) {
+            return false;
+        }
+
+        Calendar eighteenYearsAgo = Calendar.getInstance();
+        eighteenYearsAgo.add(Calendar.YEAR, -18);
+
+        return !birthdate.after(eighteenYearsAgo); // חייב להיות בן 18 ומעלה
     }
 
     private void setupRegisterButton() {
         String username = editTextUsername.getText().toString().trim();
         String email = editTextEmail.getText().toString().trim();
+        String phone = editTextPhone.getText().toString().trim();
         String password = editTextPassword.getEditText().getText().toString().trim();
         String confirmPassword = editTextConfirmPassword.getEditText().getText().toString().trim();
         String gender = getSelectedGender();
+        Date birthdateStr = new Date(selectedBirthdate.getTimeInMillis());
         if (gender == null) {
             Toast.makeText(this, "Please select a gender", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (validateInputs(username, email, password, confirmPassword)) {
-            registerUser(email, password, username, gender);
+        Log.e("REGISTER", "setupRegisterButton called");
+        if (validateInputs(username, email, password, confirmPassword, phone)) {
+            Log.e("REGISTER", "Inputs are valid");
+            registerUser(email, password, username, gender, phone, birthdateStr);
         }
     }
 
-    private boolean validateInputs(String username, String email, String password, String confirmPassword) {
+    private boolean validateInputs(String username, String email, String password, String confirmPassword, String phone) {
         if (TextUtils.isEmpty(username)) {
             editTextUsername.setError("Username is required");
             editTextUsername.requestFocus();
@@ -108,23 +192,58 @@ public class RegisterActivity extends AppCompatActivity {
             editTextConfirmPassword.requestFocus();
             return false;
         }
-
+        if (TextUtils.isEmpty(phone) || !Patterns.PHONE.matcher(phone).matches()) {
+            editTextPhone.setError("Valid phone number is required");
+            editTextPhone.requestFocus();
+            return false;
+        }
+        if (TextUtils.isEmpty(editTextBirthdate.getText())) {
+            editTextBirthdate.setError("Birthdate is required");
+            editTextBirthdate.requestFocus();
+            return false;
+        }
+        if (selectedImageUris == null || selectedImageUris.isEmpty()) {
+            showToast("Please select at least one image");
+            return false;
+        }
         return true;
     }
 
-    private void registerUser(String email, String password, String username,String gender) {
+    private void registerUser(String email, String password, String username, String gender, String phone, Date birthdateStr) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
+                    Log.e("REGISTER", "createUserWithEmail:onComplete:" + task.isSuccessful());
                     if (task.isSuccessful()) {
-                        updateUserProfile(username);
-                        saveUserToDatabase(email, username, password, gender);
+                        Log.e("REGISTER", "User registered successfully");
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (!selectedImageUris.isEmpty() && user != null) {
+                            ImageUploadManager.uploadMultipleImages(this, selectedImageUris, user.getUid(), new ImageUploadManager.MultipleUploadCallback() {
+                                @Override
+                                public void onSuccess(ArrayList<String> imageUrls) {
+                                    Log.e("REGISTER", "Images uploaded successfully: " + imageUrls);
+                                    updateUserProfile(username, imageUrls);
+                                    saveUserToDatabase(email, username, password, gender, phone, imageUrls, birthdateStr);
+                                    navigateToMbtiQuizPage();
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    showToast("Failed to upload images");
+                                }
+                            });
+                        }else {
+                            updateUserProfile(username);
+                            //saveUserToDatabase(email, username, password, gender, phone);
+                        }
+//                        updateUserProfile(username);
+//                        saveUserToDatabase(email, username, password, gender, phone);
                     } else {
                         handleRegistrationError(task.getException());
                     }
                 });
     }
 
-    private void saveUserToDatabase(String email, String username,String password,String gender) {
+    private void saveUserToDatabase(String email, String username,String password,String gender, String phone, Date birthdateStr) {
         // נניח שאת מפרקת את ה-username לשם פרטי ושם משפחה (אפשר להתאים)
         String[] nameParts = username.split(" ", 2);
         String firstName = nameParts.length > 0 ? nameParts[0] : "";
@@ -137,7 +256,8 @@ public class RegisterActivity extends AppCompatActivity {
         user.setEmail(email);
         user.setGender(gender);
         user.setPassword(password);
-
+        user.setPhoneNumber(phone);
+        user.setDateOfBirth(birthdateStr);
         // קריאה ל-UserApi
         UserApi apiService = User_ApiClient.getRetrofitInstance().create(UserApi.class);
         Call<UserResponse> call = apiService.createUser(user);
@@ -150,7 +270,6 @@ public class RegisterActivity extends AppCompatActivity {
                     String userIdFromServer = userResponse.getId();
                     Log.d("REGISTER", "User saved to database with ID: " + userIdFromServer);
                     UserSessionManager.saveUserId(RegisterActivity.this, userIdFromServer);
-                    navigateToMbtiQuizPage();
                 } else {
                     Log.e("REGISTER", "Failed to save user to database: " + response.message());
                 }
@@ -164,6 +283,54 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+    private void saveUserToDatabase(String email, String username,String password,String gender, String phone,List<String> imageUrls, Date birthdateStr) {
+        // נניח שאת מפרקת את ה-username לשם פרטי ושם משפחה (אפשר להתאים)
+        String[] nameParts = username.split(" ", 2);
+        String firstName = nameParts.length > 0 ? nameParts[0] : "";
+        String lastName = nameParts.length > 1 ? nameParts[1] : "";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        String formattedDate = sdf.format(birthdateStr);  // birthdateStr הוא java.util.Date
+        Date sqlDate = Date.valueOf(formattedDate);        // הופך למדויק לשרת
+        // יצירת אובייקט UserBoundary
+        UserBoundary user = new UserBoundary();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setGender(gender);
+        user.setPassword(password);
+        user.setPhoneNumber(phone);
+        user.setDateOfBirth(sqlDate);
+
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            user.setGalleryUrls(imageUrls); // ודא שיש שדה כזה במחלקה
+            user.setProfilePhotoUrl(imageUrls.get(0)); // אם יש לך שדה כזה
+        }
+
+        // קריאה ל-UserApi
+        UserApi apiService = User_ApiClient.getRetrofitInstance().create(UserApi.class);
+        Call<UserResponse> call = apiService.createUser(user);
+
+        Log.e("REGISTER", "Saving user to database with email: " + email);
+        call.enqueue(new Callback<UserResponse>() {
+            @Override
+            public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    UserResponse userResponse = response.body();
+                    String userIdFromServer = userResponse.getId();
+                    Log.e("REGISTER", "User saved to database with ID: " + userIdFromServer);
+                    UserSessionManager.saveUserId(RegisterActivity.this, userIdFromServer);
+                } else {
+                    Log.e("REGISTER", "Failed to save user to database: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserResponse> call, Throwable t) {
+                Log.e("REGISTER", "API call failed: " + t.getMessage(), t);
+            }
+
+        });
+    }
     private void updateUserProfile(String username) {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
@@ -177,6 +344,25 @@ public class RegisterActivity extends AppCompatActivity {
                             navigateToMbtiQuizPage();
                         } else {
                             showToast("Profile update failed: " + profileTask.getException().getMessage());
+                        }
+                    });
+        }
+    }
+
+    private void updateUserProfile(String username,  List<String> imageUrls) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            UserProfileChangeRequest.Builder builder = new UserProfileChangeRequest.Builder()
+                    .setDisplayName(username);
+
+            if (imageUrls != null) {
+                builder.setPhotoUri(Uri.parse(imageUrls.get(0))); // רק התמונה הראשונה מוצגת בפרופיל
+            }
+
+            user.updateProfile(builder.build())
+                    .addOnCompleteListener(task -> {
+                        if (!task.isSuccessful()) {
+                            showToast("Profile update failed");
                         }
                     });
         }
@@ -208,5 +394,12 @@ public class RegisterActivity extends AppCompatActivity {
     private void showToast(String message) {
         Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_SHORT).show();
     }
+
+    private void uploadImages() {
+        pickMedia.launch(new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build());
+    }
+
 
 }

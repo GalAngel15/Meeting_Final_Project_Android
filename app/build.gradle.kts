@@ -45,11 +45,11 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     // Json parser
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.gson.v2101)
 
     // Rest API calls
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
 
     // firebase
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
@@ -60,5 +60,7 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
     implementation("com.caverock:androidsvg-aar:1.4")
+    implementation (libs.firebase.storage)
+
 
 }

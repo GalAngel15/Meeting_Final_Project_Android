@@ -1,4 +1,4 @@
-package com.example.meeting_project.Managers;
+package com.example.meeting_project.managers;
 
 import android.app.Activity;
 import android.content.Context;

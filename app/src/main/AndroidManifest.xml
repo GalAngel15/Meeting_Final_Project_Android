@@ -40,7 +40,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Managers.NevigationActivity"
+            android:name=".managers.NevigationActivity"
             android:exported="false" />
         <activity
             android:name=".activities.PersonalitiesActivity"
