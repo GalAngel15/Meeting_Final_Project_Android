@@ -33,9 +33,11 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -153,20 +155,20 @@ public class RegisterActivity extends AppCompatActivity {
         String password = editTextPassword.getEditText().getText().toString().trim();
         String confirmPassword = editTextConfirmPassword.getEditText().getText().toString().trim();
         String gender = getSelectedGender();
-        String birthdateStr = editTextBirthdate.getText().toString().trim();
+        Date birthdateStr = new Date(selectedBirthdate.getTimeInMillis());
         if (gender == null) {
             Toast.makeText(this, "Please select a gender", Toast.LENGTH_SHORT).show();
             return;
         }
 
         Log.e("REGISTER", "setupRegisterButton called");
-        if (validateInputs(username, email, password, confirmPassword, phone,birthdateStr)) {
+        if (validateInputs(username, email, password, confirmPassword, phone)) {
             Log.e("REGISTER", "Inputs are valid");
-            registerUser(email, password, username, gender, phone);
+            registerUser(email, password, username, gender, phone, birthdateStr);
         }
     }
 
-    private boolean validateInputs(String username, String email, String password, String confirmPassword, String phone, String birthdateStr) {
+    private boolean validateInputs(String username, String email, String password, String confirmPassword, String phone) {
         if (TextUtils.isEmpty(username)) {
             editTextUsername.setError("Username is required");
             editTextUsername.requestFocus();
@@ -195,7 +197,7 @@ public class RegisterActivity extends AppCompatActivity {
             editTextPhone.requestFocus();
             return false;
         }
-        if (TextUtils.isEmpty(birthdateStr)) {
+        if (TextUtils.isEmpty(editTextBirthdate.getText())) {
             editTextBirthdate.setError("Birthdate is required");
             editTextBirthdate.requestFocus();
             return false;
@@ -207,7 +209,7 @@ public class RegisterActivity extends AppCompatActivity {
         return true;
     }
 
-    private void registerUser(String email, String password, String username,String gender, String phone) {
+    private void registerUser(String email, String password, String username, String gender, String phone, Date birthdateStr) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     Log.e("REGISTER", "createUserWithEmail:onComplete:" + task.isSuccessful());
@@ -220,7 +222,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 public void onSuccess(ArrayList<String> imageUrls) {
                                     Log.e("REGISTER", "Images uploaded successfully: " + imageUrls);
                                     updateUserProfile(username, imageUrls);
-                                    saveUserToDatabase(email, username, password, gender, phone, imageUrls);
+                                    saveUserToDatabase(email, username, password, gender, phone, imageUrls, birthdateStr);
                                     navigateToMbtiQuizPage();
                                 }
 
@@ -231,7 +233,7 @@ public class RegisterActivity extends AppCompatActivity {
                             });
                         }else {
                             updateUserProfile(username);
-                            saveUserToDatabase(email, username, password, gender, phone);
+                            //saveUserToDatabase(email, username, password, gender, phone);
                         }
 //                        updateUserProfile(username);
 //                        saveUserToDatabase(email, username, password, gender, phone);
@@ -241,7 +243,7 @@ public class RegisterActivity extends AppCompatActivity {
                 });
     }
 
-    private void saveUserToDatabase(String email, String username,String password,String gender, String phone) {
+    private void saveUserToDatabase(String email, String username,String password,String gender, String phone, Date birthdateStr) {
         // נניח שאת מפרקת את ה-username לשם פרטי ושם משפחה (אפשר להתאים)
         String[] nameParts = username.split(" ", 2);
         String firstName = nameParts.length > 0 ? nameParts[0] : "";
@@ -255,8 +257,7 @@ public class RegisterActivity extends AppCompatActivity {
         user.setGender(gender);
         user.setPassword(password);
         user.setPhoneNumber(phone);
-        java.sql.Date sqlBirthdate = new java.sql.Date(selectedBirthdate.getTimeInMillis());
-        user.setDateOfBirth(sqlBirthdate);
+        user.setDateOfBirth(birthdateStr);
         // קריאה ל-UserApi
         UserApi apiService = User_ApiClient.getRetrofitInstance().create(UserApi.class);
         Call<UserResponse> call = apiService.createUser(user);
@@ -282,12 +283,14 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
-    private void saveUserToDatabase(String email, String username,String password,String gender, String phone,List<String> imageUrls) {
+    private void saveUserToDatabase(String email, String username,String password,String gender, String phone,List<String> imageUrls, Date birthdateStr) {
         // נניח שאת מפרקת את ה-username לשם פרטי ושם משפחה (אפשר להתאים)
         String[] nameParts = username.split(" ", 2);
         String firstName = nameParts.length > 0 ? nameParts[0] : "";
         String lastName = nameParts.length > 1 ? nameParts[1] : "";
-
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        String formattedDate = sdf.format(birthdateStr);  // birthdateStr הוא java.util.Date
+        Date sqlDate = Date.valueOf(formattedDate);        // הופך למדויק לשרת
         // יצירת אובייקט UserBoundary
         UserBoundary user = new UserBoundary();
         user.setFirstName(firstName);
@@ -296,9 +299,7 @@ public class RegisterActivity extends AppCompatActivity {
         user.setGender(gender);
         user.setPassword(password);
         user.setPhoneNumber(phone);
-
-        java.sql.Date sqlBirthdate = new java.sql.Date(selectedBirthdate.getTimeInMillis());
-        user.setDateOfBirth(sqlBirthdate);
+        user.setDateOfBirth(sqlDate);
 
         if (imageUrls != null && !imageUrls.isEmpty()) {
             user.setGalleryUrls(imageUrls); // ודא שיש שדה כזה במחלקה
