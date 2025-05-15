@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- כותרת -->
+        <TextView
+            android:id="@+id/textViewPreferencesTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="הכנס את העדפותיך"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:paddingBottom="24dp"/>
+
+        <!-- טווח גילאים -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="טווח גילאים (שנות לידה)"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp">
+
+            <EditText
+                android:id="@+id/editTextYearFrom"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="מ-שנה"
+                android:inputType="number"/>
+
+            <Space
+                android:layout_width="16dp"
+                android:layout_height="wrap_content"/>
+
+            <EditText
+                android:id="@+id/editTextYearTo"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="עד שנה"
+                android:inputType="number"/>
+        </LinearLayout>
+
+        <!-- מגדר -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="מגדר מועדף"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
+
+        <RadioGroup
+            android:id="@+id/radioGroupGender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/radioMale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="זכר"/>
+
+            <RadioButton
+                android:id="@+id/radioFemale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="נקבה"/>
+
+            <RadioButton
+                android:id="@+id/radioBoth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="שניהם"/>
+        </RadioGroup>
+
+        <!-- מרחק מקסימלי -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="מרחק מקסימלי (בק״מ)"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
+
+        <SeekBar
+            android:id="@+id/seekBarDistance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"/>
+
+        <TextView
+            android:id="@+id/textViewDistanceValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="50 ק״מ"
+            android:layout_marginTop="8dp"/>
+
+        <!-- כפתור שמירה -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonSavePreferences"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="שמור העדפות"
+            android:layout_marginTop="24dp"/>
+    </LinearLayout>
+</ScrollView>
