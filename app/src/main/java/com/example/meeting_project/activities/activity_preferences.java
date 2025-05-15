@@ -16,8 +16,15 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.meeting_project.R;
+import com.example.meeting_project.UserSessionManager;
+import com.example.meeting_project.apiClients.User_ApiClient;
+import com.example.meeting_project.boundaries.UserPreferencesBoundary;
+import com.example.meeting_project.enums.Gender;
 import com.example.meeting_project.interfaces.UserPreferencesApi;
 import com.google.android.material.button.MaterialButton;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class activity_preferences extends AppCompatActivity {
 
@@ -48,7 +55,7 @@ public class activity_preferences extends AppCompatActivity {
         textViewDistanceValue = findViewById(R.id.textViewDistanceValue);
         buttonSavePreferences = findViewById(R.id.buttonSavePreferences);
 
-        userPreferencesApi = RetrofitClientInstance.getRetrofitInstance().create(UserPreferencesApi.class);
+        userPreferencesApi = User_ApiClient.getRetrofitInstance().create(UserPreferencesApi.class);
 
         // עדכון תצוגת המרחק לפי SeekBar
         seekBarDistance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -83,33 +90,35 @@ public class activity_preferences extends AppCompatActivity {
         }
 
         RadioButton selectedGenderButton = findViewById(selectedGenderId);
-        String genderPreference = selectedGenderButton.getText().toString();
+        String genderPreference = selectedGenderButton.toString().trim();
+        Gender genderEnum= Gender.valueOf(genderPreference.toUpperCase());
+
         int maxDistance = seekBarDistance.getProgress();
 
         // יצירת אובייקט UserPreferencesBoundary
         UserPreferencesBoundary preferences = new UserPreferencesBoundary();
         preferences.setUserId(userId);
-        preferences.setMinYearOfBirth(yearFrom);
-        preferences.setMaxYearOfBirth(yearTo);
-        preferences.setPreferredGender(genderPreference);
-        preferences.setMaxDistanceInKm(maxDistance);
+        preferences.setMinYear(yearFrom);
+        preferences.setMaxYear(yearTo);
+        preferences.setPreferredGender(genderEnum);
+        preferences.setPreferredMaxDistanceKm(maxDistance);
 
         // שליחת העדפות לשרת
         Call<String> call = userPreferencesApi.createUserPreferences(preferences);
-        call.enqueue(new Callback<>() {
+        call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {
-                    Toast.makeText(PreferencesActivity.this, "העדפות נשמרו בהצלחה!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity_preferences.this, "העדפות נשמרו בהצלחה!", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(PreferencesActivity.this, "שגיאה בשמירה: " + response.code(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity_preferences.this, "שגיאה בשמירה: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 Log.e("API_ERROR", "שגיאה: " + t.getMessage());
-                Toast.makeText(PreferencesActivity.this, "העדפות לא נשמרו (שגיאה ברשת)", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity_preferences.this, "העדפות לא נשמרו (שגיאה ברשת)", Toast.LENGTH_SHORT).show();
             }
         });
     }
