@@ -75,5 +75,13 @@ public interface UserApi {
     // קבלת כל המשתמשים (GET /users/all)
     @GET("/users/all")
     Call<List<UserBoundary>> getAllUsers();
+
+    @GET("users/login") // http://host/users/login?email=abc&password=123
+    Call<UserResponse> loginUser(
+            @Query("email") String email,
+            @Query("password") String password
+    );
+
+
 }
 

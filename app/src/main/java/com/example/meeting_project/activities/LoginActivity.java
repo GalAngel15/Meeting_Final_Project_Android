@@ -2,8 +2,6 @@ package com.example.meeting_project.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.util.Patterns;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -13,111 +11,88 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.meeting_project.R;
+import com.example.meeting_project.UserSessionManager;
+import com.example.meeting_project.boundaries.UserBoundary;
+import com.example.meeting_project.boundaries.UserResponse;
+import com.example.meeting_project.apiClients.User_ApiClient;
+import com.example.meeting_project.interfaces.UserApi;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
-    private FirebaseAuth mAuth;
-    private EditText emailInputLayout;
-    private TextInputEditText passwordInputLayout;
-    private TextView checkTextView;
-    private MaterialButton login_BTN_login, btnReturn;
+
+    private EditText emailEditText;
+    private TextInputEditText passwordEditText;
+    private MaterialButton loginButton;
     private ProgressBar progressBar;
+    private TextView checkTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        mAuth = FirebaseAuth.getInstance();
-        initViews();
-        initButtons();
-    }
-
-    private void initViews() {
-        login_BTN_login = findViewById(R.id.login_button);
-        emailInputLayout = findViewById(R.id.email);
-        passwordInputLayout = findViewById(R.id.password);
-        checkTextView = findViewById(R.id.checkTextView);
+        emailEditText = findViewById(R.id.email);
+        passwordEditText = findViewById(R.id.password);
+        loginButton = findViewById(R.id.login_button);
         progressBar = findViewById(R.id.progressBar);
-        btnReturn = findViewById(R.id.btnReturnToVisitPage);
+        checkTextView = findViewById(R.id.checkTextView);
+
+        loginButton.setOnClickListener(v -> attemptLogin());
     }
 
-    private void initButtons() {
-        login_BTN_login.setOnClickListener(v -> {
-            login_BTN_login.setEnabled(false); // Disable button to prevent double click
-            String email = emailInputLayout.getText().toString().trim();
-            String password = passwordInputLayout.getText().toString().trim();
-            if (validateInputs(email, password)) {
-                loginUser(email, password);
-            } else {
-                login_BTN_login.setEnabled(true); // Enable button if validation fails
+    private void attemptLogin() {
+        String email = emailEditText.getText().toString().trim();
+        String password = passwordEditText.getText().toString().trim();
+
+        checkTextView.setVisibility(View.GONE);
+
+        if (email.isEmpty() || password.isEmpty()) {
+            showError("נא למלא את כל השדות");
+            return;
+        }
+
+        progressBar.setVisibility(View.VISIBLE);
+        loginButton.setEnabled(false);
+
+        Call<UserResponse> call = User_ApiClient.getRetrofitInstance().loginUser(email, password);
+
+        call.enqueue(new Callback<UserResponse>() {
+            @Override
+            public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
+                progressBar.setVisibility(View.GONE);
+                loginButton.setEnabled(true);
+
+                if (response.isSuccessful() && response.body() != null) {
+                    String userId = response.body().getId();
+                    UserSessionManager.saveUserId(LoginActivity.this, userId);
+
+                    Toast.makeText(LoginActivity.this, "התחברת בהצלחה", Toast.LENGTH_SHORT).show();
+
+                    // מעבר למסך הבית
+                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class); // שים לב להתאים את השם
+                    startActivity(intent);
+                    finish();
+                } else {
+                    showError("האימייל או הסיסמה שגויים");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserResponse> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
+                loginButton.setEnabled(true);
+                showError("שגיאה בשרת: " + t.getMessage());
             }
         });
-        btnReturn.setOnClickListener(v -> navigateToVisitPage());
     }
 
-    private boolean validateInputs(String email, String password) {
-        if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailInputLayout.setError("Valid email is required");
-            emailInputLayout.requestFocus();
-            return false;
-        }
-
-        if (TextUtils.isEmpty(password) || password.length() < 6) {
-            passwordInputLayout.setError("Password must be at least 6 characters");
-            passwordInputLayout.requestFocus();
-            return false;
-        }
-
-        return true;
-    }
-
-    private void loginUser(String email, String password) {
-        showProgress(true);
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
-                    login_BTN_login.setEnabled(true);
-                    showProgress(false);
-
-                    if (task.isSuccessful()) {
-                        onLoginSuccess();
-                    } else {
-                        onLoginFailed();
-                    }
-                });
-    }
-    private void showProgress(boolean show) {
-        progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
-    }
-
-    private void onLoginSuccess() {
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null) {
-            checkTextView.setVisibility(TextView.INVISIBLE);
-            Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
-            navigateToPersonalQ();
-        }
-    }
-
-    private void onLoginFailed() {
-        checkTextView.setText(getString(R.string.error_incorrect_login_fields));
-        checkTextView.setVisibility(TextView.VISIBLE);
-        checkTextView.setTextColor(getResources().getColor(R.color.red, null));
-    }
-
-    private void navigateToPersonalQ() {
-        Intent intent = new Intent(LoginActivity.this, Activity_quiz_mbti.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear the activity stack
-        startActivity(intent);
-        finish();
-    }
-
-    private void navigateToVisitPage() {
-        Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
-        startActivity(intent);
-        finish();
+    private void showError(String message) {
+        checkTextView.setText(message);
+        checkTextView.setVisibility(View.VISIBLE);
     }
 }

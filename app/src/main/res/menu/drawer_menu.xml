@@ -1,0 +1,22 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_settings"
+            android:title="הגדרות">
+        </item>
+
+        <item
+            android:id="@+id/nav_edit_preferences"
+            android:title="עריכת שאלון העדפות" />
+
+        <item
+            android:id="@+id/nav_edit_intro"
+            android:title="עריכת שאלון היכרות" />
+
+        <item
+            android:id="@+id/nav_my_personality"
+            android:title="טיפוס האישיות שלי" />
+    </group>
+
+</menu>
