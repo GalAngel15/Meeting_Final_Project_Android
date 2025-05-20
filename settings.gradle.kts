@@ -22,4 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Meeting_Project"
 include(":app")
- 
+include(":chatlibrary")
