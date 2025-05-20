@@ -176,7 +176,8 @@ public class Activity_questionnaire extends AppCompatActivity {
 
         Toast.makeText(this, "Answers submitted", Toast.LENGTH_SHORT).show();
         Log.d("INTRO_QUIZ", "Answers: " + new Gson().toJson(answers));
-        Intent intent = new Intent(Activity_questionnaire.this, HomeActivity.class);
+//        Intent intent = new Intent(Activity_questionnaire.this, HomeActivity.class);
+        Intent intent = new Intent(Activity_questionnaire.this, activity_preferences.class);
         startActivity(intent);
         finish();
     }

@@ -18,7 +18,8 @@ public class UserBoundary {
     private String profilePhotoUrl;
     private List<String> galleryUrls;
 
-    private String location;
+    private Double Latitude;
+    private Double Longitude;
     private Date dateOfBirth;
 
     private List<String> likedUserIds;
@@ -98,14 +99,21 @@ public class UserBoundary {
         this.profilePhotoUrl = profilePhotoUrl;
     }
 
-    public String getLocation() {
-        return location;
+    public Double getLatitude() {
+        return Latitude;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setLatitude(Double latitude) {
+        Latitude = latitude;
     }
 
+    public Double getLongitude() {
+        return Longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        Longitude = longitude;
+    }
     public Date getDateOfBirth() {
         return dateOfBirth;
     }

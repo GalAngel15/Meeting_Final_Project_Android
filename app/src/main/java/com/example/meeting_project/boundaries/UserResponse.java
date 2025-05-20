@@ -12,18 +12,18 @@ public class UserResponse {
     public String gender;
     public String mbtiId;
     public List<String> galleryUrls;
-    public String location;
+    private Double Latitude;
+    private Double Longitude;
     public Date dateOfBirth;
     public List<String> likedUserIds;
     public List<String> matchedUserIds;
     public UserPreferencesBoundary preferences;
 
-    public UserResponse(UserPreferencesBoundary preferences, List<String> matchedUserIds, List<String> likedUserIds, Date dateOfBirth, String location, List<String> galleryUrls, String mbtiId, String gender, String phoneNumber, String id, String firstName, String lastName, String email) {
+    public UserResponse(UserPreferencesBoundary preferences, List<String> matchedUserIds, List<String> likedUserIds, Date dateOfBirth, String location, List<String> galleryUrls, String mbtiId, String gender, String phoneNumber, String id, String firstName, String lastName, String email, Double Latitude, Double Longitude) {
         this.preferences = preferences;
         this.matchedUserIds = matchedUserIds;
         this.likedUserIds = likedUserIds;
         this.dateOfBirth = dateOfBirth;
-        this.location = location;
         this.galleryUrls = galleryUrls;
         this.mbtiId = mbtiId;
         this.gender = gender;
@@ -32,6 +32,8 @@ public class UserResponse {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.Latitude = Latitude;
+        this.Longitude = Longitude;
     }
 
     public UserPreferencesBoundary getPreferences() {
@@ -66,12 +68,17 @@ public class UserResponse {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public String getLocation() {
-        return location;
+    public Double getLatitude() {
+        return Latitude;
     }
-
-    public void setLocation(String location) {
-        this.location = location;
+    public void setLatitude(Double latitude) {
+        Latitude = latitude;
+    }
+    public Double getLongitude() {
+        return Longitude;
+    }
+    public void setLongitude(Double longitude) {
+        Longitude = longitude;
     }
 
     public List<String> getProfilePhotoUrl() {

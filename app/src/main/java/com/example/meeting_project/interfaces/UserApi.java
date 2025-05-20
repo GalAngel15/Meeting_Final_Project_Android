@@ -78,8 +78,8 @@ public interface UserApi {
 
     @GET("users/login") // http://host/users/login?email=abc&password=123
     Call<UserResponse> loginUser(
-            @Query("email") String email,
-            @Query("password") String password
+            @Path("email") String email,
+            @Path("password") String password
     );
 
 

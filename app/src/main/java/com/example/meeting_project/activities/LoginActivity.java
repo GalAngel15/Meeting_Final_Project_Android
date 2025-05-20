@@ -59,8 +59,8 @@ public class LoginActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         loginButton.setEnabled(false);
 
-        Call<UserResponse> call = User_ApiClient.getRetrofitInstance().loginUser(email, password);
-
+        UserApi apiService = User_ApiClient.getRetrofitInstance().create(UserApi.class);
+        Call<UserResponse> call = apiService.loginUser(email, password);
         call.enqueue(new Callback<UserResponse>() {
             @Override
             public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {

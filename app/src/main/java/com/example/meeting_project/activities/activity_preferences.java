@@ -1,5 +1,6 @@
 package com.example.meeting_project.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
@@ -110,6 +111,9 @@ public class activity_preferences extends AppCompatActivity {
             public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {
                     Toast.makeText(activity_preferences.this, "העדפות נשמרו בהצלחה!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(activity_preferences.this, HomeActivity.class); // החלף בשם Activity הרלוונטי אם שונה
+                    startActivity(intent);
+                    finish();
                 } else {
                     Toast.makeText(activity_preferences.this, "שגיאה בשמירה: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
