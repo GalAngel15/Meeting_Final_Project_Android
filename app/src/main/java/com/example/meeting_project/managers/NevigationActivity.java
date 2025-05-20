@@ -1,4 +1,4 @@
-package com.example.meeting_project.managers;
+/*package com.example.meeting_project.managers;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,56 +13,70 @@ import com.example.meeting_project.R;
 import com.example.meeting_project.activities.PersonalitiesActivity;
 import com.google.android.material.button.MaterialButton;
 
-public class NevigationActivity extends AppCompatActivity {
-    public static void findNevigationButtens(Activity activity) {
+import android.content.Intent;
+import android.os.Bundle;
 
-    MaterialButton navigation_home = activity.findViewById(R.id.navigation_home);
-    MaterialButton navigation_profile = activity.findViewById(R.id.navigation_profile);
+import androidx.annotation.IdRes;
+import androidx.annotation.LayoutRes;
+import androidx.appcompat.app.AppCompatActivity;
 
-    SharedPreferences sharedPreferences = activity.getSharedPreferences("NavigationPrefs", Context.MODE_PRIVATE);
-    int selectedButtonId = sharedPreferences.getInt("selectedButtonId", R.id.navigation_home);
+import com.example.meeting_project.R;
+import com.example.meeting_project.activities.HomeActivity;
+import com.example.meeting_project.activities.ProfileActivity;
+import com.example.meeting_project.activities.ChatsActivity;
+import com.example.meeting_project.activities.AlertsActivity;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-    // Reset all buttons to their default color
-    setButtonColor(navigation_home, R.color.inactiveButtonColor);
-    setButtonColor(navigation_profile, R.color.inactiveButtonColor);
+public abstract class NavigationActivity extends AppCompatActivity {
 
-    // Set the selected button color
-    setButtonColor(activity.findViewById(selectedButtonId), R.color.activeButtonColor);
+    protected BottomNavigationView bottomNavigationView;
 
-    View.OnClickListener listener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            // Reset all buttons to their default color
-            setButtonColor(navigation_home, R.color.inactiveButtonColor);
-            setButtonColor(navigation_profile, R.color.inactiveButtonColor);
+    // כל Activity שיירש - יספק את ה־layout שלו
+    protected abstract @LayoutRes int getLayoutResourceId();
 
-            // Set the selected button color
-            setButtonColor(v, R.color.activeButtonColor);
+    // וכל Activity יספק את האייטם בתפריט שמתאים לו
+    protected abstract @IdRes int getNavigationMenuItemId();
 
-            // Save the selected button ID
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putInt("selectedButtonId", v.getId());
-            editor.apply();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(getLayoutResourceId());
 
-            Intent intent;
-            if (v.getId() == R.id.navigation_home) {
-                intent = new Intent(activity, Activity_quiz_mbti.class);
-            } else if (v.getId() == R.id.navigation_profile) {
-                intent = new Intent(activity, PersonalitiesActivity.class);
-            }else {
-                return;
+        bottomNavigationView = findViewById(R.id.bottomNav);
+        bottomNavigationView.setSelectedItemId(getNavigationMenuItemId()); // הדגשה לפי המסך הנוכחי
+
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == getNavigationMenuItemId()) {
+                return true; // כבר במסך הזה
             }
-            // Use Intent.FLAG_ACTIVITY_CLEAR_TOP to clear the back stack and navigate to the selected activity
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            activity.startActivity(intent);
-        }
-    };
 
-        navigation_home.setOnClickListener(listener);
-        navigation_profile.setOnClickListener(listener);
-    }
+            Intent intent = null;
 
-    public static void setButtonColor(View button, int color) {
-        button.setBackgroundColor(button.getContext().getResources().getColor(color, null));
+            switch (itemId) {
+                case R.id.nav_home:
+                    intent = new Intent(this, HomeActivity.class);
+                    break;
+                case R.id.nav_profile:
+                    intent = new Intent(this, ProfileActivity.class);
+                    break;
+                case R.id.nav_chats:
+                    intent = new Intent(this, ChatsActivity.class);
+                    break;
+                case R.id.nav_notifications:
+                    intent = new Intent(this, AlertsActivity.class);
+                    break;
+            }
+
+            if (intent != null) {
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                overridePendingTransition(0, 0); // מעבר חלק
+            }
+
+            return true;
+        });
     }
 }
+
+ */

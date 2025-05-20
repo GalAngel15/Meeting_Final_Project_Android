@@ -19,6 +19,8 @@
     <string name="last_name">Last Name</string>
     <string name="error_incorrect_login_fields">One or more fields are incorrect</string>
     <string name="api_base_url">https://16personalities-api-production.up.railway.app/</string>
+    <string name="navigation_drawer_open">פתח תפריט</string>
+    <string name="navigation_drawer_close">סגור תפריט</string>
 
 
 </resources>
