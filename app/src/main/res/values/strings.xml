@@ -22,5 +22,11 @@
     <string name="navigation_drawer_open">פתח תפריט</string>
     <string name="navigation_drawer_close">סגור תפריט</string>
 
+    ## Strings for the main activity
+    <string name="like">לייק</string>
+    <string name="dislike">דחייה</string>
+    <string name="profile_image">תמונת פרופיל</string>
+    <string name="personality_logo">לוגו טיפוס אישיות</string>
+    <string name="blurred_image">תמונה מטושטשת</string>
 
 </resources>

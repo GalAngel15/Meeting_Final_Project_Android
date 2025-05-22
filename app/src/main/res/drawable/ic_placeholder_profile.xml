@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- רקע בסיסי לבן -->
+    <item>
+        <color android:color="#FFFFFF"/>
+    </item>
+
+    <!-- גרדיאנט צבעוני -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="300dp"
+                android:centerX="50%"
+                android:centerY="50%"
+                android:startColor="#FFB6C1"/>
+        </shape>
+    </item>
+
+</layer-list>
