@@ -13,7 +13,7 @@ public interface UserPreferencesApi {
 
     // יצירת העדפות משתמש (POST /user-preferences/create)
     @POST("/user-preferences/create")
-    Call<String> createUserPreferences(@Body UserPreferencesBoundary preferences);
+    Call<UserPreferencesBoundary> createUserPreferences(@Body UserPreferencesBoundary preferences);
 
     // שליפת העדפות משתמש לפי userId (GET /user-preferences/{userId})
     @GET("/user-preferences/{userId}")

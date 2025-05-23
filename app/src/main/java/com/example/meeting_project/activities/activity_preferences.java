@@ -87,8 +87,12 @@ public class activity_preferences extends AppCompatActivity {
         }
 
         RadioButton selectedGenderButton = findViewById(selectedGenderId);
-        String genderPreference = selectedGenderButton.toString().trim();
-        Gender genderEnum= Gender.valueOf(genderPreference.toUpperCase());
+        String genderTag = (String) selectedGenderButton.getTag();
+        if (genderTag == null) {
+            Toast.makeText(this, "שגיאה: לא ניתן לזהות מגדר", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Gender genderEnum = Gender.valueOf(genderTag);
 
         int maxDistance = seekBarDistance.getProgress();
 
@@ -101,10 +105,10 @@ public class activity_preferences extends AppCompatActivity {
         preferences.setPreferredMaxDistanceKm(maxDistance);
 
         // שליחת העדפות לשרת
-        Call<String> call = userPreferencesApi.createUserPreferences(preferences);
-        call.enqueue(new Callback<String>() {
+        Call<UserPreferencesBoundary> call = userPreferencesApi.createUserPreferences(preferences);
+        call.enqueue(new Callback<UserPreferencesBoundary>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
+            public void onResponse(Call<UserPreferencesBoundary> call, Response<UserPreferencesBoundary> response) {
                 if (response.isSuccessful()) {
                     Toast.makeText(activity_preferences.this, "העדפות נשמרו בהצלחה!", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(activity_preferences.this, HomeActivity.class); // החלף בשם Activity הרלוונטי אם שונה
@@ -116,7 +120,7 @@ public class activity_preferences extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(Call<UserPreferencesBoundary> call, Throwable t) {
                 Log.e("API_ERROR", "שגיאה: " + t.getMessage());
                 Toast.makeText(activity_preferences.this, "העדפות לא נשמרו (שגיאה ברשת)", Toast.LENGTH_SHORT).show();
             }

@@ -77,18 +77,21 @@
                 android:id="@+id/radioMale"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:tag="MALE"
                 android:text="זכר"/>
 
             <RadioButton
                 android:id="@+id/radioFemale"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:tag="FEMALE"
                 android:text="נקבה"/>
 
             <RadioButton
                 android:id="@+id/radioBoth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:tag="OTHER"
                 android:text="שניהם"/>
         </RadioGroup>
 
