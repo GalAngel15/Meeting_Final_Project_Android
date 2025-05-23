@@ -98,6 +98,7 @@ public class activity_preferences extends AppCompatActivity {
 
         // יצירת אובייקט UserPreferencesBoundary
         UserPreferencesBoundary preferences = new UserPreferencesBoundary();
+        preferences.setId(null);
         preferences.setUserId(userId);
         preferences.setMinYear(yearFrom);
         preferences.setMaxYear(yearTo);
