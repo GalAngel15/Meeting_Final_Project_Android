@@ -41,4 +41,11 @@ public class MbtiBoundary {
     public PersonalityType getPersonalityType() {
         return personalityType;
     }
+    public String getCharacteristics() {
+        return characteristics;
+    }
+
+    public void setCharacteristics(String characteristics) {
+        this.characteristics = characteristics;
+    }
 }

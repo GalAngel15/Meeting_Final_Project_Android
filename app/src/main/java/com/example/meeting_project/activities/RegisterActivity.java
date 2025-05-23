@@ -346,6 +346,7 @@ public class RegisterActivity extends AppCompatActivity {
                             showToast("Profile update failed: " + profileTask.getException().getMessage());
                         }
                     });
+            UserSessionManager.saveFirebaseUserId(this, user.getUid());
         }
     }
 

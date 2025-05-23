@@ -10,11 +10,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.meeting_project.R;
 import com.example.meeting_project.UserSessionManager;
@@ -42,7 +38,7 @@ public class activity_preferences extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preferences);
 
-        userId = UserSessionManager.getUserId(this);
+        userId = UserSessionManager.getServerUserId(this);
         if (userId == null) {
             Toast.makeText(this, "שגיאה: לא נמצאה כניסה למשתמש", Toast.LENGTH_LONG).show();
             finish(); // או הכוונה למסך התחברות

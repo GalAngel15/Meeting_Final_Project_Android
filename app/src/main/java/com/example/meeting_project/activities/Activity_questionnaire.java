@@ -41,7 +41,7 @@ public class Activity_questionnaire extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (UserSessionManager.getUserId(this) == null) {
+        if (UserSessionManager.getServerUserId(this) == null) {
             Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, LoginActivity.class));
             finish();
@@ -147,7 +147,7 @@ public class Activity_questionnaire extends AppCompatActivity {
 
     private void submitAnswers() {
         // טיפול בשליחת תשובות לשרת
-        String userId = UserSessionManager.getUserId(this);
+        String userId = UserSessionManager.getServerUserId(this);
         if (userId == null) {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
             return;

@@ -15,12 +15,10 @@ import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.adapter.QuestionAdapter;
 import com.example.meeting_project.apiClients.MbtiService_ApiClient;
 import com.example.meeting_project.apiClients.MbtiTest_ApiClient;
-import com.example.meeting_project.apiClients.Question_ApiClient;
 import com.example.meeting_project.boundaries.MbtiBoundary;
 import com.example.meeting_project.enums.PersonalityType;
 import com.example.meeting_project.interfaces.MbtiServiceApi;
 import com.example.meeting_project.interfaces.PersonalityApi;
-import com.example.meeting_project.interfaces.QuestionsApi;
 import com.example.meeting_project.objectOfMbtiTest.AnswerSubmission;
 import com.example.meeting_project.objectOfMbtiTest.Question;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
@@ -50,7 +48,7 @@ public class Activity_quiz_mbti extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (UserSessionManager.getUserId(this) == null) {
+        if (UserSessionManager.getServerUserId(this) == null) {
             Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, LoginActivity.class));
             finish();
@@ -199,7 +197,7 @@ public class Activity_quiz_mbti extends AppCompatActivity {
         });
     }
     private void seveMbtiResultToService(SubmitResponse result) {
-        String userId = UserSessionManager.getUserId(this);
+        String userId = UserSessionManager.getServerUserId(this);
         if (userId == null) {
             Log.e("MBTI", "No userId found in session");
             Toast.makeText(this, "No userId found, please log in again.", Toast.LENGTH_SHORT).show();

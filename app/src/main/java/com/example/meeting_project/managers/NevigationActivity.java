@@ -1,82 +1,59 @@
-/*package com.example.meeting_project.managers;
+package com.example.meeting_project.managers;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.meeting_project.activities.Activity_quiz_mbti;
+import com.example.meeting_project.Chat;
 import com.example.meeting_project.R;
-import com.example.meeting_project.activities.PersonalitiesActivity;
-import com.google.android.material.button.MaterialButton;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
-import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.meeting_project.R;
 import com.example.meeting_project.activities.HomeActivity;
 import com.example.meeting_project.activities.ProfileActivity;
-import com.example.meeting_project.activities.ChatsActivity;
 import com.example.meeting_project.activities.AlertsActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public abstract class NavigationActivity extends AppCompatActivity {
+import java.util.HashMap;
+import java.util.Map;
+
+public abstract class NevigationActivity extends AppCompatActivity {
+
+    private static final Map<Integer, Class<? extends Activity>> NAV_MAP = new HashMap<>();
+    static {
+        NAV_MAP.put(R.id.nav_home, HomeActivity.class);
+        NAV_MAP.put(R.id.nav_profile, ProfileActivity.class);
+        NAV_MAP.put(R.id.nav_chats, Chat.class);           // ודא ש-ChatActivity אכן Activity
+        NAV_MAP.put(R.id.nav_notifications, AlertsActivity.class);
+    }
 
     protected BottomNavigationView bottomNavigationView;
-
-    // כל Activity שיירש - יספק את ה־layout שלו
     protected abstract @LayoutRes int getLayoutResourceId();
-
-    // וכל Activity יספק את האייטם בתפריט שמתאים לו
     protected abstract @IdRes int getNavigationMenuItemId();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(getLayoutResourceId());
-
         bottomNavigationView = findViewById(R.id.bottomNav);
-        bottomNavigationView.setSelectedItemId(getNavigationMenuItemId()); // הדגשה לפי המסך הנוכחי
+        bottomNavigationView.setSelectedItemId(getNavigationMenuItemId());
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == getNavigationMenuItemId()) {
-                return true; // כבר במסך הזה
-            }
+            int id = item.getItemId();
+            if (id == getNavigationMenuItemId()) return true;
 
-            Intent intent = null;
-
-            switch (itemId) {
-                case R.id.nav_home:
-                    intent = new Intent(this, HomeActivity.class);
-                    break;
-                case R.id.nav_profile:
-                    intent = new Intent(this, ProfileActivity.class);
-                    break;
-                case R.id.nav_chats:
-                    intent = new Intent(this, ChatsActivity.class);
-                    break;
-                case R.id.nav_notifications:
-                    intent = new Intent(this, AlertsActivity.class);
-                    break;
-            }
-
-            if (intent != null) {
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            Class<? extends Activity> target = NAV_MAP.get(id);
+            if (target != null) {
+                Intent intent = new Intent(this, target)
+                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
-                overridePendingTransition(0, 0); // מעבר חלק
+                overridePendingTransition(0, 0);
             }
-
             return true;
         });
     }
 }
-
- */

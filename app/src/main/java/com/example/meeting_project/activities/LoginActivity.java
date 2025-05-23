@@ -18,6 +18,8 @@ import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.interfaces.UserApi;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -70,7 +72,10 @@ public class LoginActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     String userId = response.body().getId();
                     UserSessionManager.saveUserId(LoginActivity.this, userId);
-
+                    FirebaseUser fbUser = FirebaseAuth.getInstance().getCurrentUser();
+                    if (fbUser != null) {
+                        UserSessionManager.saveFirebaseUserId(LoginActivity.this, fbUser.getUid());
+                    }
                     Toast.makeText(LoginActivity.this, "התחברת בהצלחה", Toast.LENGTH_SHORT).show();
 
                     // מעבר למסך הבית
