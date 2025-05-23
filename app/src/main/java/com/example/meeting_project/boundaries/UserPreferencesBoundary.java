@@ -10,7 +10,8 @@ public class UserPreferencesBoundary {
     // private String preferredGender;  // משתמשים ב-String לייצוג Enum בצורה פשוטה ב-DTO
     private Integer preferredMaxDistanceKm; // רדיוס חיפוש מועדף
     private Integer minYear;  // גיל מינימלי מועדף
-    private Integer maxYear;
+    private Integer maxYear;    // גיל מקסימלי מועדף
+
 
     public void setId(Long id) {
         this.id = id;
@@ -36,5 +37,28 @@ public class UserPreferencesBoundary {
         this.maxYear = maxYear;
     }
 
-   // גיל מקסימלי מועדף
+    public Long getId() {
+        return id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public Gender getPreferredGender() {
+        return preferredGender;
+    }
+
+    public Integer getPreferredMaxDistanceKm() {
+        return preferredMaxDistanceKm;
+    }
+
+    public Integer getMinYear() {
+        return minYear;
+    }
+
+    public Integer getMaxYear() {
+        return maxYear;
+    }
+
 }
