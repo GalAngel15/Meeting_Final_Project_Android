@@ -2,8 +2,10 @@ package com.example.meeting_project.activities;
 
 import static com.example.meeting_project.R.id.toolbar;
 
+import android.content.Intent;
 import android.graphics.drawable.PictureDrawable;
 import android.os.Bundle;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -54,9 +56,16 @@ public class HomeActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private Toolbar toolbar;
     private ImageView ivAvatar, imageProfile ;
-    private TextView tvNiceName ;
-    private TextView welcome;
+    private TextView tvNiceName, welcome ;
+    private ImageButton menuButton;
     private Map<String,String> questionCategoryMap;
+    private static final Map<Integer, Class<?>> NAV_MAP = new HashMap<>();
+    static {
+        NAV_MAP.put(R.id.nav_edit_preferences, activity_preferences.class);
+        NAV_MAP.put(R.id.nav_edit_intro, Activity_questionnaire.class);
+        NAV_MAP.put(R.id.nav_my_personality, PersonalitiesActivity.class);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +74,8 @@ public class HomeActivity extends AppCompatActivity {
         firebaseId = UserSessionManager.getFirebaseUserId(this);
 
         findView();
+        menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+
         // 2. הגדרת ה-Toolbar כ-ActionBar
         setSupportActionBar(toolbar);
 
@@ -80,7 +91,24 @@ public class HomeActivity extends AppCompatActivity {
         toggle.syncState();
 
         // טיפול בלחיצות תפריט צד
+
         navigationView.setNavigationItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            Class<?> targetActivity = NAV_MAP.get(itemId);
+
+            if (targetActivity != null) {
+                Intent intent = new Intent(HomeActivity.this, targetActivity);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "אין פעולה מתאימה", Toast.LENGTH_SHORT).show();
+            }
+
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        });
+
+
+        /*navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
             // כאן תוכל להגיב לכל אייטם שנלחץ
             if (id == R.id.nav_settings) {
@@ -88,7 +116,9 @@ public class HomeActivity extends AppCompatActivity {
             }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
-        });
+        });*/
+
+
         questionCategoryMap = new HashMap<>();
         preloadQuestionCategories();
         loadUserData();
@@ -263,6 +293,7 @@ public class HomeActivity extends AppCompatActivity {
         imageProfile = findViewById(R.id.imageProfile);
         ivAvatar = findViewById(R.id.ivAvatar);
         tvNiceName = findViewById(R.id.tvNiceName);
+        menuButton = findViewById(R.id.btn_menu);
     }
 
     // לחצן Back סוגר תפריט אם פתוח

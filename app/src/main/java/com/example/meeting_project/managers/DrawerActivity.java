@@ -1,24 +1,40 @@
-/*package com.example.meeting_project.managers;
+package com.example.meeting_project.managers;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.meeting_project.R;
+import com.example.meeting_project.activities.Activity_questionnaire;
+import com.example.meeting_project.activities.PersonalitiesActivity;
+import com.example.meeting_project.activities.activity_preferences;
 import com.google.android.material.navigation.NavigationView;
+import java.util.HashMap;
+import java.util.Map;
+import androidx.core.view.GravityCompat;
 
 public class DrawerActivity extends AppCompatActivity {
-
+    private ImageButton menuButton;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle toggle;
     private NavigationView navigationView;
+    private static final Map<Integer, Class<?>> NAV_MAP = new HashMap<>();
 
+    static {
+        //NAV_MAP.put(R.id.nav_settings, nav_settings.class);
+        NAV_MAP.put(R.id.nav_edit_preferences, activity_preferences.class);
+        NAV_MAP.put(R.id.nav_edit_intro, Activity_questionnaire.class);
+        NAV_MAP.put(R.id.nav_my_personality, PersonalitiesActivity.class);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,9 +43,11 @@ public class DrawerActivity extends AppCompatActivity {
         // אתחול רכיבים
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.navigation_view);
+        menuButton = findViewById(R.id.btn_menu);
+        menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
 
         // Toolbar
-        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // כפתור המבורגר
@@ -43,27 +61,18 @@ public class DrawerActivity extends AppCompatActivity {
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        // שימוש ב-Listener רגיל (לא למבדה)
+        // האזנה לפריטים בתפריט הצד
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
+                int itemId = item.getItemId();
+                Class<?> targetActivity = NAV_MAP.get(itemId);
 
-                switch (id) {
-                    case R.id.nav_settings:
-                        showToast("הגדרות");
-                        break;
-                    case R.id.nav_edit_preferences:
-                        showToast("עריכת שאלון העדפות");
-                        break;
-                    case R.id.nav_edit_intro:
-                        showToast("עריכת שאלון היכרות");
-                        break;
-                    case R.id.nav_my_personality:
-                        showToast("טיפוס האישיות שלי");
-                        break;
-                    default:
-                        return false;
+                if (targetActivity != null) {
+                    Intent intent = new Intent(DrawerActivity.this, targetActivity);
+                    startActivity(intent);
+                } else {
+                    showToast("פעולה לא זמינה");
                 }
 
                 drawerLayout.closeDrawers();
@@ -71,9 +80,10 @@ public class DrawerActivity extends AppCompatActivity {
             }
         });
 
+
         // עדכון טקסט בכותרת התפריט (אופציונלי)
         TextView headerTitle = navigationView.getHeaderView(0).findViewById(R.id.header_title);
-        headerTitle.setText("שלום, מיקה 👋"); // תעדכני לפי המשתמש
+        headerTitle.setText("שלום,  👋"); // תעדכני לפי המשתמש
     }
 
     private void showToast(String message) {
@@ -81,4 +91,4 @@ public class DrawerActivity extends AppCompatActivity {
     }
 }
 
- */
+

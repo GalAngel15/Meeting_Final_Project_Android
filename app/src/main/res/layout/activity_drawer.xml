@@ -11,15 +11,27 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- Toolbar עם כפתור תפריט בתוכו -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             android:titleTextColor="@android:color/white"
-            app:title="MatchApp" />
+            app:title="MatchApp">
 
-        <!-- כאן אפשר לשים תוכן המסך בפועל -->
+            <!-- כפתור המבורגר בתוך הטולבר -->
+            <ImageButton
+                android:id="@+id/btn_menu"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="start"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/menu"
+                android:contentDescription="@string/navigation_drawer_open" />
+        </androidx.appcompat.widget.Toolbar>
+
+        <!-- תוכן מרכזי של האקטיביטי -->
         <FrameLayout
             android:id="@+id/content_frame"
             android:layout_width="match_parent"

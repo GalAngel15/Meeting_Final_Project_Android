@@ -3,7 +3,7 @@ package com.example.meeting_project.boundaries;
 import com.example.meeting_project.enums.Gender;
 
 public class UserPreferencesBoundary {
-    private Long id;
+    private String id;
     private String userId;
 
     private Gender preferredGender;  // העדפת מין (למשל MALE/FEMALE/OTHER)
@@ -13,7 +13,7 @@ public class UserPreferencesBoundary {
     private Integer maxYear;    // גיל מקסימלי מועדף
 
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -37,7 +37,7 @@ public class UserPreferencesBoundary {
         this.maxYear = maxYear;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
