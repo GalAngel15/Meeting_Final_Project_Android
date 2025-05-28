@@ -5,7 +5,6 @@ import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.meeting_project.Chat;
 import com.example.meeting_project.R;
 
 import android.os.Bundle;

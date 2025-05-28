@@ -15,8 +15,8 @@ import com.example.meeting_project.adapter.QuestionIntroAdapter;
 import com.example.meeting_project.apiClients.Question_ApiClient;
 import com.example.meeting_project.boundaries.QuestionsBoundary;
 import com.example.meeting_project.boundaries.UserAnswerBoundary;
-import com.example.meeting_project.interfaces.AnswersApi;
-import com.example.meeting_project.interfaces.QuestionsApi;
+import com.example.meeting_project.APIRequests.AnswersApi;
+import com.example.meeting_project.APIRequests.QuestionsApi;
 import com.google.android.material.button.MaterialButton;
 import com.google.gson.Gson;
 

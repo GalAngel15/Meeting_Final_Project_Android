@@ -12,10 +12,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.meeting_project.R;
 import com.example.meeting_project.UserSessionManager;
-import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.boundaries.UserResponse;
 import com.example.meeting_project.apiClients.User_ApiClient;
-import com.example.meeting_project.interfaces.UserApi;
+import com.example.meeting_project.APIRequests.UserApi;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;

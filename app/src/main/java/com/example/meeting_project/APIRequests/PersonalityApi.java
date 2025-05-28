@@ -1,4 +1,4 @@
-package com.example.meeting_project.interfaces;
+package com.example.meeting_project.APIRequests;
 
 import com.example.meeting_project.objectOfMbtiTest.AnswerSubmission;
 import com.example.meeting_project.objectOfMbtiTest.Question;

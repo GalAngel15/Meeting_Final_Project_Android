@@ -8,20 +8,15 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.meeting_project.R;
 import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
-import com.example.meeting_project.enums.Gender;
-import com.example.meeting_project.interfaces.UserApi;
+import com.example.meeting_project.APIRequests.UserApi;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 

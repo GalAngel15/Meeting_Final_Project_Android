@@ -1,7 +1,5 @@
 package com.example.meeting_project.activities;
 
-import static com.example.meeting_project.R.id.toolbar;
-
 import android.content.Intent;
 import android.graphics.drawable.PictureDrawable;
 import android.os.Bundle;
@@ -11,7 +9,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -30,10 +27,10 @@ import com.example.meeting_project.boundaries.QuestionsBoundary;
 import com.example.meeting_project.boundaries.UserAnswerBoundary;
 import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.enums.QuestionCategory;
-import com.example.meeting_project.interfaces.AnswersApi;
-import com.example.meeting_project.interfaces.MbtiServiceApi;
-import com.example.meeting_project.interfaces.QuestionsApi;
-import com.example.meeting_project.interfaces.UserApi;
+import com.example.meeting_project.APIRequests.AnswersApi;
+import com.example.meeting_project.APIRequests.MbtiServiceApi;
+import com.example.meeting_project.APIRequests.QuestionsApi;
+import com.example.meeting_project.APIRequests.UserApi;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.google.android.material.navigation.NavigationView;
 import com.example.meeting_project.R;
@@ -74,6 +71,9 @@ public class HomeActivity extends AppCompatActivity {
         firebaseId = UserSessionManager.getFirebaseUserId(this);
 
         findView();
+
+
+
         menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
 
         // 2. הגדרת ה-Toolbar כ-ActionBar

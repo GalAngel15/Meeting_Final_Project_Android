@@ -23,7 +23,7 @@ import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.boundaries.UserResponse;
-import com.example.meeting_project.interfaces.UserApi;
+import com.example.meeting_project.APIRequests.UserApi;
 import com.example.meeting_project.managers.ImageUploadManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;

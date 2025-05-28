@@ -17,7 +17,7 @@ import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserPreferencesBoundary;
 import com.example.meeting_project.enums.Gender;
-import com.example.meeting_project.interfaces.UserPreferencesApi;
+import com.example.meeting_project.APIRequests.UserPreferencesApi;
 import com.google.android.material.button.MaterialButton;
 import retrofit2.Call;
 import retrofit2.Callback;

@@ -8,6 +8,7 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.meeting_project.R;
+import com.example.meeting_project.managers.AppManager;
 
 public class WelcomeActivity extends AppCompatActivity {
     Button btnRegister;
@@ -18,7 +19,17 @@ public class WelcomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_welcome);
         findView();
         setBtnClick();
+        AppManager.initAppManager();
+        checkUserLoggedIn();
     }
+
+    private void checkUserLoggedIn(){
+        if(! AppManager.isUserLoggedIn()) return;
+        Intent intent = new Intent(WelcomeActivity.this, HomeActivity.class);
+        startActivity(intent);
+    }
+
+
     private void findView() {
         btnRegister = findViewById(R.id.btn_register);
         btnLogin = findViewById(R.id.btn_login);
