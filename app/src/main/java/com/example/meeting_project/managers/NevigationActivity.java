@@ -5,6 +5,7 @@ import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.chatlibrary.models.Chat;
 import com.example.meeting_project.R;
 
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.os.Bundle;
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 
+import com.example.meeting_project.activities.ChatActivity;
 import com.example.meeting_project.activities.HomeActivity;
 import com.example.meeting_project.activities.ProfileActivity;
 import com.example.meeting_project.activities.AlertsActivity;
@@ -26,7 +28,7 @@ public abstract class NevigationActivity extends AppCompatActivity {
     static {
         NAV_MAP.put(R.id.nav_home, HomeActivity.class);
         NAV_MAP.put(R.id.nav_profile, ProfileActivity.class);
-        NAV_MAP.put(R.id.nav_chats, Chat.class);           // ודא ש-ChatActivity אכן Activity
+        NAV_MAP.put(R.id.nav_chats, ChatActivity.class);           // ודא ש-ChatActivity אכן Activity
         NAV_MAP.put(R.id.nav_notifications, AlertsActivity.class);
     }
 

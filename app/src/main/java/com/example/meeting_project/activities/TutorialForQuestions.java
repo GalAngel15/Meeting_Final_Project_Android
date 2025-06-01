@@ -13,6 +13,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.meeting_project.R;
 import com.example.meeting_project.adapter.TextBoxAdapter;
+import com.example.meeting_project.managers.AppManager;
 
 import java.util.Arrays;
 import java.util.List;
@@ -42,6 +43,8 @@ public class TutorialForQuestions extends AppCompatActivity {
 
         setupDots();
         btnStartQuiz.setVisibility(View.GONE); // מוסתר בהתחלה
+
+        AppManager.setContext(this.getApplicationContext());
 
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override public void onPageSelected(int position) {

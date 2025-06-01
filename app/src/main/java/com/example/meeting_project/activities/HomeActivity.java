@@ -31,6 +31,7 @@ import com.example.meeting_project.APIRequests.AnswersApi;
 import com.example.meeting_project.APIRequests.MbtiServiceApi;
 import com.example.meeting_project.APIRequests.QuestionsApi;
 import com.example.meeting_project.APIRequests.UserApi;
+import com.example.meeting_project.managers.AppManager;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.google.android.material.navigation.NavigationView;
 import com.example.meeting_project.R;
@@ -69,6 +70,8 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home); // קובץ ה־XML שלך
         serverId   = UserSessionManager.getServerUserId(this);
         firebaseId = UserSessionManager.getFirebaseUserId(this);
+        AppManager.setContext(this.getApplicationContext());
+
 
         findView();
 

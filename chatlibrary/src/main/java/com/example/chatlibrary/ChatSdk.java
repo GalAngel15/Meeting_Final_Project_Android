@@ -60,5 +60,6 @@ public class ChatSdk {
     public void getChatsForUser(String currentUserId, Callback<List<Chat>> callback) {
         apiService.getChatsForUser(currentUserId).enqueue(callback);
     }
+
 }
 

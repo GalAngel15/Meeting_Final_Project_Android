@@ -19,6 +19,7 @@ import com.example.meeting_project.boundaries.MbtiBoundary;
 import com.example.meeting_project.enums.PersonalityType;
 import com.example.meeting_project.APIRequests.MbtiServiceApi;
 import com.example.meeting_project.APIRequests.PersonalityApi;
+import com.example.meeting_project.managers.AppManager;
 import com.example.meeting_project.objectOfMbtiTest.AnswerSubmission;
 import com.example.meeting_project.objectOfMbtiTest.Question;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
@@ -57,6 +58,8 @@ public class Activity_quiz_mbti extends AppCompatActivity {
         setContentView(R.layout.activity_quiz2);
         findView();
         recyclerViewQuestions.setLayoutManager(new LinearLayoutManager(this));
+        AppManager.setContext(this.getApplicationContext());
+
 
         fetchQuestions();
 

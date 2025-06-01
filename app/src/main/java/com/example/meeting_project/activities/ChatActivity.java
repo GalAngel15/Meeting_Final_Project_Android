@@ -9,6 +9,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.meeting_project.R;
+import com.example.meeting_project.managers.AppManager;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -17,6 +18,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_chat);
+        AppManager.setContext(this.getApplicationContext());
 
     }
 }

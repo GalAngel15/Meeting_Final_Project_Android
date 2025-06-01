@@ -18,6 +18,7 @@ import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserPreferencesBoundary;
 import com.example.meeting_project.enums.Gender;
 import com.example.meeting_project.APIRequests.UserPreferencesApi;
+import com.example.meeting_project.managers.AppManager;
 import com.google.android.material.button.MaterialButton;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -37,6 +38,8 @@ public class activity_preferences extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preferences);
+        AppManager.setContext(this.getApplicationContext());
+
 
         userId = UserSessionManager.getServerUserId(this);
         if (userId == null) {

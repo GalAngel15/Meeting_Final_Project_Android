@@ -1,5 +1,7 @@
 package com.example.meeting_project.managers;
 
+import android.content.Context;
+
 import com.example.meeting_project.boundaries.ChatBoundary;
 import com.example.meeting_project.boundaries.ChatSubscriber;
 import com.example.meeting_project.boundaries.MatchBoundary;
@@ -15,6 +17,7 @@ public class AppManager {
     private ChatSubscriber chatSubscriber;
     private UserBoundary appUser;
     private DataFetcher dataFetcher;
+    private Context appContext;
     private AppManager(){
         matchSubscriber = new MatchSubscriber();
         // TBD - check if there's a user in memory, if there is - update the appUser
@@ -48,6 +51,15 @@ public class AppManager {
     }
     public static ArrayList<MatchBoundary> getMatches(){
         return instance.matchSubscriber.getMatches();
+    }
+    public static UserBoundary getAppUser(){
+        return instance.appUser;
+    }
+    public static Context getCurrentContext(){
+        return instance.appContext;
+    }
+    public static void setContext(Context context){
+        instance.appContext = context;
     }
 
 

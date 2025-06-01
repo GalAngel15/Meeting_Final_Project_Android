@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation("com.google.firebase:firebase-auth:22.0.0")
     implementation (libs.gson)
+    implementation(project(":chatlibrary"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

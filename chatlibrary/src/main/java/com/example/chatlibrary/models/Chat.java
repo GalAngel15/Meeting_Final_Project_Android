@@ -1,12 +1,14 @@
 package com.example.chatlibrary.models;
 
+import java.util.ArrayList;
+
 public class Chat {
     private String id;
     private String user1Id;
     private String username1;
     private String user2Id;
     private String username2;
-    private String lastMessage;
+    private ArrayList<Message> allMessages;
 
     public String getId() {
         return id;
@@ -33,11 +35,7 @@ public class Chat {
     }
 
     public String getLastMessage() {
-        return lastMessage;
-    }
-
-    public void setLastMessage(String lastMessage) {
-        this.lastMessage = lastMessage;
+        return allMessages.get(allMessages.size() - 1).getContent();
     }
 
     public String getUsername1() {
@@ -54,5 +52,29 @@ public class Chat {
 
     public void setUsername2(String username2) {
         this.username2 = username2;
+    }
+
+    public void addMessage(Message message) {
+        this.allMessages.add(message);
+    }
+
+    public ArrayList<Message> getAllMessages() {
+        return this.allMessages;
+    }
+
+    public void setAllMessages(ArrayList<Message> allMessages) {
+        this.allMessages = allMessages;
+    }
+
+    @Override
+    public String toString() {
+        return "Chat{" +
+                "id='" + id + '\'' +
+                ", user1Id='" + user1Id + '\'' +
+                ", username1='" + username1 + '\'' +
+                ", user2Id='" + user2Id + '\'' +
+                ", username2='" + username2 + '\'' +
+                ", allMessages=" + allMessages +
+                '}';
     }
 }

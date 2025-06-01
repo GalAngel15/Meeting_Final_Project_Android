@@ -15,6 +15,7 @@ import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.boundaries.UserResponse;
 import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.APIRequests.UserApi;
+import com.example.meeting_project.managers.AppManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
@@ -43,6 +44,7 @@ public class LoginActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         checkTextView = findViewById(R.id.checkTextView);
 
+        AppManager.setContext(this.getApplicationContext());
         loginButton.setOnClickListener(v -> attemptLogin());
     }
 

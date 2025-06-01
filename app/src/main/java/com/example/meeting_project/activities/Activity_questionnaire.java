@@ -17,6 +17,7 @@ import com.example.meeting_project.boundaries.QuestionsBoundary;
 import com.example.meeting_project.boundaries.UserAnswerBoundary;
 import com.example.meeting_project.APIRequests.AnswersApi;
 import com.example.meeting_project.APIRequests.QuestionsApi;
+import com.example.meeting_project.managers.AppManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.gson.Gson;
 
@@ -50,6 +51,8 @@ public class Activity_questionnaire extends AppCompatActivity {
         setContentView(R.layout.activity_questionnaire);
         findViews();
         fetchQuestions();
+        AppManager.setContext(this.getApplicationContext());
+
 
         nextButton.setOnClickListener(v -> {
             if (!didAnswerAllCurrentQuestions()) {

@@ -17,6 +17,7 @@ import com.bumptech.glide.RequestBuilder;
 import com.example.meeting_project.GlideAdapter.GlideApp;
 import com.example.meeting_project.GlideAdapter.SvgSoftwareLayerSetter;
 import com.example.meeting_project.R;
+import com.example.meeting_project.managers.AppManager;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.example.meeting_project.objectOfMbtiTest.Trait;
 import com.google.gson.Gson;
@@ -41,6 +42,8 @@ public class Activity_personality_result extends AppCompatActivity {
         // המר אותו חזרה לאובייקט
         Gson gson = new Gson();
         SubmitResponse response = gson.fromJson(json, SubmitResponse.class);
+        AppManager.setContext(this.getApplicationContext());
+
 
         if (response != null) {
             tvNiceName.setText(response.getNiceName() + " (" + response.getFullCode() + ")");

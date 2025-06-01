@@ -17,6 +17,7 @@ import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.APIRequests.UserApi;
+import com.example.meeting_project.managers.AppManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
@@ -53,6 +54,8 @@ public class ProfileActivity extends AppCompatActivity {
         setUpDrawer();
         //setUpBottomNav();
         loadUserData();
+        AppManager.setContext(this.getApplicationContext());
+
 
         btnEditProfile.setOnClickListener(v -> {
             if (!isEditing) {

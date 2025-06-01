@@ -21,6 +21,7 @@ public class WelcomeActivity extends AppCompatActivity {
         setBtnClick();
         AppManager.initAppManager();
         checkUserLoggedIn();
+        AppManager.setContext(this.getApplicationContext());
     }
 
     private void checkUserLoggedIn(){
