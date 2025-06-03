@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- אייקון בסגול חזק כשלחצן נבחר -->
+    <!-- אייקון סגול כשהכפתור נבחר -->
     <item android:color="#B59FD3" android:state_selected="true" />
 
-    <!-- אייקון בשחור כשלחצן לא נבחר -->
+    <!-- אייקון שחור כשהכפתור לא נבחר -->
     <item android:color="#131313" android:state_selected="false" />
 
 </selector>

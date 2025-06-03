@@ -15,71 +15,70 @@ import com.google.android.material.button.MaterialButton;
 
 public class NevigationActivity {
 
-    // אם רוצים לשמר איזו לחיצה היתה נבחרת בין הפעלות, נשמור במשתנה סטטי
+    // שומר איזה לחצן נבחר כרגע (אם רוצים לשמר בין הפעלות)
     private static int currentSelectedId = -1;
 
     public static void findNevigationButtens(Activity activity) {
-        // 1. מציאת כל ארבעת הכפתורים מתוך ה־Layout
         MaterialButton navigation_home = activity.findViewById(R.id.navigation_home);
         MaterialButton navigation_profile = activity.findViewById(R.id.navigation_profile);
         MaterialButton navigation_chats = activity.findViewById(R.id.navigation_chats);
         MaterialButton navigation_notifications = activity.findViewById(R.id.navigation_notifications);
 
-        // 2. קריאה ל־SharedPreferences כדי לבדוק אם כבר נשמרה בחירה קודמת
+        // SharedPreferences כדי לשמור ולקרוא מה היה הנבחר בפעם הקודמת
         SharedPreferences sharedPreferences =
                 activity.getSharedPreferences("NavigationPrefs", Context.MODE_PRIVATE);
         int savedButtonId = sharedPreferences.getInt("selectedButtonId", R.id.navigation_home);
 
-        // 3. איפוס כל הכפתורים (setSelected(false)), כדי להתחיל “נקי”
+        // 1. מנקים מצב בחירה מכל הכפתורים
         navigation_home.setSelected(false);
         navigation_profile.setSelected(false);
         navigation_chats.setSelected(false);
         navigation_notifications.setSelected(false);
 
-        // 4. סימון הכפתור השמור (אם קיים)
+        // 2. סימון הכפתור השמור (אם קיים במפתחים המותרים)
         if (savedButtonId == R.id.navigation_home ||
                 savedButtonId == R.id.navigation_profile ||
                 savedButtonId == R.id.navigation_chats ||
                 savedButtonId == R.id.navigation_notifications) {
-            // סימנו אותו כ'הנבחר'
             View prev = activity.findViewById(savedButtonId);
             if (prev != null) {
                 prev.setSelected(true);
                 currentSelectedId = savedButtonId;
             }
-        } else {
-            // אם לא שמרו עדיין (בראשונה), נסמן כברירת מחדל את ה-Home
+        }
+        else {
+            // ברירת מחדל: סימון ה-Home
             navigation_home.setSelected(true);
             currentSelectedId = R.id.navigation_home;
         }
 
-        // 5. מאזין ללחיצה על הכפתורים
+        // 3. מאזין אחד לכל הכפתורים
         View.OnClickListener listener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int clickedId = v.getId();
 
-                // אם כבר נבחר – אין צורך לעבור או לצבוע שנית
+                // אם הכפתור נבחר כבר, אין צורך לעשות כלום
                 if (clickedId == currentSelectedId) {
                     return;
                 }
 
-                // 5.1. נבטל את מצבי ה-selected מהכפתור הישן
+                // 3.1. מבטל סימון (selected) מהכפתור הישן
                 View old = activity.findViewById(currentSelectedId);
                 if (old != null) {
                     old.setSelected(false);
                 }
 
-                // 5.2. נסמן את הכפתור החדש כ-'selected'
+                // 3.2. מסמן (selected) את הכפתור החדש
                 v.setSelected(true);
                 currentSelectedId = clickedId;
 
-                // 5.3. נשמור ב־SharedPreferences את הכפתור הנוכחי
+                // 3.3. שומר ב־SharedPreferences כדי לשמור על הבחירה בין הפעלות
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putInt("selectedButtonId", clickedId);
                 editor.apply();
 
-                // 5.4. נבחר Intent בעזרת 'if-else' לכל לחיצה
+                // 3.4. מעבר ל־Activity המתאים בעזרת if-else
                 Intent intent;
                 if (clickedId == R.id.navigation_home) {
                     intent = new Intent(activity, HomeActivity.class);
@@ -94,16 +93,17 @@ public class NevigationActivity {
                     intent = new Intent(activity, AlertsActivity.class);
                 }
                 else {
+                    // שום לחצן אחר לא מתאים – נעצור
                     return;
                 }
 
-                // ניקוי ה־ActivityStack והמרה למסך הרצוי
+                // מנקים את ה־Activity Stack ועוברים ל־המסך הרצוי
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 activity.startActivity(intent);
             }
         };
 
-        // 6. קישור המאזין לכל כפתור
+        // 4. קישור המאזין לכל כפתור
         navigation_home.setOnClickListener(listener);
         navigation_profile.setOnClickListener(listener);
         navigation_chats.setOnClickListener(listener);

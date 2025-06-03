@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- מצב “נבחר” – יוצג “בועה” סגולה מאחורי האייקון -->
+    <!-- מצב “נבחר” – יוצג “בועה” סגולה מסביב לאייקון+טקסט -->
     <item android:state_selected="true">
         <shape android:shape="rectangle">
-            <!-- צבע הבועה הסגולה הבהירה -->
-            <solid android:color="#E4D9FF"/>
-            <!-- עומק הפינות כדי שהבועה תהיה בצורת קפסולה (אובל) -->
-            <corners android:radius="20dp"/>
-            <!-- גודל הבועה: כאן התאמנו ל־64dp רוחב ו־40dp גובה; אפשר לשנות אם צריך צורה אחרת -->
-            <size android:width="64dp" android:height="40dp"/>
+            <solid android:color="#E4D9FF"/>      <!-- צבע הבועה -->
+            <corners android:radius="20dp"/>     <!-- פינות מעוגלות -->
+            <!-- אין יותר <size>, כך ה-shape יתאים לגודל ה-MaterialButton -->
         </shape>
     </item>
 

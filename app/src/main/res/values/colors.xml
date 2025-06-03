@@ -32,5 +32,6 @@
 
     <color name="green">#2ECC71</color>
     <color name="gray">#BDBDBD</color>
+    <color name="backgroundLight">#F3EEFD</color>
 
 </resources>

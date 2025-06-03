@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- טקסט בסגול חזק כשלחצן נבחר -->
+    <!-- טקסט סגול כשהכפתור נבחר -->
     <item android:color="#B59FD3" android:state_selected="true" />
 
-    <!-- טקסט שקוף כשלחצן לא נבחר (ככה המרחק לא יתפס) -->
+    <!-- טקסט שקוף כשהכפתור לא נבחר (במקום להסיר את הטקסט, פשוט שקוף) -->
     <item android:color="@android:color/transparent" android:state_selected="false" />
 
 </selector>
