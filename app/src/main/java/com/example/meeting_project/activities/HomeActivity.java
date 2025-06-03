@@ -32,6 +32,7 @@ import com.example.meeting_project.APIRequests.MbtiServiceApi;
 import com.example.meeting_project.APIRequests.QuestionsApi;
 import com.example.meeting_project.APIRequests.UserApi;
 import com.example.meeting_project.managers.AppManager;
+import com.example.meeting_project.managers.NevigationActivity;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.google.android.material.navigation.NavigationView;
 import com.example.meeting_project.R;
@@ -72,12 +73,9 @@ public class HomeActivity extends AppCompatActivity {
         firebaseId = UserSessionManager.getFirebaseUserId(this);
         AppManager.setContext(this.getApplicationContext());
 
-
         findView();
-
-
-
         menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+        NevigationActivity.findNevigationButtens(this);
 
         // 2. הגדרת ה-Toolbar כ-ActionBar
         setSupportActionBar(toolbar);

@@ -3,18 +3,54 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/background"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:background="@color/background">
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNav"
-        android:layout_width="match_parent"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/navigation_home"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@color/white"
-        app:itemIconTint="@color/bottom_nav_selector"
-        app:itemTextColor="@color/bottom_nav_selector"
-        app:menu="@menu/bottom_nav_menu" />
+        android:layout_weight="1"
+        android:text="Home"
+        app:icon="@drawable/ic_home"
+        app:iconGravity="textTop"
+        android:gravity="center"
+        android:padding="8dp"
+        android:backgroundTint="@android:color/black" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/navigation_profile"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Profile"
+        app:icon="@drawable/ic_profile"
+        app:iconGravity="textTop"
+        android:gravity="center"
+        android:padding="8dp"
+        android:backgroundTint="@android:color/black" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/navigation_chats"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Chats"
+        app:icon="@drawable/ic_chats"
+        app:iconGravity="textTop"
+        android:gravity="center"
+        android:padding="8dp"
+        android:backgroundTint="@android:color/black" />
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/navigation_notifications"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Notifications"
+        app:icon="@drawable/ic_notifications"
+        app:iconGravity="textTop"
+        android:gravity="center"
+        android:padding="8dp"
+        android:backgroundTint="@android:color/black" />
 
 </LinearLayout>
