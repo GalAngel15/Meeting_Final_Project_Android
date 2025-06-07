@@ -8,7 +8,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -18,6 +20,7 @@ import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.APIRequests.UserApi;
 import com.example.meeting_project.managers.AppManager;
+import com.example.meeting_project.managers.NevigationActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
@@ -33,7 +36,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-    private BottomNavigationView bottomNav;
+    private Toolbar toolbar;
+    private ActionBarDrawerToggle toggle;
     private ImageButton menuButton;
     private EditText etFirstName, etLastName, etPersonalityType, etEmail, etPhone, etDob, etGender;
     private Button btnEditProfile;
@@ -51,8 +55,11 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         initViews();
+        setSupportActionBar(toolbar);
+
         setUpDrawer();
-        //setUpBottomNav();
+        menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+        NevigationActivity.findNevigationButtens(this);
         loadUserData();
         AppManager.setContext(this.getApplicationContext());
 
@@ -74,9 +81,8 @@ public class ProfileActivity extends AppCompatActivity {
     private void initViews() {
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.navigation_view);
-        bottomNav = findViewById(R.id.bottom_nav);
+        toolbar = findViewById(R.id.toolbar);
         menuButton = findViewById(R.id.btn_menu);
-
         etFirstName = findViewById(R.id.et_first_name);
         etLastName = findViewById(R.id.et_last_name);
         etPersonalityType = findViewById(R.id.et_personality_type);
@@ -89,6 +95,16 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void setUpDrawer() {
         menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+        toggle = new ActionBarDrawerToggle(
+                this,
+                drawerLayout,
+                toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close
+        );
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
         navigationView.setNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
             Class<?> targetActivity = NAV_MAP.get(itemId);
@@ -101,21 +117,6 @@ public class ProfileActivity extends AppCompatActivity {
             return true;
         });
     }
-
-    /*private void setUpBottomNav() {
-        bottomNav.setOnItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.nav_home:
-                    startActivity(new Intent(this, HomeActivity.class));
-                    return true;
-                case R.id.nav_profile:
-                    return true;
-                default:
-                    return false;
-            }
-        });
-        bottomNav.setSelectedItemId(R.id.nav_profile);
-    }*/
 
     private void enableFields(boolean enable) {
         etFirstName.setEnabled(enable);
