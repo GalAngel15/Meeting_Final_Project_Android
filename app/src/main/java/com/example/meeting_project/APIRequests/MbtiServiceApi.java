@@ -23,12 +23,12 @@ public interface MbtiServiceApi {
     Call<String> updateProfile(@Path("userId") String userId, @Body MbtiBoundary profile);
 
     @POST("/mbti/create")
-    Call<String> createProfile(@Body MbtiBoundary profile);
+    Call<ResponseBody> createProfile(@Body MbtiBoundary profile);
 
-    @PUT("/users/{userId}/match/{mbtiType}")
+    @PUT("/users/{userId}/match")
     Call<ResponseBody> updateUserMbtiType(
             @Path("userId") String userId,
-            @Path("mbtiType") String mbtiType
+            @Query("mbtiType") String mbtiType
     );
 
 }

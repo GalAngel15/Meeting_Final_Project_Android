@@ -229,9 +229,9 @@ public class Activity_quiz_mbti extends AppCompatActivity {
         );
 
         MbtiServiceApi apiService = MbtiService_ApiClient.getRetrofitInstance().create(MbtiServiceApi.class);
-        apiService.createProfile(newProfile).enqueue(new Callback<String>() {
+        apiService.createProfile(newProfile).enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Log.d("MBTI", "Created: " + response.body());
                     // Update the user's MBTI type in the user service
@@ -242,7 +242,7 @@ public class Activity_quiz_mbti extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.e("MBTI", "Create Error: " + t.getMessage());
             }
         });

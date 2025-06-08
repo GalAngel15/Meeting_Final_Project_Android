@@ -14,7 +14,7 @@ public class UserBoundary {
     private String phoneNumber;
     private String gender;
 
-    private String mbtiId;  // מחזיק את מזהה ה-MBTI בלבד
+    private String mbtiType;  // מחזיק את מזהה ה-MBTI בלבד
     private String profilePhotoUrl;
     private List<String> galleryUrls;
 
@@ -83,12 +83,12 @@ public class UserBoundary {
         this.gender = gender;
     }
 
-    public String getMbtiId() {
-        return mbtiId;
+    public String getMbtiType() {
+        return mbtiType;
     }
 
-    public void setMbtiId(String mbtiId) {
-        this.mbtiId = mbtiId;
+    public void setMbtiType(String mbtiType) {
+        this.mbtiType = mbtiType;
     }
 
     public String getProfilePhotoUrl() {

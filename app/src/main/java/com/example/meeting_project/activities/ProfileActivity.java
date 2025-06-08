@@ -21,7 +21,6 @@ import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.APIRequests.UserApi;
 import com.example.meeting_project.managers.AppManager;
 import com.example.meeting_project.managers.NevigationActivity;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 
 import java.sql.Date;
@@ -155,7 +154,7 @@ public class ProfileActivity extends AppCompatActivity {
         etPhone.setText(user.getPhoneNumber());
         etDob.setText(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : "");
         etGender.setText(user.getGender().toString());
-        etPersonalityType.setText(user.getMbtiId());
+        etPersonalityType.setText(user.getMbtiType());
     }
 
     private void saveChanges() {
@@ -167,7 +166,7 @@ public class ProfileActivity extends AppCompatActivity {
         currentUser.setPhoneNumber(etPhone.getText().toString());
         currentUser.setDateOfBirth(Date.valueOf(etDob.getText().toString()));
         currentUser.setGender(etGender.getText().toString());
-        currentUser.setMbtiId(etPersonalityType.getText().toString());
+        currentUser.setMbtiType(etPersonalityType.getText().toString());
 
         UserApi userApi = User_ApiClient.getRetrofitInstance().create(UserApi.class);
         userApi.updateUser(currentUser, currentUser.getId()).enqueue(new Callback<String>() {
