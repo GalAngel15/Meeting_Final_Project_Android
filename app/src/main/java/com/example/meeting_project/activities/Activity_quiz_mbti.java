@@ -30,6 +30,7 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -233,6 +234,8 @@ public class Activity_quiz_mbti extends AppCompatActivity {
             public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {
                     Log.d("MBTI", "Created: " + response.body());
+                    // Update the user's MBTI type in the user service
+                    updateUserMbtiType(userId, personalityTypeCode);
                 } else {
                     Log.e("MBTI", "Server Error: " + response.message());
                 }
@@ -243,8 +246,27 @@ public class Activity_quiz_mbti extends AppCompatActivity {
                 Log.e("MBTI", "Create Error: " + t.getMessage());
             }
         });
+
     }
 
+    private void updateUserMbtiType(String userId, String mbtiType) {
+        MbtiServiceApi apiService = MbtiService_ApiClient.getRetrofitInstance().create(MbtiServiceApi.class);
+        apiService.updateUserMbtiType(userId, mbtiType).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d("MBTI", "User MBTI type : " + mbtiType + " updated successfully");
+                } else {
+                    Log.e("MBTI", "Failed to update user MBTI type: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("MBTI", "Error updating user MBTI type: " + t.getMessage());
+            }
+        });
+    }
     // ניווט לדף התוצאה
     private void navigateToResultMbtiPage(SubmitResponse result) {
         Gson gson = new Gson();

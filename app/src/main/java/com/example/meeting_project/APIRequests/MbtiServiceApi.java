@@ -2,6 +2,7 @@ package com.example.meeting_project.APIRequests;
 
 import com.example.meeting_project.boundaries.MbtiBoundary;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.*;
 
@@ -23,4 +24,11 @@ public interface MbtiServiceApi {
 
     @POST("/mbti/create")
     Call<String> createProfile(@Body MbtiBoundary profile);
+
+    @PUT("/users/{userId}/match/{mbtiType}")
+    Call<ResponseBody> updateUserMbtiType(
+            @Path("userId") String userId,
+            @Path("mbtiType") String mbtiType
+    );
+
 }
