@@ -18,17 +18,16 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import com.example.meeting_project.APIRequests.UserApi;
 import com.example.meeting_project.R;
 import com.example.meeting_project.UserSessionManager;
+import com.example.meeting_project.APIRequests.UserApi;
+import com.example.meeting_project.APIRequests.UserPreferencesApi;
 import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.boundaries.UserPreferencesBoundary;
 import com.example.meeting_project.enums.Gender;
-import com.example.meeting_project.APIRequests.UserPreferencesApi;
 import com.example.meeting_project.managers.AppManager;
 import com.example.meeting_project.managers.NevigationActivity;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
 
@@ -38,188 +37,107 @@ import retrofit2.Response;
 
 public class activity_preferences extends AppCompatActivity {
 
-    // Navigation
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private Toolbar toolbar;
     private ImageButton btnMenu;
+    private ActionBarDrawerToggle toggle;
 
-    // Form fields
     private EditText editTextYearFrom, editTextYearTo;
     private RadioGroup radioGroupGender;
     private SeekBar seekBarDistance;
     private TextView textViewDistanceValue;
     private MaterialButton buttonSavePreferences;
 
-    // API + user
-    private UserPreferencesApi userPreferencesApi;
     private UserApi userApi;
-
-    // State
+    private UserPreferencesApi preferencesApi;
     private String userId;
     private boolean isLoggedIn;
     private boolean isEditing;
-    private ActionBarDrawerToggle toggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preferences);
-        AppManager.setContext(this.getApplicationContext());
+        AppManager.setContext(getApplicationContext());
 
-        // check if user is logged in
-        userId = UserSessionManager.getServerUserId(this);
-        isLoggedIn = userId != null;
-        isEditing = !isLoggedIn;
-
-        bindViews();
-
-        // init APIs
-        userApi = User_ApiClient.getRetrofitInstance().create(UserApi.class);
-        userPreferencesApi = User_ApiClient.getRetrofitInstance().create(UserPreferencesApi.class);
-
-        // determine login state
-        userId = UserSessionManager.getServerUserId(this);
-        isLoggedIn = userId != null;
-        // default editing for guest, locked for logged user
-        isEditing = !isLoggedIn;
-
-        // update UI after checking login
-        if (isLoggedIn) {
-            loadUserData();
-            isEditing=true; // allow editing for logged in users
-            setRadioGroupEnabled(radioGroupGender, isEditing);
-        } else {
-            // guest flow
-            configureNavigation();
-            configureFormState();
-        }
-        setupListeners();
-
-        userId = UserSessionManager.getServerUserId(this);
-        if (userId == null) {
-            Toast.makeText(this, "שגיאה: לא נמצאה כניסה למשתמש", Toast.LENGTH_LONG).show();
-            finish(); // או הכוונה למסך התחברות
-            return;
-        }
-        userPreferencesApi = User_ApiClient.getRetrofitInstance().create(UserPreferencesApi.class);
-
-        // עדכון תצוגת המרחק לפי SeekBar
-        seekBarDistance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                textViewDistanceValue.setText(progress + " ק״מ");
-            }
-            @Override public void onStartTrackingTouch(SeekBar seekBar) { }
-            @Override public void onStopTrackingTouch(SeekBar seekBar) { }
-        });
-        buttonSavePreferences.setOnClickListener(v -> savePreferencesToServer());
-    }
-
-    // enable/disable fields and button text
-    private void configureFormState() {
-        editTextYearFrom.setEnabled(isEditing);
-        editTextYearTo.setEnabled(isEditing);
-        radioGroupGender.setEnabled(isEditing);
-        for (int i = 0; i < radioGroupGender.getChildCount(); i++) {
-            radioGroupGender.getChildAt(i).setEnabled(isEditing);
-        }
-        seekBarDistance.setEnabled(isEditing);
-
-        if (isLoggedIn) {
-            buttonSavePreferences.setText(isEditing ? "שמור העדפות" : "ערוך העדפות");
-        } else {
-            buttonSavePreferences.setText("שמור העדפות");
-        }
-        textViewDistanceValue.setText(seekBarDistance.getProgress() + " ק״מ");
-    }
-
-    private void setupListeners() {
-        // שינוי תצוגת מרחק בזמן אמת
-        seekBarDistance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                textViewDistanceValue.setText(progress + " ק״מ");
-            }
-            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
-        });
-
-        // לחיצה על כפתור עריכה/שמירה
-        buttonSavePreferences.setOnClickListener(v -> {
-            if (isLoggedIn && !isEditing) {
-                // מעבר למצב עריכה
-                isEditing = true;
-                configureFormState();
-            } else {
-                // שמירת הערכים לשרת
-                savePreferencesToServer();
-            }
-        });
-    }
-
-    private void setRadioGroupEnabled(RadioGroup group, boolean enabled) {
-        group.setEnabled(enabled);
-        for (int i = 0; i < group.getChildCount(); i++) {
-            group.getChildAt(i).setEnabled(enabled);
-        }
-    }
-    // fetch user profile to confirm session
-    private void loadUserData() {
-        userApi.getUserById(userId)
-                .enqueue(new Callback<UserBoundary>() {
-                    @Override
-                    public void onResponse(Call<UserBoundary> call, Response<UserBoundary> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            // valid session
-                            isLoggedIn = true;
-                            isEditing = false;
-                        } else {
-                            // session invalid
-                            isLoggedIn = false;
-                            isEditing = true;
-                            Toast.makeText(activity_preferences.this,
-                                    "שגיאה: לא נמצאה כניסה תקפה", Toast.LENGTH_LONG).show();
-                        }
-                        // update UI
-                        configureNavigation();
-                        configureFormState();
-                    }
-                    @Override
-                    public void onFailure(Call<UserBoundary> call, Throwable t) {
-                        // network or server error, treat as guest
-                        isLoggedIn = false;
-                        isEditing = true;
-                        configureNavigation();
-                        configureFormState();
-                    }
-                });
-    }
-
-    private void bindViews() {
+        // bind views
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.navigation_view);
-        btnMenu = findViewById(R.id.btn_menu);
         toolbar = findViewById(R.id.toolbar);
+        btnMenu = findViewById(R.id.btn_menu);
         editTextYearFrom = findViewById(R.id.editTextYearFrom);
         editTextYearTo = findViewById(R.id.editTextYearTo);
         radioGroupGender = findViewById(R.id.radioGroupGender);
         seekBarDistance = findViewById(R.id.seekBarDistance);
         textViewDistanceValue = findViewById(R.id.textViewDistanceValue);
         buttonSavePreferences = findViewById(R.id.buttonSavePreferences);
+
+        // init APIs
+        userApi = User_ApiClient.getRetrofitInstance().create(UserApi.class);
+        preferencesApi = User_ApiClient.getRetrofitInstance().create(UserPreferencesApi.class);
+
+        // determine login state and default editing
+        userId = UserSessionManager.getServerUserId(this);
+        isLoggedIn = userId != null;
+        isEditing = !isLoggedIn; // guests edit immediately, logged users locked
+
+        // configure navigation and form after login check
+        configureNavigation();
+        configureFormState();
+
+        // if logged in, fetch user to validate session then lock fields
+        if (isLoggedIn) {
+            userApi.getUserById(userId).enqueue(new Callback<UserBoundary>() {
+                @Override
+                public void onResponse(Call<UserBoundary> call, Response<UserBoundary> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        isEditing = false; // lock after validation
+                    } else {
+                        isLoggedIn = false;
+                        isEditing = true;
+                        Toast.makeText(activity_preferences.this, "Session invalid", Toast.LENGTH_LONG).show();
+                        configureNavigation();
+                    }
+                    configureFormState();
+                }
+                @Override public void onFailure(Call<UserBoundary> call, Throwable t) {
+                    isLoggedIn = false;
+                    isEditing = true;
+                    configureNavigation();
+                    configureFormState();
+                }
+            });
+        }
+
+        // listeners
+        seekBarDistance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar s, int p, boolean fromUser) {
+                textViewDistanceValue.setText(p + " ק״מ");
+            }
+            @Override public void onStartTrackingTouch(SeekBar s) {}
+            @Override public void onStopTrackingTouch(SeekBar s) {}
+        });
+
+        buttonSavePreferences.setOnClickListener(v -> {
+            if (isLoggedIn && !isEditing) {
+                isEditing = true;
+                configureFormState();
+            } else {
+                savePreferences();
+            }
+        });
     }
 
-    // show/hide nav based on login
     private void configureNavigation() {
         if (isLoggedIn) {
             setSupportActionBar(toolbar);
             btnMenu.setVisibility(View.VISIBLE);
             navigationView.setVisibility(View.VISIBLE);
-
-            btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
             NevigationActivity.findNevigationButtens(this);
 
-            toggle = new ActionBarDrawerToggle(
-                    this, drawerLayout, toolbar,
+            btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+            toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar,
                     R.string.navigation_drawer_open, R.string.navigation_drawer_close);
             drawerLayout.addDrawerListener(toggle);
             toggle.syncState();
@@ -229,66 +147,59 @@ public class activity_preferences extends AppCompatActivity {
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         }
     }
-    private void savePreferencesToServer() {
-        String yearFromStr = editTextYearFrom.getText().toString();
-        String yearToStr = editTextYearTo.getText().toString();
 
-        if (yearFromStr.isEmpty() || yearToStr.isEmpty()) {
-            Toast.makeText(this, "אנא מלא טווח גילאים", Toast.LENGTH_SHORT).show();
-            return;
+    private void configureFormState() {
+        editTextYearFrom.setEnabled(isEditing);
+        editTextYearTo.setEnabled(isEditing);
+        for (int i = 0; i < radioGroupGender.getChildCount(); i++) {
+            radioGroupGender.getChildAt(i).setEnabled(isEditing);
         }
+        seekBarDistance.setEnabled(isEditing);
+        buttonSavePreferences.setText(isLoggedIn ?
+                (isEditing ? "שמור העדפות" : "ערוך העדפות") :
+                "שמור העדפות");
+        textViewDistanceValue.setText(seekBarDistance.getProgress() + " ק״מ");
+    }
 
-        int yearFrom = Integer.parseInt(yearFromStr);
-        int yearTo = Integer.parseInt(yearToStr);
-        if (yearFrom > yearTo) {
-            Toast.makeText(this, "שנת התחלה גדולה משנת סיום", Toast.LENGTH_SHORT).show();
-            return;
+    private void savePreferences() {
+        String fromStr = editTextYearFrom.getText().toString();
+        String toStr = editTextYearTo.getText().toString();
+        if (fromStr.isEmpty() || toStr.isEmpty()) {
+            Toast.makeText(this, "אנא מלא טווח גילאים", Toast.LENGTH_SHORT).show(); return;
         }
+        int from = Integer.parseInt(fromStr), to = Integer.parseInt(toStr);
+        if (from > to) { Toast.makeText(this, "טווח לא חוקי", Toast.LENGTH_SHORT).show(); return; }
+        int gid = radioGroupGender.getCheckedRadioButtonId();
+        if (gid == -1) { Toast.makeText(this, "בחר מגדר", Toast.LENGTH_SHORT).show(); return; }
+        Gender g = Gender.valueOf((String)((RadioButton)findViewById(gid)).getTag());
+        int dist = seekBarDistance.getProgress();
 
-        int selectedGenderId = radioGroupGender.getCheckedRadioButtonId();
-        if (selectedGenderId == -1) {
-            Toast.makeText(this, "אנא בחר מגדר מועדף", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        UserPreferencesBoundary prefs = new UserPreferencesBoundary();
+        prefs.setUserId(userId);
+        prefs.setMinYear(from);
+        prefs.setMaxYear(to);
+        prefs.setPreferredGender(g);
+        prefs.setPreferredMaxDistanceKm(dist);
 
-        RadioButton selectedGenderButton = findViewById(selectedGenderId);
-        String genderTag = (String) selectedGenderButton.getTag();
-        if (genderTag == null) {
-            Toast.makeText(this, "שגיאה: לא ניתן לזהות מגדר", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Gender genderEnum = Gender.valueOf(genderTag);
-
-        int maxDistance = seekBarDistance.getProgress();
-
-        // יצירת אובייקט UserPreferencesBoundary
-        UserPreferencesBoundary preferences = new UserPreferencesBoundary();
-        preferences.setId(userId);
-        preferences.setUserId(userId);
-        preferences.setMinYear(yearFrom);
-        preferences.setMaxYear(yearTo);
-        preferences.setPreferredGender(genderEnum);
-        preferences.setPreferredMaxDistanceKm(maxDistance);
-
-        // שליחת העדפות לשרת
-        Call<UserPreferencesBoundary> call = userPreferencesApi.createUserPreferences(preferences);
-        call.enqueue(new Callback<UserPreferencesBoundary>() {
+        preferencesApi.createUserPreferences(prefs).enqueue(new Callback<UserPreferencesBoundary>() {
             @Override
-            public void onResponse(Call<UserPreferencesBoundary> call, Response<UserPreferencesBoundary> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(activity_preferences.this, "העדפות נשמרו בהצלחה!", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(activity_preferences.this, HomeActivity.class); // החלף בשם Activity הרלוונטי אם שונה
-                    startActivity(intent);
-                    finish();
+            public void onResponse(Call<UserPreferencesBoundary> call, Response<UserPreferencesBoundary> resp) {
+                if (resp.isSuccessful()) {
+                    Toast.makeText(activity_preferences.this, "נשמר בהצלחה", Toast.LENGTH_SHORT).show();
+                    if (isLoggedIn) {
+                        isEditing = false;
+                        configureFormState();
+                    } else {
+                        startActivity(new Intent(activity_preferences.this, HomeActivity.class));
+                        finish();
+                    }
                 } else {
-                    Toast.makeText(activity_preferences.this, "שגיאה בשמירה: " + response.code(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity_preferences.this, "שגיאה: " + resp.code(), Toast.LENGTH_SHORT).show();
                 }
             }
-
-            @Override
-            public void onFailure(Call<UserPreferencesBoundary> call, Throwable t) {
-                Log.e("API_ERROR", "שגיאה: " + t.getMessage());
-                Toast.makeText(activity_preferences.this, "העדפות לא נשמרו (שגיאה ברשת)", Toast.LENGTH_SHORT).show();
+            @Override public void onFailure(Call<UserPreferencesBoundary> call, Throwable t) {
+                Log.e("PrefsErr", t.getMessage());
+                Toast.makeText(activity_preferences.this, "שגיאה ברשת", Toast.LENGTH_SHORT).show();
             }
         });
     }
