@@ -2,7 +2,11 @@
 agp = "8.7.2"
 androidsvgAar = "1.4"
 circleimageview = "3.1.0"
+compilerVersion = "4.15.1"
+firebaseBomVersion = "33.1.2"
 firebaseStorage = "21.0.1"
+firebaseuiFirebaseUiAuth = "8.0.2"
+glideVersion = "4.15.1"
 gson = "2.11.0"
 gsonVersion = "2.10.1"
 junit = "4.13.2"
@@ -16,13 +20,18 @@ okhttp = "4.9.1"
 retrofit = "2.9.0"
 
 [libraries]
+androidsvg = { module = "com.caverock:androidsvg", version.ref = "androidsvgAar" }
 androidsvg-aar = { module = "com.caverock:androidsvg-aar", version.ref = "androidsvgAar" }
 circleimageview = { module = "de.hdodenhof:circleimageview", version.ref = "circleimageview" }
+com-firebaseui-firebase-ui-auth = { module = "com.firebaseui:firebase-ui-auth", version.ref = "firebaseuiFirebaseUiAuth" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-database = { module = "com.google.firebase:firebase-database" }
 firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseStorage" }
+github-glide = { module = "com.github.bumptech.glide:glide", version.ref = "glideVersion" }
+glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compilerVersion" }
 google-firebase-auth = { module = "com.google.firebase:firebase-auth" }
+google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBomVersion" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 gson-v2101 = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

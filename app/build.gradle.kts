@@ -54,16 +54,18 @@ dependencies {
 
     // firebase
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
-    implementation(libs.firebase.analytics)
-    implementation(libs.firebase.database)
-    implementation(libs.google.firebase.auth)
     implementation ("com.firebaseui:firebase-ui-auth:8.0.2")
     implementation ("com.github.bumptech.glide:glide:4.15.1")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
-    implementation(libs.androidsvg.aar)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.database)
+    implementation(libs.google.firebase.auth)
+//    implementation(libs.androidsvg.aar)
     implementation (libs.firebase.storage)
     implementation (libs.circleimageview)
-
-
-
+    implementation (libs.androidsvg)
+//    implementation (libs.com.firebaseui.firebase.ui.auth)
+//    implementation (libs.github.glide)
+//    annotationProcessor (libs.glide.compiler)
+//    implementation(platform(libs.google.firebase.bom))
 }
