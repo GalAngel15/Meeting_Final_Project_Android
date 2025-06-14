@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.meeting_project.R;
-import com.example.meeting_project.adapter.TextBoxAdapter;
+import com.example.meeting_project.adapters.TextBoxAdapter;
 import com.example.meeting_project.managers.AppManager;
 
 import java.util.Arrays;

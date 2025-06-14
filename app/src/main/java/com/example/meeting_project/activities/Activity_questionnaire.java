@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.meeting_project.R;
 import com.example.meeting_project.UserSessionManager;
-import com.example.meeting_project.adapter.QuestionIntroAdapter;
+import com.example.meeting_project.adapters.QuestionIntroAdapter;
 import com.example.meeting_project.apiClients.Question_ApiClient;
 import com.example.meeting_project.boundaries.QuestionsBoundary;
 import com.example.meeting_project.boundaries.UserAnswerBoundary;

@@ -8,6 +8,7 @@ import android.view.View;
 
 import com.example.meeting_project.R;
 import com.example.meeting_project.activities.ChatActivity;
+import com.example.meeting_project.activities.Conversations;
 import com.example.meeting_project.activities.HomeActivity;
 import com.example.meeting_project.activities.ProfileActivity;
 import com.example.meeting_project.activities.AlertsActivity;
@@ -87,7 +88,7 @@ public class NevigationActivity {
                     intent = new Intent(activity, ProfileActivity.class);
                 }
                 else if (clickedId == R.id.navigation_chats) {
-                    intent = new Intent(activity, ChatActivity.class);
+                    intent = new Intent(activity, Conversations.class);
                 }
                 else if (clickedId == R.id.navigation_notifications) {
                     intent = new Intent(activity, AlertsActivity.class);

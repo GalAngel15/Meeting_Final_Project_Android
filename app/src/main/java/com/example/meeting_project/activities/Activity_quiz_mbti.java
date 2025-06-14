@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.meeting_project.R;
 import com.example.meeting_project.UserSessionManager;
-import com.example.meeting_project.adapter.QuestionAdapter;
+import com.example.meeting_project.adapters.QuestionAdapter;
 import com.example.meeting_project.apiClients.MbtiService_ApiClient;
 import com.example.meeting_project.apiClients.MbtiTest_ApiClient;
 import com.example.meeting_project.boundaries.MbtiBoundary;

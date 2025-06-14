@@ -4,23 +4,40 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/light_purple"> <!-- סגול בהיר מאוד -->
+    android:background="@color/light_purple">
 
-    <!-- כותרת עם שם המשתמש -->
-    <TextView
-        android:id="@+id/chat_username"
+    <!-- שורת כותרת עם תמונה + שם -->
+    <LinearLayout
+        android:id="@+id/header_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Liel"
-        android:textSize="20sp"
-        android:textColor="#5E35B1"
-        android:textStyle="bold"
-        android:gravity="center"
+        android:orientation="horizontal"
         android:padding="16dp"
+        android:gravity="center_vertical"
         android:background="#EDE7F6"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/chat_user_image"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_profile"
+            android:layout_marginEnd="12dp"
+            app:civ_border_width="1dp"
+            app:civ_border_color="#D1C4E9"
+            android:contentDescription="Profile image" />
+
+        <TextView
+            android:id="@+id/chat_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Liel"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#5E35B1"/>
+    </LinearLayout>
 
     <!-- RecyclerView להודעות -->
     <androidx.recyclerview.widget.RecyclerView
@@ -30,12 +47,12 @@
         android:padding="8dp"
         android:clipToPadding="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/chat_username"
+        app:layout_constraintTop_toBottomOf="@id/header_layout"
         app:layout_constraintBottom_toTopOf="@id/message_input_layout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- שדה הקלדה וכפתור שליחה -->
+    <!-- שורת הקלדה -->
     <LinearLayout
         android:id="@+id/message_input_layout"
         android:layout_width="0dp"

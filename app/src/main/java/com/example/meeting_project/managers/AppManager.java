@@ -55,6 +55,9 @@ public class AppManager {
     public static UserBoundary getAppUser(){
         return instance.appUser;
     }
+    public static void setAppUser(UserBoundary user){
+        instance.appUser = user;
+    }
     public static Context getCurrentContext(){
         return instance.appContext;
     }

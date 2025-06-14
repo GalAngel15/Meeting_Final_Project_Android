@@ -190,6 +190,7 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
     private void bindUser(UserBoundary u) {
+        AppManager.setAppUser(u);
         bindBasicProfile(u);
         // במקום addDetail ישירות – נטען תשובות מהשרת
         fetchAndBindPersonalDetails(u.getId());

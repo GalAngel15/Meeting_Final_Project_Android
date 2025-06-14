@@ -1,4 +1,4 @@
-package com.example.meeting_project.adapter;
+package com.example.meeting_project.adapters;
 
 import android.text.Editable;
 import android.text.TextWatcher;
