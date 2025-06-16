@@ -2,6 +2,7 @@ package com.example.meeting_project.activities;
 
 import android.graphics.drawable.PictureDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,6 +22,7 @@ import com.example.meeting_project.GlideAdapter.GlideApp;
 import com.example.meeting_project.GlideAdapter.SvgSoftwareLayerSetter;
 import com.example.meeting_project.R;
 import com.example.meeting_project.UserSessionManager;
+import com.example.meeting_project.apiClients.MbtiService_ApiClient;
 import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.boundaries.MbtiBoundary;
@@ -167,29 +169,39 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void loadMbtiData(String userId) {
-        MbtiServiceApi mbtiApi = User_ApiClient.getRetrofitInstance().create(MbtiServiceApi.class);
+        MbtiServiceApi mbtiApi = MbtiService_ApiClient.getRetrofitInstance().create(MbtiServiceApi.class);
         mbtiApi.getProfileByUserId(userId)
                 .enqueue(new Callback<MbtiBoundary>() {
                     @Override
                     public void onResponse(Call<MbtiBoundary> call, Response<MbtiBoundary> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            String json = response.body().getCharacteristics();
-                            SubmitResponse resp = new Gson().fromJson(json, SubmitResponse.class);
-                            if (resp != null) {
-                                RequestBuilder<PictureDrawable> rb = GlideApp.with(ProfileActivity.this)
-                                        .as(PictureDrawable.class)
-                                        .listener(new SvgSoftwareLayerSetter());
-                                rb.load(resp.getAvatarSrcStatic())
-                                        .placeholder(R.drawable.type_logo_placeholder)
-                                        .into(personalityImage);
+                            String characteristicsJson = response.body().getCharacteristics();
+                            Log.e("characteristicsJson", characteristicsJson);
+
+                            SubmitResponse submitResponse = new Gson().fromJson(characteristicsJson, SubmitResponse.class);
+                            if (submitResponse != null && submitResponse.getAvatarSrcStatic() != null) {
+                                loadSvgImage(submitResponse.getAvatarSrcStatic(), personalityImage);
+                            } else {
+                                Log.e("MBTI", "SubmitResponse or avatar URL is null");
                             }
+                        } else {
+                            Log.e("MBTI", "Response unsuccessful or empty body");
                         }
                     }
                     @Override
                     public void onFailure(Call<MbtiBoundary> call, Throwable t) {
-                        // אפשר להוסיף טיפול בשגיאות אם תרצי
-                    }
+                        Log.e("MBTI", "API call failed: " + t.getMessage());
+                        Toast.makeText(ProfileActivity.this, "Failed to load MBTI data", Toast.LENGTH_SHORT).show();}
                 });
     }
+    private void loadSvgImage(String url, ImageView imageView) {
+        RequestBuilder<PictureDrawable> requestBuilder = GlideApp.with(this)
+                .as(PictureDrawable.class)
+                .listener(new SvgSoftwareLayerSetter());
 
+        requestBuilder.load(url)
+                .placeholder(R.drawable.type_logo_placeholder)
+                .error(R.drawable.type_logo_placeholder)
+                .into(imageView);
+    }
 }

@@ -8,23 +8,23 @@ import com.example.meeting_project.enums.PersonalityType;
  */
 
 public class MbtiBoundary {
-    private Long id;
+    private String id;
     private String userId;
     private PersonalityType personalityType;
     private String characteristics;
 
-    public MbtiBoundary(Long id, String userId, PersonalityType personalityType, String characteristics) {
+    public MbtiBoundary(String id, String userId, PersonalityType personalityType, String characteristics) {
         this.id = id;
         this.userId = userId;
         this.personalityType = personalityType;
         this.characteristics = characteristics;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public MbtiBoundary setId(Long id) {
+    public MbtiBoundary setId(String id) {
         this.id = id;
         return this;
     }
