@@ -83,14 +83,6 @@
                     android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
-
-                <Button
-                    android:id="@+id/btnNextTest"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="next test" />
-
             </LinearLayout>
         </ScrollView>
 

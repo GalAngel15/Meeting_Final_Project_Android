@@ -46,7 +46,6 @@ import retrofit2.Response;
 
 public class Activity_personality_result extends AppCompatActivity {
     private NavigationView navigationView;
-    private BottomNavigationView bottomNavigationView;
     private ImageButton menuButton;
     private DrawerLayout drawerLayout;
     private Toolbar toolbar;
@@ -55,7 +54,6 @@ public class Activity_personality_result extends AppCompatActivity {
     private TextView tvNiceName, tvSnippet;
     private ImageView ivAvatar;
     private LinearLayout scalesContainer, traitsContainer;
-    private Button btnNextTest;
 
     private MbtiServiceApi mbtiApi;
     private String userId;
@@ -113,8 +111,6 @@ public class Activity_personality_result extends AppCompatActivity {
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
-
-        setBtnClick();
     }
 
     private void loadSvgImage(String url, ImageView imageView) {
@@ -127,17 +123,6 @@ public class Activity_personality_result extends AppCompatActivity {
                 .centerInside()
                 .error(R.drawable.ic_error) // Replace with your error drawable
                 .into(imageView);
-    }
-
-    private void setBtnClick() {
-        btnNextTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Activity_personality_result.this, Activity_questionnaire.class);
-
-                startActivity(intent);
-            }
-        });
     }
 
     private void showScales(List<String> scales) {
@@ -185,7 +170,6 @@ public class Activity_personality_result extends AppCompatActivity {
         ivAvatar = findViewById(R.id.ivAvatar);
         scalesContainer = findViewById(R.id.scalesContainer);
         traitsContainer = findViewById(R.id.traitsContainer);
-        btnNextTest = findViewById(R.id.btnNextTest);
         drawerLayout = findViewById(R.id.drawer_layout);
         menuButton = findViewById(R.id.btn_menu);
         navigationView = findViewById(R.id.navigation_view);
