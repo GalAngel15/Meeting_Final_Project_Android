@@ -26,14 +26,13 @@
             android:id="@+id/btn_menu"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="16dp"
+            android:layout_margin="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/menu"
-            android:contentDescription="@string/navigation_drawer_open"
-            android:layout_alignParentTop="true"
             android:layout_alignParentStart="true"
-            android:visibility="gone" />
+            android:layout_alignParentTop="true"
+            android:contentDescription="@string/navigation_drawer_open" />
+
 
         <!-- תוכן גלילה בתוך כרטיס -->
         <ScrollView
