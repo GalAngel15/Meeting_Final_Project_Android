@@ -62,7 +62,8 @@ public class HomeActivity extends AppCompatActivity {
     static {
         NAV_MAP.put(R.id.nav_edit_preferences, activity_preferences.class);
         NAV_MAP.put(R.id.nav_edit_intro, Activity_questionnaire.class);
-        NAV_MAP.put(R.id.nav_my_personality, PersonalitiesActivity.class);
+        NAV_MAP.put(R.id.nav_my_personality, Activity_personality_result.class);
+        //NAV_MAP.put(R.id.nav_my_personality, PersonalitiesActivity.class);
     }
 
     @Override

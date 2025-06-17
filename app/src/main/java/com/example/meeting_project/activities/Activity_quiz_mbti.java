@@ -183,8 +183,8 @@ public class Activity_quiz_mbti extends AppCompatActivity {
                     String personalityType = result.getNiceName();
                     Toast.makeText(Activity_quiz_mbti.this, "Your personality type: " + personalityType, Toast.LENGTH_LONG).show();
                     seveMbtiResultToService(result);
-                    navigateToResultMbtiPage(result);
-                    //navigateToQuizPage();
+                    //navigateToResultMbtiPage(result);
+                    navigateToQuizPage();
                 } else {
                     Log.w("QUIZ", "Response body is null");
 

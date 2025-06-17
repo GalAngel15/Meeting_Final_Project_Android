@@ -1,5 +1,6 @@
 package com.example.meeting_project.activities;
 
+import android.content.Intent;
 import android.graphics.drawable.PictureDrawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +14,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.bumptech.glide.Glide;
@@ -27,10 +30,14 @@ import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.boundaries.MbtiBoundary;
 import com.example.meeting_project.APIRequests.UserApi;
+import com.example.meeting_project.managers.NevigationActivity;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
+import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -42,11 +49,23 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView tvFullName;
     private EditText etFirstName, etLastName, etPersonalityType, etEmail, etPhone, etDob, etGender;
     private Button btnEditProfile;
-    private ImageButton btnMenu;
+
+    private ImageButton menuButton;
     private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle toggle;
+    private NavigationView navigationView;
+    private Toolbar toolbar;
 
     private UserApi userApi;
     private boolean isEditMode = false;  // מעקב אחר מצב העריכה
+
+    private static final Map<Integer, Class<?>> NAV_MAP = new HashMap<>();
+    static {
+        NAV_MAP.put(R.id.nav_edit_preferences, activity_preferences.class);
+        NAV_MAP.put(R.id.nav_edit_intro, Activity_questionnaire.class);
+        NAV_MAP.put(R.id.nav_my_personality, Activity_personality_result.class);
+        //NAV_MAP.put(R.id.nav_my_personality, PersonalitiesActivity.class);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +73,10 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         initViews();
+
+        menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+        NevigationActivity.findNevigationButtens(this);
+
         setupDrawer();
         setupEditButton();
 
@@ -78,20 +101,38 @@ public class ProfileActivity extends AppCompatActivity {
         etDob = findViewById(R.id.et_dob);
         etGender = findViewById(R.id.et_gender);
         btnEditProfile = findViewById(R.id.btn_edit_profile);
-        btnMenu = findViewById(R.id.btn_menu);
+        menuButton = findViewById(R.id.btn_menu);
         drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.navigation_view);
+        toolbar = findViewById(R.id.toolbar);
 
         // כברירת מחדל - השדות נעולים לעריכה
         setFieldsEditable(false);
     }
 
     private void setupDrawer() {
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        setSupportActionBar(toolbar);
+        toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(Gravity.LEFT));
+        //menuButton.setOnClickListener(v -> drawerLayout.openDrawer(Gravity.LEFT));
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            Class<?> targetActivity = NAV_MAP.get(itemId);
+
+            if (targetActivity != null) {
+                Intent intent = new Intent(ProfileActivity.this, targetActivity);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "אין פעולה מתאימה", Toast.LENGTH_SHORT).show();
+            }
+
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        });
     }
 
     private void setupEditButton() {

@@ -20,9 +20,13 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
+import com.example.meeting_project.APIRequests.MbtiServiceApi;
 import com.example.meeting_project.GlideAdapter.GlideApp;
 import com.example.meeting_project.GlideAdapter.SvgSoftwareLayerSetter;
 import com.example.meeting_project.R;
+import com.example.meeting_project.UserSessionManager;
+import com.example.meeting_project.apiClients.MbtiService_ApiClient;
+import com.example.meeting_project.boundaries.MbtiBoundary;
 import com.example.meeting_project.managers.AppManager;
 import com.example.meeting_project.managers.NevigationActivity;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
@@ -34,6 +38,10 @@ import com.google.gson.Gson;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class Activity_personality_result extends AppCompatActivity {
@@ -49,11 +57,14 @@ public class Activity_personality_result extends AppCompatActivity {
     private LinearLayout scalesContainer, traitsContainer;
     private Button btnNextTest;
 
+    private MbtiServiceApi mbtiApi;
+    private String userId;
+
     private static final Map<Integer, Class<?>> NAV_MAP = new HashMap<>();
     static {
         NAV_MAP.put(R.id.nav_edit_preferences, activity_preferences.class);
         NAV_MAP.put(R.id.nav_edit_intro, Activity_questionnaire.class);
-        NAV_MAP.put(R.id.nav_my_personality, PersonalitiesActivity.class);
+        NAV_MAP.put(R.id.nav_my_personality, Activity_personality_result.class);
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +74,14 @@ public class Activity_personality_result extends AppCompatActivity {
         // הגדר את ה־NavigationView
         menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
         NevigationActivity.findNevigationButtens(this);
+
+        mbtiApi = MbtiService_ApiClient.getRetrofitInstance().create(MbtiServiceApi.class);
+        userId = UserSessionManager.getServerUserId(this);
+        if (userId != null) {
+            fetchMbtiData(userId);
+        } else {
+            Toast.makeText(this, "User ID not found", Toast.LENGTH_SHORT).show();
+        }
 
         // 2. הגדרת ה-Toolbar כ-ActionBar
         setSupportActionBar(toolbar);
@@ -96,35 +115,6 @@ public class Activity_personality_result extends AppCompatActivity {
         });
 
         setBtnClick();
-        // קבל את ה־JSON
-        String json = getIntent().getStringExtra("submitResponseJson");
-
-        // המר אותו חזרה לאובייקט
-        Gson gson = new Gson();
-        SubmitResponse response = gson.fromJson(json, SubmitResponse.class);
-        AppManager.setContext(this.getApplicationContext());
-
-
-        if (response != null) {
-            tvNiceName.setText(response.getNiceName() + " (" + response.getFullCode() + ")");
-            tvSnippet.setText(response.getSnippet());
-
-            Log.d("AvatarDebug", "Avatar URL: " + response.getAvatarSrcStatic());
-            // Load SVG image
-            loadSvgImage(response.getAvatarSrcStatic(), ivAvatar);
-
-            showScales(response.getScales());
-            showTraits(response.getTraits());
-        }
-
-//        if (response != null) {
-//            tvNiceName.setText(response.getNiceName() + " (" + response.getFullCode() + ")");
-//            tvSnippet.setText(response.getSnippet());
-//            // Load SVG image using Glide
-//            Glide.with(this).load(Uri.parse(response.getAvatarSrcStatic())).into(ivAvatar);
-//            showScales(response.getScales());
-//            showTraits(response.getTraits());
-//        }
     }
 
     private void loadSvgImage(String url, ImageView imageView) {
@@ -149,6 +139,7 @@ public class Activity_personality_result extends AppCompatActivity {
             }
         });
     }
+
     private void showScales(List<String> scales) {
         scalesContainer.removeAllViews();
         for (String scale : scales) {
@@ -187,6 +178,7 @@ public class Activity_personality_result extends AppCompatActivity {
             traitsContainer.addView(traitLayout);
         }
     }
+
     private void initViews() {
         tvNiceName = findViewById(R.id.tvNiceName);
         tvSnippet = findViewById(R.id.tvSnippet);
@@ -197,8 +189,42 @@ public class Activity_personality_result extends AppCompatActivity {
         drawerLayout = findViewById(R.id.drawer_layout);
         menuButton = findViewById(R.id.btn_menu);
         navigationView = findViewById(R.id.navigation_view);
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
         toolbar = findViewById(R.id.toolbar);
     }
 
+    private void fetchMbtiData(String userId) {
+        mbtiApi.getProfileByUserId(userId).enqueue(new Callback<MbtiBoundary>() {
+            @Override
+            public void onResponse(Call<MbtiBoundary> call, Response<MbtiBoundary> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String characteristicsJson = response.body().getCharacteristics();
+                    Log.e("characteristicsJson", characteristicsJson);
+
+                    SubmitResponse submitResponse = new Gson().fromJson(characteristicsJson, SubmitResponse.class);
+                    if (submitResponse != null) {
+                        displaySubmitResponse(submitResponse);
+                    } else {
+                        Log.e("MBTI", "SubmitResponse is null");
+                    }
+                } else {
+                    Log.e("MBTI", "Response unsuccessful or empty body");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MbtiBoundary> call, Throwable t) {
+                Log.e("MBTI", "API call failed: " + t.getMessage());
+                Toast.makeText(Activity_personality_result.this, "Failed to load MBTI data", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void displaySubmitResponse(SubmitResponse response) {
+        tvNiceName.setText(response.getNiceName() + " (" + response.getFullCode() + ")");
+        tvSnippet.setText(response.getSnippet());
+        Log.d("AvatarDebug", "Avatar URL: " + response.getAvatarSrcStatic());
+        loadSvgImage(response.getAvatarSrcStatic(), ivAvatar);
+        showScales(response.getScales());
+        showTraits(response.getTraits());
+    }
 }
