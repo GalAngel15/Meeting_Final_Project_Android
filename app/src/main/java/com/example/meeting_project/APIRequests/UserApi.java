@@ -82,6 +82,13 @@ public interface UserApi {
             @Query("password") String password
     );
 
+    @PUT("users/{userId}/mbtiType")
+    Call<String> updateUserMbtiType(
+            @Path("userId") String userId,
+            @Query("mbtiType") String mbtiType
+    );
 
+    @GET("users/matches/{userId}/potential")
+    Call<List<UserBoundary>> getPotentialMatches(@Path("userId") String userId);
 }
 

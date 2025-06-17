@@ -10,11 +10,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.meeting_project.APIRequests.UserApi;
 import com.example.meeting_project.R;
 import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.adapters.QuestionAdapter;
 import com.example.meeting_project.apiClients.MbtiService_ApiClient;
 import com.example.meeting_project.apiClients.MbtiTest_ApiClient;
+import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.MbtiBoundary;
 import com.example.meeting_project.enums.PersonalityType;
 import com.example.meeting_project.APIRequests.MbtiServiceApi;
@@ -250,10 +252,10 @@ public class Activity_quiz_mbti extends AppCompatActivity {
     }
 
     private void updateUserMbtiType(String userId, String mbtiType) {
-        MbtiServiceApi apiService = MbtiService_ApiClient.getRetrofitInstance().create(MbtiServiceApi.class);
-        apiService.updateUserMbtiType(userId, mbtiType).enqueue(new Callback<ResponseBody>() {
+        UserApi userApi = User_ApiClient.getRetrofitInstance().create(UserApi.class);
+        userApi.updateUserMbtiType(userId, mbtiType).enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {
                     Log.d("MBTI", "User MBTI type : " + mbtiType + " updated successfully");
                 } else {
@@ -262,7 +264,7 @@ public class Activity_quiz_mbti extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            public void onFailure(Call<String> call, Throwable t) {
                 Log.e("MBTI", "Error updating user MBTI type: " + t.getMessage());
             }
         });

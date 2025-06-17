@@ -25,10 +25,4 @@ public interface MbtiServiceApi {
     @POST("/mbti/create")
     Call<ResponseBody> createProfile(@Body MbtiBoundary profile);
 
-    @PUT("/users/{userId}/match")
-    Call<ResponseBody> updateUserMbtiType(
-            @Path("userId") String userId,
-            @Query("mbtiType") String mbtiType
-    );
-
 }
