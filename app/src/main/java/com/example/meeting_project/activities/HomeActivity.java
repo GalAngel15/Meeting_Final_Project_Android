@@ -32,7 +32,7 @@ import com.example.meeting_project.APIRequests.MbtiServiceApi;
 import com.example.meeting_project.APIRequests.QuestionsApi;
 import com.example.meeting_project.APIRequests.UserApi;
 import com.example.meeting_project.managers.AppManager;
-import com.example.meeting_project.managers.NevigationActivity;
+import com.example.meeting_project.managers.BaseNavigationActivity;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.google.android.material.navigation.NavigationView;
 import com.example.meeting_project.R;
@@ -46,87 +46,31 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends BaseNavigationActivity {
     private String serverId;
     private String firebaseId ;
     private String mbtiCharacteristics;
-    private DrawerLayout drawerLayout;
-    private ActionBarDrawerToggle toggle;
-    private NavigationView navigationView;
-    private Toolbar toolbar;
     private ImageView ivAvatar, imageProfile ;
     private TextView tvNiceName, welcome ;
-    private ImageButton menuButton;
     private Map<String,String> questionCategoryMap;
-    private static final Map<Integer, Class<?>> NAV_MAP = new HashMap<>();
-    static {
-        NAV_MAP.put(R.id.nav_edit_preferences, activity_preferences.class);
-        NAV_MAP.put(R.id.nav_edit_intro, Activity_questionnaire.class);
-        NAV_MAP.put(R.id.nav_my_personality, Activity_personality_result.class);
-        //NAV_MAP.put(R.id.nav_my_personality, PersonalitiesActivity.class);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home); // קובץ ה־XML שלך
+        //setContentView(R.layout.activity_home); // קובץ ה־XML שלך
+
         serverId   = UserSessionManager.getServerUserId(this);
         firebaseId = UserSessionManager.getFirebaseUserId(this);
         AppManager.setContext(this.getApplicationContext());
 
         findView();
-        menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
-        NevigationActivity.findNevigationButtens(this);
-
-        // 2. הגדרת ה-Toolbar כ-ActionBar
-        setSupportActionBar(toolbar);
-
-        // 3. יצירת ה-Toggle והוספתו ל-DrawerLayout
-        toggle = new ActionBarDrawerToggle(
-                this,
-                drawerLayout,
-                toolbar,
-                R.string.navigation_drawer_open,   // ודא שיש לך מחרוזות אלו ב־strings.xml
-                R.string.navigation_drawer_close
-        );
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        // טיפול בלחיצות תפריט צד
-
-        navigationView.setNavigationItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            Class<?> targetActivity = NAV_MAP.get(itemId);
-
-            if (targetActivity != null) {
-                Intent intent = new Intent(HomeActivity.this, targetActivity);
-                startActivity(intent);
-            } else {
-                Toast.makeText(this, "אין פעולה מתאימה", Toast.LENGTH_SHORT).show();
-            }
-
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        });
-
-
-        /*navigationView.setNavigationItemSelectedListener(item -> {
-            int id = item.getItemId();
-            // כאן תוכל להגיב לכל אייטם שנלחץ
-            if (id == R.id.nav_settings) {
-                // לדוגמה: פתח אקטיביטי של הגדרות
-            }
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        });*/
-
 
         questionCategoryMap = new HashMap<>();
         preloadQuestionCategories();
         loadUserData();
         loadMbtiData();
-
     }
+
     private void preloadQuestionCategories() {
         QuestionsApi api = Question_ApiClient
                 .getRetrofitInstance()
@@ -288,27 +232,24 @@ public class HomeActivity extends AppCompatActivity {
 
 
     private void findView() {
-        // חיבור Drawer + Toggle (אייקון המבורגר)
-        drawerLayout = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.navigation_view);
-        toolbar = findViewById(R.id.toolbar);
         welcome = findViewById(R.id.textWelcome);
         imageProfile = findViewById(R.id.imageProfile);
         ivAvatar = findViewById(R.id.ivAvatar);
         tvNiceName = findViewById(R.id.tvNiceName);
-        menuButton = findViewById(R.id.btn_menu);
     }
 
-    // לחצן Back סוגר תפריט אם פתוח
     @Override
-    public void onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
+    protected int getLayoutResourceId() {
+        return R.layout.activity_home; // קובץ ה-XML הקיים שלך
     }
-    protected int getNavMenuId() {
-        return R.id.nav_home; // מתאים ל-home
+
+    @Override
+    protected int getDrawerMenuItemId() {
+        return 0;  // כי במסך Home את לא רוצה לבחור כלום בתפריט הצד
+    }
+
+    @Override
+    protected int getBottomMenuItemId() {
+        return R.id.navigation_home;  // זה המזהה של הפריט בתפריט התחתון שמתאים ל-Home
     }
 }

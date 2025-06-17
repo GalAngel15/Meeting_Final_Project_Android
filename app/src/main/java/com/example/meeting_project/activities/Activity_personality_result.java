@@ -28,7 +28,7 @@ import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.apiClients.MbtiService_ApiClient;
 import com.example.meeting_project.boundaries.MbtiBoundary;
 import com.example.meeting_project.managers.AppManager;
-import com.example.meeting_project.managers.NevigationActivity;
+import com.example.meeting_project.managers.BaseNavigationActivity;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.example.meeting_project.objectOfMbtiTest.Trait;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -44,13 +44,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-public class Activity_personality_result extends AppCompatActivity {
-    private NavigationView navigationView;
-    private ImageButton menuButton;
-    private DrawerLayout drawerLayout;
-    private Toolbar toolbar;
-    private ActionBarDrawerToggle toggle;
-
+public class Activity_personality_result extends BaseNavigationActivity {
     private TextView tvNiceName, tvSnippet;
     private ImageView ivAvatar;
     private LinearLayout scalesContainer, traitsContainer;
@@ -58,20 +52,11 @@ public class Activity_personality_result extends AppCompatActivity {
     private MbtiServiceApi mbtiApi;
     private String userId;
 
-    private static final Map<Integer, Class<?>> NAV_MAP = new HashMap<>();
-    static {
-        NAV_MAP.put(R.id.nav_edit_preferences, activity_preferences.class);
-        NAV_MAP.put(R.id.nav_edit_intro, Activity_questionnaire.class);
-        NAV_MAP.put(R.id.nav_my_personality, Activity_personality_result.class);
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_personality_result);
+        //setContentView(R.layout.activity_personality_result);
         initViews();
-        // הגדר את ה־NavigationView
-        menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
-        NevigationActivity.findNevigationButtens(this);
 
         mbtiApi = MbtiService_ApiClient.getRetrofitInstance().create(MbtiServiceApi.class);
         userId = UserSessionManager.getServerUserId(this);
@@ -80,37 +65,6 @@ public class Activity_personality_result extends AppCompatActivity {
         } else {
             Toast.makeText(this, "User ID not found", Toast.LENGTH_SHORT).show();
         }
-
-        // 2. הגדרת ה-Toolbar כ-ActionBar
-        setSupportActionBar(toolbar);
-
-        // 3. יצירת ה-Toggle והוספתו ל-DrawerLayout
-        toggle = new ActionBarDrawerToggle(
-                this,
-                drawerLayout,
-                toolbar,
-                R.string.navigation_drawer_open,   // ודא שיש לך מחרוזות אלו ב־strings.xml
-                R.string.navigation_drawer_close
-        );
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        // טיפול בלחיצות תפריט צד
-
-        navigationView.setNavigationItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            Class<?> targetActivity = NAV_MAP.get(itemId);
-
-            if (targetActivity != null) {
-                Intent intent = new Intent(Activity_personality_result.this, targetActivity);
-                startActivity(intent);
-            } else {
-                Toast.makeText(this, "אין פעולה מתאימה", Toast.LENGTH_SHORT).show();
-            }
-
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        });
     }
 
     private void loadSvgImage(String url, ImageView imageView) {
@@ -170,10 +124,6 @@ public class Activity_personality_result extends AppCompatActivity {
         ivAvatar = findViewById(R.id.ivAvatar);
         scalesContainer = findViewById(R.id.scalesContainer);
         traitsContainer = findViewById(R.id.traitsContainer);
-        drawerLayout = findViewById(R.id.drawer_layout);
-        menuButton = findViewById(R.id.btn_menu);
-        navigationView = findViewById(R.id.navigation_view);
-        toolbar = findViewById(R.id.toolbar);
     }
 
     private void fetchMbtiData(String userId) {
@@ -210,5 +160,20 @@ public class Activity_personality_result extends AppCompatActivity {
         loadSvgImage(response.getAvatarSrcStatic(), ivAvatar);
         showScales(response.getScales());
         showTraits(response.getTraits());
+    }
+
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_personality_result;
+    }
+
+    @Override
+    protected int getDrawerMenuItemId() {
+        return R.id.nav_my_personality;
+    }
+
+    @Override
+    protected int getBottomMenuItemId() {
+        return 0;  // כי במסך הזה אין סימון בתפריט התחתון
     }
 }

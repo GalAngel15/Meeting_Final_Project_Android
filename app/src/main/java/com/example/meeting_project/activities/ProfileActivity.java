@@ -30,7 +30,7 @@ import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.boundaries.MbtiBoundary;
 import com.example.meeting_project.APIRequests.UserApi;
-import com.example.meeting_project.managers.NevigationActivity;
+import com.example.meeting_project.managers.BaseNavigationActivity;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.google.android.material.navigation.NavigationView;
 import com.google.gson.Gson;
@@ -43,41 +43,21 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends BaseNavigationActivity {
 
     private ImageView profileImage, personalityImage;
     private TextView tvFullName;
     private EditText etFirstName, etLastName, etPersonalityType, etEmail, etPhone, etDob, etGender;
     private Button btnEditProfile;
 
-    private ImageButton menuButton;
-    private DrawerLayout drawerLayout;
-    private ActionBarDrawerToggle toggle;
-    private NavigationView navigationView;
-    private Toolbar toolbar;
-
     private UserApi userApi;
     private boolean isEditMode = false;  // מעקב אחר מצב העריכה
 
-    private static final Map<Integer, Class<?>> NAV_MAP = new HashMap<>();
-    static {
-        NAV_MAP.put(R.id.nav_edit_preferences, activity_preferences.class);
-        NAV_MAP.put(R.id.nav_edit_intro, Activity_questionnaire.class);
-        NAV_MAP.put(R.id.nav_my_personality, Activity_personality_result.class);
-        //NAV_MAP.put(R.id.nav_my_personality, PersonalitiesActivity.class);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
-
         initViews();
-
-        menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
-        NevigationActivity.findNevigationButtens(this);
-
-        setupDrawer();
         setupEditButton();
 
         userApi = User_ApiClient.getRetrofitInstance().create(UserApi.class);
@@ -101,38 +81,8 @@ public class ProfileActivity extends AppCompatActivity {
         etDob = findViewById(R.id.et_dob);
         etGender = findViewById(R.id.et_gender);
         btnEditProfile = findViewById(R.id.btn_edit_profile);
-        menuButton = findViewById(R.id.btn_menu);
-        drawerLayout = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.navigation_view);
-        toolbar = findViewById(R.id.toolbar);
-
         // כברירת מחדל - השדות נעולים לעריכה
         setFieldsEditable(false);
-    }
-
-    private void setupDrawer() {
-        setSupportActionBar(toolbar);
-        toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar,
-                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        //menuButton.setOnClickListener(v -> drawerLayout.openDrawer(Gravity.LEFT));
-        navigationView.setNavigationItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            Class<?> targetActivity = NAV_MAP.get(itemId);
-
-            if (targetActivity != null) {
-                Intent intent = new Intent(ProfileActivity.this, targetActivity);
-                startActivity(intent);
-            } else {
-                Toast.makeText(this, "אין פעולה מתאימה", Toast.LENGTH_SHORT).show();
-            }
-
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        });
     }
 
     private void setupEditButton() {
@@ -235,6 +185,7 @@ public class ProfileActivity extends AppCompatActivity {
                         Toast.makeText(ProfileActivity.this, "Failed to load MBTI data", Toast.LENGTH_SHORT).show();}
                 });
     }
+
     private void loadSvgImage(String url, ImageView imageView) {
         RequestBuilder<PictureDrawable> requestBuilder = GlideApp.with(this)
                 .as(PictureDrawable.class)
@@ -244,5 +195,20 @@ public class ProfileActivity extends AppCompatActivity {
                 .placeholder(R.drawable.type_logo_placeholder)
                 .error(R.drawable.type_logo_placeholder)
                 .into(imageView);
+    }
+
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_profile;
+    }
+
+    @Override
+    protected int getDrawerMenuItemId() {
+        return 0;  // אין בחירה בתפריט הצד עבור פרופיל
+    }
+
+    @Override
+    protected int getBottomMenuItemId() {
+        return R.id.navigation_profile;  // עכשיו עובד לפי ה־navigation_ שלך
     }
 }

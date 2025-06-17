@@ -9,148 +9,96 @@
     android:paddingTop="8dp"
     android:paddingBottom="8dp">
 
-    <!-- מכולה ראשונה (Home) -->
-    <FrameLayout
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/navigation_home"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:foreground="?attr/selectableItemBackgroundBorderless"
-        android:paddingTop="4dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:paddingTop="8dp"
         android:paddingBottom="4dp"
-        android:clickable="false">
+        android:background="@drawable/nav_button_bg_selector"
+        app:backgroundTint="@null"
+        android:text="Home"
+        android:textSize="12sp"
+        android:textAllCaps="false"
+        android:textColor="@color/nav_text_tint_selector"
+        app:icon="@drawable/ic_home"
+        app:iconTint="@color/nav_icon_tint_selector"
+        app:iconGravity="textTop"
+        app:iconSize="24dp"
+        android:gravity="center"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/navigation_home"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="4dp"
-            android:background="@drawable/nav_button_bg_selector"
-            app:backgroundTint="@null"
-            android:text="Home"
-            android:textSize="12sp"
-            android:textAllCaps="false"
-            android:textColor="@color/nav_text_tint_selector"
-            app:icon="@drawable/ic_home"
-            app:iconTint="@color/nav_icon_tint_selector"
-            app:iconGravity="textTop"
-            app:iconSize="24dp"
-            android:gravity="center"
-            android:layout_gravity="center" />
-    </FrameLayout>
-
-    <!-- מכולה שנייה (Profile) -->
-    <FrameLayout
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/navigation_profile"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:foreground="?attr/selectableItemBackgroundBorderless"
-        android:paddingTop="4dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:paddingTop="8dp"
         android:paddingBottom="4dp"
-        android:clickable="false">
+        android:background="@drawable/nav_button_bg_selector"
+        app:backgroundTint="@null"
+        android:text="Profile"
+        android:textSize="12sp"
+        android:textAllCaps="false"
+        android:textColor="@color/nav_text_tint_selector"
+        app:icon="@drawable/ic_profile"
+        app:iconTint="@color/nav_icon_tint_selector"
+        app:iconGravity="textTop"
+        app:iconSize="24dp"
+        android:gravity="center"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/navigation_profile"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="4dp"
-            android:background="@drawable/nav_button_bg_selector"
-            app:backgroundTint="@null"
-            android:text="Profile"
-            android:textSize="12sp"
-            android:textAllCaps="false"
-            android:textColor="@color/nav_text_tint_selector"
-            app:icon="@drawable/ic_profile"
-            app:iconTint="@color/nav_icon_tint_selector"
-            app:iconGravity="textTop"
-            app:iconSize="24dp"
-            android:gravity="center"
-            android:layout_gravity="center" />
-    </FrameLayout>
-
-    <!-- מכולה שלישית (Chats) -->
-    <FrameLayout
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/navigation_chats"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:foreground="?attr/selectableItemBackgroundBorderless"
-        android:paddingTop="4dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:paddingTop="8dp"
         android:paddingBottom="4dp"
-        android:clickable="false">
+        android:background="@drawable/nav_button_bg_selector"
+        app:backgroundTint="@null"
+        android:text="Chats"
+        android:textSize="12sp"
+        android:textAllCaps="false"
+        android:textColor="@color/nav_text_tint_selector"
+        app:icon="@drawable/ic_chats"
+        app:iconTint="@color/nav_icon_tint_selector"
+        app:iconGravity="textTop"
+        app:iconSize="24dp"
+        android:gravity="center"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/navigation_chats"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="4dp"
-            android:background="@drawable/nav_button_bg_selector"
-            app:backgroundTint="@null"
-            android:text="Chats"
-            android:textSize="12sp"
-            android:textAllCaps="false"
-            android:textColor="@color/nav_text_tint_selector"
-            app:icon="@drawable/ic_chats"
-            app:iconTint="@color/nav_icon_tint_selector"
-            app:iconGravity="textTop"
-            app:iconSize="24dp"
-            android:gravity="center"
-            android:layout_gravity="center" />
-    </FrameLayout>
-
-    <!-- מכולה רביעית (Notifications) -->
-    <FrameLayout
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/navigation_notifications"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:foreground="?attr/selectableItemBackgroundBorderless"
-        android:paddingTop="4dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:paddingTop="8dp"
         android:paddingBottom="4dp"
-        android:clickable="false">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/navigation_notifications"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="4dp"
-            android:background="@drawable/nav_button_bg_selector"
-            app:backgroundTint="@null"
-            android:text="Notifications"
-            android:textSize="12sp"
-            android:textAllCaps="false"
-            android:textColor="@color/nav_text_tint_selector"
-            app:icon="@drawable/ic_notifications"
-            app:iconTint="@color/nav_icon_tint_selector"
-            app:iconGravity="textTop"
-            app:iconSize="24dp"
-            android:gravity="center"
-            android:layout_gravity="center" />
-    </FrameLayout>
+        android:background="@drawable/nav_button_bg_selector"
+        app:backgroundTint="@null"
+        android:text="Notifications"
+        android:textSize="12sp"
+        android:textAllCaps="false"
+        android:textColor="@color/nav_text_tint_selector"
+        app:icon="@drawable/ic_notifications"
+        app:iconTint="@color/nav_icon_tint_selector"
+        app:iconGravity="textTop"
+        app:iconSize="24dp"
+        android:gravity="center"/>
 
 </LinearLayout>

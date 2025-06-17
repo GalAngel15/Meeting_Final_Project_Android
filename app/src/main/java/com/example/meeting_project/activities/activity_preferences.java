@@ -27,7 +27,7 @@ import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.boundaries.UserPreferencesBoundary;
 import com.example.meeting_project.enums.Gender;
 import com.example.meeting_project.managers.AppManager;
-import com.example.meeting_project.managers.NevigationActivity;
+import com.example.meeting_project.managers.BaseNavigationActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
 
@@ -35,13 +35,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class activity_preferences extends AppCompatActivity {
-
-    private DrawerLayout drawerLayout;
-    private NavigationView navigationView;
-    private Toolbar toolbar;
-    private ImageButton btnMenu;
-    private ActionBarDrawerToggle toggle;
+public class activity_preferences extends BaseNavigationActivity {
 
     private EditText editTextYearFrom, editTextYearTo;
     private RadioGroup radioGroupGender;
@@ -58,20 +52,11 @@ public class activity_preferences extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_preferences);
+        //setContentView(R.layout.activity_preferences);
         AppManager.setContext(getApplicationContext());
 
-        // bind views
-        drawerLayout = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.navigation_view);
-        toolbar = findViewById(R.id.toolbar);
-        btnMenu = findViewById(R.id.btn_menu);
-        editTextYearFrom = findViewById(R.id.editTextYearFrom);
-        editTextYearTo = findViewById(R.id.editTextYearTo);
-        radioGroupGender = findViewById(R.id.radioGroupGender);
-        seekBarDistance = findViewById(R.id.seekBarDistance);
-        textViewDistanceValue = findViewById(R.id.textViewDistanceValue);
-        buttonSavePreferences = findViewById(R.id.buttonSavePreferences);
+        initViews();
+
 
         // init APIs
         userApi = User_ApiClient.getRetrofitInstance().create(UserApi.class);
@@ -83,7 +68,6 @@ public class activity_preferences extends AppCompatActivity {
         isEditing = !isLoggedIn; // guests edit immediately, logged users locked
 
         // configure navigation and form after login check
-        configureNavigation();
         configureFormState();
 
         // if logged in, fetch user to validate session then lock fields
@@ -97,14 +81,12 @@ public class activity_preferences extends AppCompatActivity {
                         isLoggedIn = false;
                         isEditing = true;
                         Toast.makeText(activity_preferences.this, "Session invalid", Toast.LENGTH_LONG).show();
-                        configureNavigation();
                     }
                     configureFormState();
                 }
                 @Override public void onFailure(Call<UserBoundary> call, Throwable t) {
                     isLoggedIn = false;
                     isEditing = true;
-                    configureNavigation();
                     configureFormState();
                 }
             });
@@ -129,23 +111,13 @@ public class activity_preferences extends AppCompatActivity {
         });
     }
 
-    private void configureNavigation() {
-        if (isLoggedIn) {
-            setSupportActionBar(toolbar);
-            btnMenu.setVisibility(View.VISIBLE);
-            navigationView.setVisibility(View.VISIBLE);
-            NevigationActivity.findNevigationButtens(this);
-
-            btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
-            toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar,
-                    R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-            drawerLayout.addDrawerListener(toggle);
-            toggle.syncState();
-        } else {
-            btnMenu.setVisibility(View.GONE);
-            navigationView.setVisibility(View.GONE);
-            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
-        }
+    private void initViews() {
+        editTextYearFrom = findViewById(R.id.editTextYearFrom);
+        editTextYearTo = findViewById(R.id.editTextYearTo);
+        radioGroupGender = findViewById(R.id.radioGroupGender);
+        seekBarDistance = findViewById(R.id.seekBarDistance);
+        textViewDistanceValue = findViewById(R.id.textViewDistanceValue);
+        buttonSavePreferences = findViewById(R.id.buttonSavePreferences);
     }
 
     private void configureFormState() {
@@ -202,5 +174,20 @@ public class activity_preferences extends AppCompatActivity {
                 Toast.makeText(activity_preferences.this, "שגיאה ברשת", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_preferences;
+    }
+
+    @Override
+    protected int getDrawerMenuItemId() {
+        return R.id.nav_edit_preferences;
+    }
+
+    @Override
+    protected int getBottomMenuItemId() {
+        return 0;
     }
 }
