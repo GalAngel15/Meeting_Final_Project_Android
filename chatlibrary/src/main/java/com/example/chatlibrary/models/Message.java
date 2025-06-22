@@ -2,7 +2,7 @@ package com.example.chatlibrary.models;
 
 public class Message {
     private String id;
-    private String chatId;
+    private Long chat;
     private String senderId;
     private String receiverId;
     private String content;
@@ -16,12 +16,12 @@ public class Message {
         this.id = id;
     }
 
-    public String getChatId() {
-        return chatId;
+    public Long getChat() {
+        return chat;
     }
 
-    public void setChatId(String chatId) {
-        this.chatId = chatId;
+    public void setChat(Long chat) {
+        this.chat = chat;
     }
 
     public String getSenderId() {
