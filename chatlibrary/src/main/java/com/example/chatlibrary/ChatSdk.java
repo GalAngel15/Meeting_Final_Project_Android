@@ -26,13 +26,6 @@ public class ChatSdk {
         return instance;
     }
 
-    public void registerUser(String username, String passwordHash, Callback<User> callback) {
-        apiService.registerUser(username, passwordHash).enqueue(callback);
-    }
-
-    public void loginUser(String username, String password, Callback<User> callback) {
-        apiService.loginUser(username, password).enqueue(callback);
-    }
     public void loadUser(String userId, Callback<User> callback){
         apiService.getUserById(userId).enqueue(callback);
     }

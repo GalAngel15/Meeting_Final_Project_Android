@@ -87,6 +87,7 @@ public class ChooseUserForChat extends AppCompatActivity
                 } else {
                     Toast.makeText(ChooseUserForChat.this,
                             "שגיאה ביצירת/פתיחת שיחה (" + r.code() + ")", Toast.LENGTH_SHORT).show();
+                    Log.e("ChooseUser", "createChat failed: " + r.code());
                 }
             }
 

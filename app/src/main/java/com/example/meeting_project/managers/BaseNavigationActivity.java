@@ -18,6 +18,7 @@ import com.example.meeting_project.activities.Activity_personality_result;
 import com.example.meeting_project.activities.Activity_questionnaire;
 import com.example.meeting_project.activities.AlertsActivity;
 import com.example.meeting_project.activities.ChooseUserForChat;
+import com.example.meeting_project.activities.Conversations;
 import com.example.meeting_project.activities.HomeActivity;
 import com.example.meeting_project.activities.ProfileActivity;
 import com.example.meeting_project.activities.activity_preferences;
@@ -49,7 +50,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity {
 
         bottomMap.put(R.id.navigation_home, HomeActivity.class);
         bottomMap.put(R.id.navigation_profile, ProfileActivity.class);
-        bottomMap.put(R.id.navigation_chats, ChooseUserForChat.class);
+        bottomMap.put(R.id.navigation_chats, Conversations.class);
         bottomMap.put(R.id.navigation_notifications, AlertsActivity.class);
     }
 

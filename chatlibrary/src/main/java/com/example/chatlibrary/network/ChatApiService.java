@@ -11,27 +11,29 @@ import retrofit2.http.*;
 
 public interface ChatApiService {
 
-    // User APIs
-    @POST("/users/register")
-    Call<User> registerUser(@Query("username") String username,
-                            @Query("passwordHash") String passwordHash);
 
-    @GET("/users/login")
-    Call<User> loginUser(@Query("username") String username,
-                         @Query("password") String password);
-
+    // Load user by ID
     @GET("/users/loadUser")
     Call<User> getUserById(@Query("userId") String userId);
 
+    // Update user status (e.g., online/offline)
+    @PUT("/users/update-status")
+    Call<User> updateUserStatus(@Query("id") String userId,
+                                @Query("status") String status);
+
+    // Set user offline (logout)
     @PUT("/users/logout")
     Call<User> logoutUser(@Query("id") String userId);
 
+    // Get all users
     @GET("/users/get-all-users")
     Call<List<User>> getAllUsers();
 
-    // Chat APIs
+    // --- Chat APIs ---
+
     @POST("/chats/create")
-    Call<Chat> createChat(@Query("user1Id") String user1Id, @Query("user2Id") String user2Id);
+    Call<Chat> createChat(@Query("user1Id") String user1Id,
+                          @Query("user2Id") String user2Id);
 
     @GET("/chats/{chatId}")
     Call<Chat> getChatById(@Path("chatId") Long chatId);
@@ -39,7 +41,8 @@ public interface ChatApiService {
     @GET("/chats/get-all-chats-of-user/{userId}")
     Call<List<Chat>> getChatsForUser(@Path("userId") String userId);
 
-    // Message APIs
+    // --- Message APIs ---
+
     @POST("/messages/send")
     Call<Message> sendMessage(@Query("chatId") Long chatId,
                               @Query("senderId") String senderId,
