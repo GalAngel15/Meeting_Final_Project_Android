@@ -17,13 +17,15 @@ import com.example.meeting_project.R;
 import com.example.meeting_project.adapters.ConversationAdapter;
 import com.example.meeting_project.boundaries.UserBoundary;
 import com.example.meeting_project.managers.AppManager;
+import com.example.meeting_project.managers.BaseNavigationActivity;
+
 import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class Conversations extends AppCompatActivity {
+public class Conversations extends BaseNavigationActivity {
 
     private RecyclerView recyclerView;
     private LinearLayout emptyState;
@@ -83,7 +85,6 @@ public class Conversations extends AppCompatActivity {
                 });
     }
 
-
     /** מציג מסך ריק + כפתור "פתח צ'אט חדש" */
     private void showEmptyState() {
         recyclerView.setVisibility(View.GONE);
@@ -95,5 +96,21 @@ public class Conversations extends AppCompatActivity {
         emptyState.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
         recyclerView.setAdapter(new ConversationAdapter(chats));
+    }
+
+
+    @Override
+    protected int getLayoutResourceId() {
+        return R.layout.activity_conversations;
+    }
+
+    @Override
+    protected int getDrawerMenuItemId() {
+        return 0;
+    }
+
+    @Override
+    protected int getBottomMenuItemId() {
+        return R.id.navigation_chats;
     }
 }
