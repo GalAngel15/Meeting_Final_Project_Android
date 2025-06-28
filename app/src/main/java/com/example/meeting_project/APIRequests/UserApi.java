@@ -90,5 +90,11 @@ public interface UserApi {
 
     @GET("users/matches/{userId}/potential")
     Call<List<UserBoundary>> getPotentialMatches(@Path("userId") String userId);
+
+    @PUT("users/like/{userId}/{likedUserId}")
+    Call<String> likeUser(
+            @Path("userId") String userId,
+            @Path("likedUserId") String likedUserId
+    );
 }
 
