@@ -116,6 +116,7 @@ public class ChatActivity extends AppCompatActivity {
     /* -------------------------------------------------------------------- */
 
     private void createOrGetChat() {
+        Log.d("CHAT", "Creating or getting chat for user: " + currentUserId + " with receiver: " + receiverId);
         api.createChat(currentUserId, receiverId).enqueue(new Callback<Chat>() {
             @Override public void onResponse(Call<Chat> call, Response<Chat> res) {
                 if (res.isSuccessful() && res.body() != null) {
@@ -159,7 +160,8 @@ public class ChatActivity extends AppCompatActivity {
             Toast.makeText(this, "Chat not ready", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        Log.d("CHAT", "Sending message: " + content + " in chat: " + chatId +
+                " from: " + currentUserId + " to: " + receiverId);
         api.sendMessage(chatId, currentUserId, receiverId, content).enqueue(new Callback<Message>() {
             @Override public void onResponse(Call<Message> call, Response<Message> res) {
                 if (res.isSuccessful() && res.body() != null) {
