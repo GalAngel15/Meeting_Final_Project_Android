@@ -81,7 +81,8 @@ public class ChatActivity extends AppCompatActivity {
         String otherImage = getIntent().getStringExtra("user_image");
         chatId            = getIntent().getLongExtra("chat_id", -1L);
         receiverId        = getIntent().getStringExtra("receiver_id");
-
+        Log.d("CHAT", "ChatActivity started with chatId: " + chatId +
+                ", receiverId: " + receiverId + ", otherName: " + otherName);
         currentUserId = AppManager.getAppUser().getId();
 
         /* ----- UI init ---- */
