@@ -47,7 +47,7 @@ public class ChatActivity extends AppCompatActivity {
     private final List<Message> messageList = new ArrayList<>();
     private ChatMessageAdapter messageAdapter;
 
-    private Long chatId;          // מזהה הצ'אט בבסיס הנתונים
+    private String chatId;          // מזהה הצ'אט בבסיס הנתונים
     private String receiverId;    // ID של הצד השני בצ'אט
     private String currentUserId; // ID של המשתמש המחובר
 
@@ -79,7 +79,7 @@ public class ChatActivity extends AppCompatActivity {
         /* ----- Intent extras ---- */
         String otherName  = getIntent().getStringExtra("user_name");
         String otherImage = getIntent().getStringExtra("user_image");
-        chatId            = getIntent().getLongExtra("chat_id", -1L);
+        chatId = getIntent().getStringExtra("chat_id");
         receiverId        = getIntent().getStringExtra("receiver_id");
         Log.d("CHAT", "ChatActivity started with chatId: " + chatId +
                 ", receiverId: " + receiverId + ", otherName: " + otherName);
@@ -100,7 +100,7 @@ public class ChatActivity extends AppCompatActivity {
         api = RetrofitClient.getInstance().create(ChatApiService.class);
 
         /* ----- Load or create chat ---- */
-        if (chatId == -1L) {
+        if (chatId == null || chatId.isEmpty()) {
             createOrGetChat();
         } else {
             loadMessages();
@@ -135,7 +135,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void loadMessages() {
-        if (chatId == null || chatId == -1L) return;
+        if (chatId == null || chatId.isEmpty()) return;
         api.getMessagesByChatId(chatId).enqueue(new Callback<List<Message>>() {
             @Override public void onResponse(Call<List<Message>> call, Response<List<Message>> res) {
                 if (res.isSuccessful() && res.body() != null) {
@@ -157,7 +157,7 @@ public class ChatActivity extends AppCompatActivity {
             messageInput.setError("Message cannot be empty");
             return;
         }
-        if (chatId == null || chatId == -1L) {
+        if (chatId == null || chatId.isEmpty()) {
             Toast.makeText(this, "Chat not ready", Toast.LENGTH_SHORT).show();
             return;
         }

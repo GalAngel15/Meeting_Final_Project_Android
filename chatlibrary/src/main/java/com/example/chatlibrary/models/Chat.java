@@ -3,18 +3,18 @@ package com.example.chatlibrary.models;
 import java.util.ArrayList;
 
 public class Chat {
-    private Long id;
+    private String id;
     private String user1Id;
     private String username1;
     private String user2Id;
     private String username2;
     private ArrayList<Message> allMessages;
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

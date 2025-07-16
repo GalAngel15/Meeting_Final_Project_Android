@@ -4,19 +4,19 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class ChatBoundary {
-    private Long id;
+    private String id;
     private ArrayList<MessageBoundary> messages;
 
-    public ChatBoundary(Long id, ArrayList<MessageBoundary> messages) {
+    public ChatBoundary(String  id, ArrayList<MessageBoundary> messages) {
         this.id = id;
         this.messages = messages;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public ChatBoundary setId(Long id) {
+    public ChatBoundary setId(String id) {
         this.id = id;
         return this;
     }

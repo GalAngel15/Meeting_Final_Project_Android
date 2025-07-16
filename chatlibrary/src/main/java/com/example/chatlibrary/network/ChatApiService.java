@@ -36,7 +36,7 @@ public interface ChatApiService {
                           @Query("user2Id") String user2Id);
 
     @GET("/chats/{chatId}")
-    Call<Chat> getChatById(@Path("chatId") Long chatId);
+    Call<Chat> getChatById(@Path("chatId") String chatId);
 
     @GET("/chats/get-all-chats-of-user/{userId}")
     Call<List<Chat>> getChatsForUser(@Path("userId") String userId);
@@ -44,11 +44,11 @@ public interface ChatApiService {
     // --- Message APIs ---
 
     @POST("/messages/send")
-    Call<Message> sendMessage(@Query("chatId") Long chatId,
+    Call<Message> sendMessage(@Query("chatId") String chatId,
                               @Query("senderId") String senderId,
                               @Query("receiverId") String receiverId,
                               @Query("content") String content);
 
     @GET("/messages/messages-in-chat/{chatId}")
-    Call<List<Message>> getMessagesByChatId(@Path("chatId") Long chatId);
+    Call<List<Message>> getMessagesByChatId(@Path("chatId") String chatId);
 }

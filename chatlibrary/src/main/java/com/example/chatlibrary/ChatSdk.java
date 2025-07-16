@@ -42,11 +42,11 @@ public class ChatSdk {
         apiService.createChat(user1Id, user2Id).enqueue(callback);
     }
 
-    public void sendMessage(Long chatId, String senderId, String receiverId, String content, Callback<Message> callback) {
+    public void sendMessage(String chatId, String senderId, String receiverId, String content, Callback<Message> callback) {
         apiService.sendMessage(chatId, senderId, receiverId, content).enqueue(callback);
     }
 
-    public void getMessagesByChatId(Long chatId, Callback<List<Message>> callback) {
+    public void getMessagesByChatId(String chatId, Callback<List<Message>> callback) {
         apiService.getMessagesByChatId(chatId).enqueue(callback);
     }
 
