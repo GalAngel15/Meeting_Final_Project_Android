@@ -42,6 +42,8 @@ import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import android.util.Log;
+
 
 public class HomeActivity extends BaseNavigationActivity {
     private String loggedInUserId;
@@ -88,6 +90,7 @@ public class HomeActivity extends BaseNavigationActivity {
 
     private void loadUserData() {
         String serverId = UserSessionManager.getServerUserId(this);
+        Log.d("HomeActivity", "Loading user data for server ID: " + serverId);
         if (serverId == null) {
             Toast.makeText(this, "לא נמצא מזהה משתמש", Toast.LENGTH_SHORT).show();
             return;
@@ -98,6 +101,7 @@ public class HomeActivity extends BaseNavigationActivity {
             @Override
             public void onResponse(Call<UserBoundary> call, Response<UserBoundary> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    Log.d("HomeActivity", "User loaded successfully: " + response.body().getFirstName());
                     bindUser(response.body());
                 }
             }
@@ -105,6 +109,7 @@ public class HomeActivity extends BaseNavigationActivity {
             @Override
             public void onFailure(Call<UserBoundary> call, Throwable t) {
                 Toast.makeText(HomeActivity.this, "שגיאה בטעינת פרופיל", Toast.LENGTH_SHORT).show();
+                Log.e("HomeActivity", "Failed to load user profile", t);
             }
         });
     }
@@ -117,6 +122,7 @@ public class HomeActivity extends BaseNavigationActivity {
     }
 
     private void preloadQuestionCategories() {
+        Log.d("HomeActivity", "Loading question categories");
         QuestionsApi api = Question_ApiClient
                 .getRetrofitInstance()
                 .create(QuestionsApi.class);
@@ -128,6 +134,7 @@ public class HomeActivity extends BaseNavigationActivity {
                     for (QuestionsBoundary q : r.body()) {
                         questionCategoryMap.put(q.getId(), q.getQuestionCategory());
                     }
+                    Log.d("HomeActivity", "Loaded " + r.body().size() + " question categories");
                 }
                 else {
                     Toast.makeText(HomeActivity.this, "שגיאה בטעינת קטגוריות שאלות", Toast.LENGTH_SHORT).show();
@@ -144,12 +151,14 @@ public class HomeActivity extends BaseNavigationActivity {
     private void fetchAndJoinMatches(String userIdLogin) {
         UserApi userApi = User_ApiClient.getRetrofitInstance().create(UserApi.class);
         MatchApi matchApi = Match_ApiClient.getRetrofitInstance().create(MatchApi.class);
+        Log.d("HomeActivity", "Fetching potential matches for userId: " + userIdLogin);
 
         userApi.getPotentialMatches(userIdLogin).enqueue(new Callback<List<UserBoundary>>() {
             @Override
             public void onResponse(Call<List<UserBoundary>> call, Response<List<UserBoundary>> userResponse) {
                 if (userResponse.isSuccessful() && userResponse.body() != null) {
                     potentialMatchesList = userResponse.body();
+                    Log.d("HomeActivity", "Potential matches loaded: " + potentialMatchesList.size());
 
                     matchApi.getMatchesByUserId(userIdLogin).enqueue(new Callback<List<MatchPercentageBoundary>>() {
                         @Override
@@ -161,22 +170,32 @@ public class HomeActivity extends BaseNavigationActivity {
                                     String otherUserId = userIdLogin.equals(mp.getUserId1()) ? mp.getUserId2() : mp.getUserId1();
                                     matchPercentageMap.put(otherUserId, mp);
                                 }
+                                Log.d("HomeActivity", "Match percentages loaded: " + matchPercentages.size());
                                 currentMatchIndex = 0;
-                                if (!potentialMatchesList.isEmpty())
+                                if (!potentialMatchesList.isEmpty()){
+                                    Log.d("HomeActivity", "Displaying first match");
                                     displayMatch(potentialMatchesList.get(currentMatchIndex));
-                                else
+                                } else{
+                                    Log.d("HomeActivity", "No matches to display");
                                     Toast.makeText(HomeActivity.this, "אין התאמות כרגע", Toast.LENGTH_SHORT).show();
+                                }
+                            }else {
+                                Log.e("HomeActivity", "Failed to load match percentages");
                             }
                         }
                         @Override
                         public void onFailure(Call<List<MatchPercentageBoundary>> call, Throwable t) {
+                            Log.e("HomeActivity", "Error loading match percentages", t);
                             Toast.makeText(HomeActivity.this, "שגיאה בטעינת אחוזי התאמה", Toast.LENGTH_SHORT).show();
                         }
                     });
+                }else {
+                    Log.e("HomeActivity", "Failed to load potential matches");
                 }
             }
             @Override
             public void onFailure(Call<List<UserBoundary>> call, Throwable t) {
+                Log.e("HomeActivity", "Error fetching potential matches", t);
                 Toast.makeText(HomeActivity.this, "שגיאה בטעינת התאמות", Toast.LENGTH_SHORT).show();
             }
         });
@@ -185,6 +204,7 @@ public class HomeActivity extends BaseNavigationActivity {
     // ===================== הצגת כרטיס התאמה =====================
     // 2. מציג את הכרטיס של ההתאמה הנוכחית
     private void displayMatch(UserBoundary match) {
+        Log.d("HomeActivity", "Displaying match: " + match.getFirstName() + " " + match.getLastName());
         displayProfileImage(match.getProfilePhotoUrl());
         displayName(match.getFirstName(), match.getLastName());
         displayMbtiType(match.getMbtiType());
@@ -215,6 +235,7 @@ public class HomeActivity extends BaseNavigationActivity {
 
     private void loadMbtiData(String userId, ImageView logoImageView) {
         MbtiServiceApi mbtiApi = MbtiService_ApiClient.getRetrofitInstance().create(MbtiServiceApi.class);
+        Log.d("HomeActivity", "Loading MBTI data for user: " + userId);
         mbtiApi.getProfileByUserId(userId).enqueue(new Callback<MbtiBoundary>() {
             @Override
             public void onResponse(Call<MbtiBoundary> call, Response<MbtiBoundary> response) {
@@ -222,6 +243,7 @@ public class HomeActivity extends BaseNavigationActivity {
                     String characteristicsJson = response.body().getCharacteristics();
                     SubmitResponse submitResponse = new Gson().fromJson(characteristicsJson, SubmitResponse.class);
                     if (submitResponse != null && submitResponse.getAvatarSrcStatic() != null) {
+                        Log.d("HomeActivity", "Loaded MBTI avatar: " + submitResponse.getAvatarSrcStatic());
                         loadSvgImage(submitResponse.getAvatarSrcStatic(), logoImageView);
                     } else {
                         logoImageView.setImageResource(R.drawable.type_logo_placeholder);
@@ -268,6 +290,7 @@ public class HomeActivity extends BaseNavigationActivity {
     }
 
     private void showNextMatch() {
+        Log.d("HomeActivity", "Moving to next match. Current index: " + currentMatchIndex);
         currentMatchIndex++;
         if (currentMatchIndex < potentialMatchesList.size()) {
             displayMatch(potentialMatchesList.get(currentMatchIndex));
@@ -280,7 +303,7 @@ public class HomeActivity extends BaseNavigationActivity {
     // =========== הצגת פרטי שאלון/אישיים ============
     private void fetchAndBindPersonalDetails(String serverId) {
         AnswersApi answersApi = User_ApiClient.getRetrofitInstance().create(AnswersApi.class);
-
+        Log.d("HomeActivity", "Fetching personal details for user: " + serverId);
         answersApi.getUserAnswers(serverId).enqueue(new Callback<List<UserAnswerBoundary>>() {
             @Override
             public void onResponse(Call<List<UserAnswerBoundary>> call, Response<List<UserAnswerBoundary>> resp) {
@@ -297,7 +320,7 @@ public class HomeActivity extends BaseNavigationActivity {
 
     private void bindPersonalDetails(List<UserAnswerBoundary> answers) {
         detailsLayout.removeAllViews();
-
+        Log.d("HomeActivity", "Binding " + answers.size() + " personal details");
         for (UserAnswerBoundary ans : answers) {
             String cat = questionCategoryMap.get(ans.getQuestionId());
             if (cat == null) continue;
@@ -370,6 +393,7 @@ public class HomeActivity extends BaseNavigationActivity {
 
     // =========== שליחת לייק ============
     private void sendLikeToServer(UserBoundary userBoundary) {
+        Log.d("HomeActivity", "Sending like from " + loggedInUserId + " to " + userBoundary.getId());
         UserApi userApi = User_ApiClient.getRetrofitInstance().create(UserApi.class);
         userApi.likeUser(loggedInUserId, userBoundary.getId()).enqueue(new Callback<String>() {
             @Override
