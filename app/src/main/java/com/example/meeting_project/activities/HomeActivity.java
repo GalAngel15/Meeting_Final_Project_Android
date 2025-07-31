@@ -205,7 +205,7 @@ public class HomeActivity extends BaseNavigationActivity {
     // 2. מציג את הכרטיס של ההתאמה הנוכחית
     private void displayMatch(UserBoundary match) {
         Log.d("HomeActivity", "Displaying match: " + match.getFirstName() + " " + match.getLastName());
-        displayProfileImage(match.getProfilePhotoUrl());
+        displayProfileImage(match.getGalleryUrls());
         displayName(match.getFirstName(), match.getLastName());
         displayMbtiType(match.getMbtiType());
         loadMbtiData(match.getId(), ivAvatar);
@@ -214,11 +214,15 @@ public class HomeActivity extends BaseNavigationActivity {
         fetchAndBindPersonalDetails(match.getId());
     }
 
-    private void displayProfileImage(String url) {
-        if (url != null && !url.isEmpty())
-            Glide.with(this).load(url).placeholder(R.drawable.ic_placeholder_profile).into(imageProfile);
-        else
+    private void displayProfileImage(List<String> galleryUrls) {
+        if (galleryUrls != null && !galleryUrls.isEmpty()) {
+            Glide.with(this)
+                    .load(galleryUrls.get(0))
+                    .placeholder(R.drawable.ic_placeholder_profile)
+                    .into(imageProfile);
+        } else {
             imageProfile.setImageResource(R.drawable.ic_placeholder_profile);
+        }
     }
 
     private void displayName(String first, String last) {
@@ -384,10 +388,9 @@ public class HomeActivity extends BaseNavigationActivity {
                 .as(PictureDrawable.class)
                 .listener(new SvgSoftwareLayerSetter());
 
-        requestBuilder
-                .load(url)
-                .centerInside()
-                .error(R.drawable.ic_error) // Replace with your error drawable
+        requestBuilder.load(url)
+                .placeholder(R.drawable.type_logo_placeholder)
+                .error(R.drawable.type_logo_placeholder)
                 .into(imageView);
     }
 
