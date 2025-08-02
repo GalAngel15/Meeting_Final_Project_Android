@@ -27,6 +27,8 @@ import com.example.meeting_project.objectOfMbtiTest.Question;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -52,11 +54,29 @@ public class Activity_quiz_mbti extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (UserSessionManager.getServerUserId(this) == null) {
-            Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
-            return;
+
+        String serverUserId = UserSessionManager.getServerUserId(this);
+        String firebaseUserId = UserSessionManager.getFirebaseUserId(this);
+
+        Log.d("QUIZ_MBTI", "Server userId: " + serverUserId);
+        Log.d("QUIZ_MBTI", "Firebase userId: " + firebaseUserId);
+        if (serverUserId == null) {
+            if (firebaseUserId != null) {
+                Log.d("QUIZ_MBTI", "Using Firebase UserId temporarily");
+                // אפשר להמשיך עם Firebase UserId
+            } else {
+                // אם אין שום UserId
+                FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+                if (currentUser != null) {
+                    Log.d("QUIZ_MBTI", "Saving Firebase UserId from current user");
+                    UserSessionManager.saveFirebaseUserId(this, currentUser.getUid());
+                } else {
+                    Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, LoginActivity.class));
+                    finish();
+                    return;
+                }
+            }
         }
         setContentView(R.layout.activity_quiz2);
         findView();

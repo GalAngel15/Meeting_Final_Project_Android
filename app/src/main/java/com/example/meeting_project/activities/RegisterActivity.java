@@ -322,6 +322,7 @@ public class RegisterActivity extends AppCompatActivity {
                     String userIdFromServer = userResponse.getId();
                     Log.e("REGISTER", "User saved to database with ID: " + userIdFromServer);
                     UserSessionManager.saveUserId(RegisterActivity.this, userIdFromServer);
+                    UserSessionManager.saveFirebaseUserId(RegisterActivity.this, mAuth.getCurrentUser().getUid());
                 } else {
                     Log.e("REGISTER", "Failed to save user to database: " + response.message());
                 }
