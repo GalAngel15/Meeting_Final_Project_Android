@@ -97,13 +97,13 @@ public class ProfileActivity extends BaseNavigationActivity {
     }
 
     private void setFieldsEditable(boolean editable) {
-        etFirstName.setEnabled(editable);
-        etLastName.setEnabled(editable);
+        etFirstName.setEnabled(false);
+        etLastName.setEnabled(false);
         etPersonalityType.setEnabled(false); // שדה זה תמיד לא ניתן לעריכה
         etEmail.setEnabled(editable);
         etPhone.setEnabled(editable);
-        etDob.setEnabled(editable);
-        etGender.setEnabled(editable);
+        etDob.setEnabled(false);
+        etGender.setEnabled(false);
     }
 
     private void saveProfileChanges() {

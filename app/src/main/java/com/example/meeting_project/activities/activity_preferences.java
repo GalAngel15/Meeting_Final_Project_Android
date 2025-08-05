@@ -77,6 +77,7 @@ public class activity_preferences extends BaseNavigationActivity {
                 public void onResponse(Call<UserBoundary> call, Response<UserBoundary> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         isEditing = false; // lock after validation
+                        fetchUserPreferences();
                     } else {
                         isLoggedIn = false;
                         isEditing = true;
@@ -175,6 +176,47 @@ public class activity_preferences extends BaseNavigationActivity {
             }
         });
     }
+
+    private void fetchUserPreferences() {
+        preferencesApi.getUserPreferencesByUserId(userId).enqueue(new Callback<UserPreferencesBoundary>() {
+            @Override
+            public void onResponse(Call<UserPreferencesBoundary> call, Response<UserPreferencesBoundary> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    populatePreferencesFields(response.body());
+                } else {
+                    Log.d("Preferences", "No preferences found or failed to load");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserPreferencesBoundary> call, Throwable t) {
+                Log.e("Preferences", "Failed to fetch preferences: " + t.getMessage());
+            }
+        });
+    }
+
+    private void populatePreferencesFields(UserPreferencesBoundary prefs) {
+        editTextYearFrom.setText(String.valueOf(prefs.getMinYear()));
+        editTextYearTo.setText(String.valueOf(prefs.getMaxYear()));
+        seekBarDistance.setProgress(prefs.getPreferredMaxDistanceKm() != null ? prefs.getPreferredMaxDistanceKm() : 0);
+        textViewDistanceValue.setText(seekBarDistance.getProgress() + " ק״מ");
+
+        // הגדרת כפתור המגדר לפי העדפת המשתמש
+        Gender gender = prefs.getPreferredGender();
+        if (gender != null) {
+            for (int i = 0; i < radioGroupGender.getChildCount(); i++) {
+                View child = radioGroupGender.getChildAt(i);
+                if (child instanceof RadioButton) {
+                    RadioButton radio = (RadioButton) child;
+                    if (radio.getTag() != null && radio.getTag().equals(gender.name())) {
+                        radio.setChecked(true);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
 
     @Override
     protected int getLayoutResourceId() {
