@@ -2,6 +2,7 @@ package com.example.meeting_project.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -35,7 +36,6 @@ public class Conversations extends BaseNavigationActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversations);
-
         recyclerView = findViewById(R.id.conversations_recycler_view);
         emptyState   = findViewById(R.id.empty_state);
         btnStartChat = findViewById(R.id.btn_start_chat);
