@@ -1,22 +1,28 @@
 package com.example.meeting_project.activities;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
-import android.util.Log;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.example.meeting_project.R;
 import com.example.meeting_project.UserSessionManager;
@@ -26,6 +32,8 @@ import com.example.meeting_project.boundaries.UserResponse;
 import com.example.meeting_project.APIRequests.UserApi;
 import com.example.meeting_project.managers.AppManager;
 import com.example.meeting_project.managers.ImageUploadManager;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -33,6 +41,7 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
+import java.io.IOException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,6 +52,7 @@ import java.util.Locale;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 public class RegisterActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private EditText editTextUsername, editTextEmail, editTextPhone;
@@ -53,8 +63,16 @@ public class RegisterActivity extends AppCompatActivity {
     private Calendar selectedBirthdate;
     private ImageView btnUploadImage;
     //private Uri selectedImageUri = null;
-    private static final int MAX_IMAGES = 5;
+    private EditText locationDisplay;
+    private MaterialButton btnCurrentLocation, btnSelectOnMap;
+    private FusedLocationProviderClient fusedLocationClient;
+    private double selectedLatitude = 0.0;
+    private double selectedLongitude = 0.0;
+    private boolean locationSelected = false;
+    private Geocoder geocoder;
 
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+    private static final int MAX_IMAGES = 5;
     private final ArrayList<Uri> selectedImageUris = new ArrayList<>();
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
@@ -73,13 +91,30 @@ public class RegisterActivity extends AppCompatActivity {
                     Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
                 }
             });
+    private final ActivityResultLauncher<Intent> mapSelectionLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Intent data = result.getData();
+                    selectedLatitude = data.getDoubleExtra("latitude", 0.0);
+                    selectedLongitude = data.getDoubleExtra("longitude", 0.0);
+                    String address = data.getStringExtra("address");
 
+                    if (address != null) {
+                        locationDisplay.setText(address);
+                    } else {
+                        locationDisplay.setText(String.format("Lat: %.4f, Lng: %.4f", selectedLatitude, selectedLongitude));
+                    }
+                    locationSelected = true;
+                }
+            });
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
         mAuth = FirebaseAuth.getInstance();
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        geocoder = new Geocoder(this, Locale.getDefault());
         initViews();
         initButtons();
         AppManager.setContext(this.getApplicationContext());
@@ -98,6 +133,9 @@ public class RegisterActivity extends AppCompatActivity {
         editTextBirthdate = findViewById(R.id.birthdate);
         selectedBirthdate = Calendar.getInstance();
         btnUploadImage = findViewById(R.id.profile_placeholder);
+        locationDisplay = findViewById(R.id.location_display);
+        btnCurrentLocation = findViewById(R.id.btn_current_location);
+        btnSelectOnMap = findViewById(R.id.btn_select_on_map);
     }
     private String getSelectedGender() {
         int selectedId = genderGroup.getCheckedRadioButtonId();
@@ -113,7 +151,73 @@ public class RegisterActivity extends AppCompatActivity {
         btnReturn.setOnClickListener(v -> navigateToVisitPage());
         editTextBirthdate.setOnClickListener(v -> showDatePickerDialog());
         btnUploadImage.setOnClickListener(v -> uploadImages());
+        btnCurrentLocation.setOnClickListener(v -> getCurrentLocation());
+        btnSelectOnMap.setOnClickListener(v -> openMapSelection());
     }
+
+    private void getCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            // בקשת הרשאות
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+            return;
+        }
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        selectedLatitude = location.getLatitude();
+                        selectedLongitude = location.getLongitude();
+                        locationSelected = true;
+
+                        // קבלת כתובת מהקואורדינטות
+                        getAddressFromCoordinates(selectedLatitude, selectedLongitude);
+                    } else {
+                        Toast.makeText(this, "Unable to get current location. Please try again or select on map.", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnFailureListener(this, e -> {
+                    Log.e("LOCATION", "Error getting location: " + e.getMessage());
+                    Toast.makeText(this, "Failed to get current location", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void getAddressFromCoordinates(double latitude, double longitude) {
+        try {
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            if (addresses != null && !addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                String addressText = address.getAddressLine(0);
+                locationDisplay.setText(addressText);
+            } else {
+                locationDisplay.setText(String.format("Lat: %.4f, Lng: %.4f", latitude, longitude));
+            }
+        } catch (IOException e) {
+            Log.e("GEOCODER", "Error getting address: " + e.getMessage());
+            locationDisplay.setText(String.format("Lat: %.4f, Lng: %.4f", latitude, longitude));
+        }
+    }
+
+    private void openMapSelection() {
+        Intent intent = new Intent(this, MapSelectionActivity.class);
+        mapSelectionLauncher.launch(intent);
+    }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocation();
+            } else {
+                Toast.makeText(this, "Location permission denied. Please select location on map.", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+
     private void showDatePickerDialog() {
         Calendar today = Calendar.getInstance();
         int year = today.get(Calendar.YEAR);
@@ -207,6 +311,10 @@ public class RegisterActivity extends AppCompatActivity {
         }
         if (selectedImageUris == null || selectedImageUris.isEmpty()) {
             showToast("Please select at least one image");
+            return false;
+        }
+        if (!locationSelected) {
+            showToast("Please select your location");
             return false;
         }
         return true;
@@ -303,7 +411,8 @@ public class RegisterActivity extends AppCompatActivity {
         user.setPassword(password);
         user.setPhoneNumber(phone);
         user.setDateOfBirth(sqlDate);
-
+        user.setLatitude(selectedLatitude);
+        user.setLongitude(selectedLongitude);
         if (imageUrls != null && !imageUrls.isEmpty()) {
             user.setGalleryUrls(imageUrls); // ודא שיש שדה כזה במחלקה
             user.setProfilePhotoUrl(imageUrls.get(0)); // אם יש לך שדה כזה

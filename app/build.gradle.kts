@@ -68,4 +68,7 @@ dependencies {
 //    implementation (libs.github.glide)
 //    annotationProcessor (libs.glide.compiler)
 //    implementation(platform(libs.google.firebase.bom))
+    //location
+    implementation (libs.play.services.maps)
+    implementation (libs.play.services.location)
 }
