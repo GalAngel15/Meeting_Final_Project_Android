@@ -66,8 +66,8 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText locationDisplay;
     private MaterialButton btnCurrentLocation, btnSelectOnMap;
     private FusedLocationProviderClient fusedLocationClient;
-    private double selectedLatitude = 0.0;
-    private double selectedLongitude = 0.0;
+    private Double selectedLatitude = 0.0;
+    private Double selectedLongitude = 0.0;
     private boolean locationSelected = false;
     private Geocoder geocoder;
 
@@ -98,7 +98,7 @@ public class RegisterActivity extends AppCompatActivity {
                     selectedLatitude = data.getDoubleExtra("latitude", 0.0);
                     selectedLongitude = data.getDoubleExtra("longitude", 0.0);
                     String address = data.getStringExtra("address");
-
+                    Log.e("MAP_SELECTION", "Selected location: Lat: " + selectedLatitude + ", Lng: " + selectedLongitude);
                     if (address != null) {
                         locationDisplay.setText(address);
                     } else {
@@ -137,6 +137,7 @@ public class RegisterActivity extends AppCompatActivity {
         btnCurrentLocation = findViewById(R.id.btn_current_location);
         btnSelectOnMap = findViewById(R.id.btn_select_on_map);
     }
+
     private String getSelectedGender() {
         int selectedId = genderGroup.getCheckedRadioButtonId();
         if (selectedId != -1) {
@@ -185,13 +186,16 @@ public class RegisterActivity extends AppCompatActivity {
                 });
     }
 
-    private void getAddressFromCoordinates(double latitude, double longitude) {
+    private void getAddressFromCoordinates(Double latitude, Double longitude) {
         try {
             List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
             if (addresses != null && !addresses.isEmpty()) {
                 Address address = addresses.get(0);
                 String addressText = address.getAddressLine(0);
                 locationDisplay.setText(addressText);
+                Log.e("GEOCODER", "Address: " + addressText);
+                Log.e("GEOCODER", "Lat: " + latitude + ", Lng: " + longitude);
+                Log.e("GEOCODER", "Full Address: " + locationDisplay.toString());
             } else {
                 locationDisplay.setText(String.format("Lat: %.4f, Lng: %.4f", latitude, longitude));
             }
@@ -242,6 +246,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         datePickerDialog.show();
     }
+
     private boolean isValidBirthdate(Calendar birthdate) {
         Calendar today = Calendar.getInstance();
 
@@ -354,46 +359,6 @@ public class RegisterActivity extends AppCompatActivity {
                 });
     }
 
-    private void saveUserToDatabase(String email, String username,String password,String gender, String phone, Date birthdateStr) {
-        // נניח שאת מפרקת את ה-username לשם פרטי ושם משפחה (אפשר להתאים)
-        String[] nameParts = username.split(" ", 2);
-        String firstName = nameParts.length > 0 ? nameParts[0] : "";
-        String lastName = nameParts.length > 1 ? nameParts[1] : "";
-
-        // יצירת אובייקט UserBoundary
-        UserBoundary user = new UserBoundary();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setEmail(email);
-        user.setGender(gender);
-        user.setPassword(password);
-        user.setPhoneNumber(phone);
-        user.setDateOfBirth(birthdateStr);
-        // קריאה ל-UserApi
-        UserApi apiService = User_ApiClient.getRetrofitInstance().create(UserApi.class);
-        Call<UserResponse> call = apiService.createUser(user);
-
-        call.enqueue(new Callback<UserResponse>() {
-            @Override
-            public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    UserResponse userResponse = response.body();
-                    String userIdFromServer = userResponse.getId();
-                    Log.d("REGISTER", "User saved to database with ID: " + userIdFromServer);
-                    UserSessionManager.saveUserId(RegisterActivity.this, userIdFromServer);
-                } else {
-                    Log.e("REGISTER", "Failed to save user to database: " + response.message());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<UserResponse> call, Throwable t) {
-                Log.e("REGISTER", "API call failed: " + t.getMessage(), t);
-            }
-
-        });
-    }
-
     private void saveUserToDatabase(String email, String username,String password,String gender, String phone,List<String> imageUrls, Date birthdateStr) {
         // נניח שאת מפרקת את ה-username לשם פרטי ושם משפחה (אפשר להתאים)
         String[] nameParts = username.split(" ", 2);
@@ -413,13 +378,14 @@ public class RegisterActivity extends AppCompatActivity {
         user.setDateOfBirth(sqlDate);
         user.setLatitude(selectedLatitude);
         user.setLongitude(selectedLongitude);
+        Log.e("REGISTER", "Selected location: Lat: " + selectedLatitude + ", Lng: " + selectedLongitude);
         if (imageUrls != null && !imageUrls.isEmpty()) {
             user.setGalleryUrls(imageUrls); // ודא שיש שדה כזה במחלקה
             user.setProfilePhotoUrl(imageUrls.get(0)); // אם יש לך שדה כזה
         }
-
         // קריאה ל-UserApi
         UserApi apiService = User_ApiClient.getRetrofitInstance().create(UserApi.class);
+        Log.e("REGISTER", "Creating user "+ user);
         Call<UserResponse> call = apiService.createUser(user);
 
         Log.e("REGISTER", "Saving user to database with email: " + email);

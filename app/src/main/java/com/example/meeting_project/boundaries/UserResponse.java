@@ -19,7 +19,7 @@ public class UserResponse {
     public List<String> matchedUserIds;
     public UserPreferencesBoundary preferences;
 
-    public UserResponse(UserPreferencesBoundary preferences, List<String> matchedUserIds, List<String> likedUserIds, Date dateOfBirth, String location, List<String> galleryUrls, String mbtiId, String gender, String phoneNumber, String id, String firstName, String lastName, String email, Double Latitude, Double Longitude) {
+    public UserResponse(UserPreferencesBoundary preferences, List<String> matchedUserIds, List<String> likedUserIds, Date dateOfBirth, List<String> galleryUrls, String mbtiId, String gender, String phoneNumber, String id, String firstName, String lastName, String email, Double Latitude, Double Longitude) {
         this.preferences = preferences;
         this.matchedUserIds = matchedUserIds;
         this.likedUserIds = likedUserIds;

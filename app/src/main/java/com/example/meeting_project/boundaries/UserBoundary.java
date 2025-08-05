@@ -151,4 +151,26 @@ public class UserBoundary {
     public void setGalleryUrls(List<String> galleryUrls) {
         this.galleryUrls = galleryUrls;
     }
+
+    @Override
+    public String toString() {
+        return "UserBoundary{" +
+                "id='" + id + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", gender='" + gender + '\'' +
+                ", mbtiType='" + mbtiType + '\'' +
+                ", profilePhotoUrl='" + profilePhotoUrl + '\'' +
+                ", galleryUrls=" + galleryUrls +
+                ", Latitude=" + Latitude +
+                ", Longitude=" + Longitude +
+                ", dateOfBirth=" + dateOfBirth +
+                ", likedUserIds=" + likedUserIds +
+                ", matchedUserIds=" + matchedUserIds +
+                ", preferences=" + preferences +
+                '}';
+    }
 }
