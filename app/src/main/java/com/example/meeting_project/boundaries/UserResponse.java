@@ -12,14 +12,14 @@ public class UserResponse {
     public String gender;
     public String mbtiId;
     public List<String> galleryUrls;
-    private Double Latitude;
-    private Double Longitude;
+    private Double latitude;
+    private Double longitude;
     public Date dateOfBirth;
     public List<String> likedUserIds;
     public List<String> matchedUserIds;
     public UserPreferencesBoundary preferences;
 
-    public UserResponse(UserPreferencesBoundary preferences, List<String> matchedUserIds, List<String> likedUserIds, Date dateOfBirth, List<String> galleryUrls, String mbtiId, String gender, String phoneNumber, String id, String firstName, String lastName, String email, Double Latitude, Double Longitude) {
+    public UserResponse(UserPreferencesBoundary preferences, List<String> matchedUserIds, List<String> likedUserIds, Date dateOfBirth, List<String> galleryUrls, String mbtiId, String gender, String phoneNumber, String id, String firstName, String lastName, String email, Double latitude, Double longitude) {
         this.preferences = preferences;
         this.matchedUserIds = matchedUserIds;
         this.likedUserIds = likedUserIds;
@@ -32,8 +32,8 @@ public class UserResponse {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.Latitude = Latitude;
-        this.Longitude = Longitude;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public UserPreferencesBoundary getPreferences() {
@@ -69,16 +69,16 @@ public class UserResponse {
     }
 
     public Double getLatitude() {
-        return Latitude;
+        return latitude;
     }
     public void setLatitude(Double latitude) {
-        Latitude = latitude;
+        this.latitude = latitude;
     }
     public Double getLongitude() {
-        return Longitude;
+        return longitude;
     }
     public void setLongitude(Double longitude) {
-        Longitude = longitude;
+        this.longitude = longitude;
     }
 
     public List<String> getProfilePhotoUrl() {

@@ -18,8 +18,8 @@ public class UserBoundary {
     private String profilePhotoUrl;
     private List<String> galleryUrls;
 
-    private Double Latitude;
-    private Double Longitude;
+    private Double latitude;
+    private Double longitude;
     private Date dateOfBirth;
 
     private List<String> likedUserIds;
@@ -100,19 +100,19 @@ public class UserBoundary {
     }
 
     public Double getLatitude() {
-        return Latitude;
+        return latitude;
     }
 
     public void setLatitude(Double latitude) {
-        Latitude = latitude;
+        this.latitude = latitude;
     }
 
     public Double getLongitude() {
-        return Longitude;
+        return longitude;
     }
 
     public void setLongitude(Double longitude) {
-        Longitude = longitude;
+        this.longitude = longitude;
     }
     public Date getDateOfBirth() {
         return dateOfBirth;
@@ -165,8 +165,8 @@ public class UserBoundary {
                 ", mbtiType='" + mbtiType + '\'' +
                 ", profilePhotoUrl='" + profilePhotoUrl + '\'' +
                 ", galleryUrls=" + galleryUrls +
-                ", Latitude=" + Latitude +
-                ", Longitude=" + Longitude +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
                 ", dateOfBirth=" + dateOfBirth +
                 ", likedUserIds=" + likedUserIds +
                 ", matchedUserIds=" + matchedUserIds +
