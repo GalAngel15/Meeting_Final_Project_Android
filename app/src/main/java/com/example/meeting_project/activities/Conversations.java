@@ -77,9 +77,6 @@ public class Conversations extends BaseNavigationActivity {
 
                     @Override
                     public void onFailure(Call<List<Chat>> call, Throwable t) {
-                        Toast.makeText(Conversations.this,
-                                "שגיאת רשת: " + t.getMessage(),
-                                Toast.LENGTH_SHORT).show();
                         showEmptyState();
                     }
                 });
