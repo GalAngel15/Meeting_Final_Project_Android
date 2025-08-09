@@ -21,20 +21,16 @@
         <activity
             android:name=".activities.ChooseUserForChat"
             android:exported="false" />
-        <activity
-            android:name=".activities.NewChatActivity"
-            android:exported="false" />
+
         <activity
             android:name=".activities.ChatActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activities.ProfileActivity"
             android:exported="false" />
         <activity
             android:name=".activities.AlertsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".Chat"
             android:exported="false" />
         <activity
             android:name=".activities.Conversations"
@@ -67,9 +63,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".managers.NevigationActivity"
-            android:exported="false" />
-        <activity
             android:name=".activities.PersonalitiesActivity"
             android:exported="false" />
         <activity
@@ -81,15 +74,6 @@
         <activity
             android:name=".activities.LoginActivity"
             android:exported="false" />
-        <activity
-            android:name=".managers.DrawerActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCijlHl7yyVsT38M6VgH3mnRiE78ZNE54g" />
