@@ -19,20 +19,20 @@ public interface MatchApi {
     /*@POST("profile-matches/create")
     Call<List<MatchPercentageBoundary>> createPotentialMatches(@Body CreateMatchRequest request);
 */
-    @GET("profile-matches/user/{userId}")
+    @GET("potentialMatches/user/{userId}")
     Call<List<MatchPercentageBoundary>> getMatchesByUserId(@Path("userId") String userId);
 
-    @GET("profile-matches/percentage")
+    @GET("potentialMatches/percentage")
     Call<List<MatchPercentageBoundary>> getMatchesByPercentage(@Query("minPercentage") int minPercentage);
 
-    @PUT("profile-matches/confirm")
+    @PUT("potentialMatches/confirm")
     Call<ResponseBody> confirmMatch(@Query("userId1") String userId1,
                                     @Query("userId2") String userId2);
 
-    @DELETE("profile-matches/delete")
+    @DELETE("potentialMatches/delete")
     Call<ResponseBody> deletePotentialMatch(@Query("userId1") String userId1,
                                             @Query("userId2") String userId2);
 
-    @GET("profile-matches/all")
+    @GET("potentialMatches/all")
     Call<List<MatchPercentageBoundary>> getAllMatches();
 }

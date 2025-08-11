@@ -2,6 +2,7 @@ package com.example.meeting_project.activities;
 
 import android.graphics.drawable.PictureDrawable;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -50,14 +51,16 @@ public class HomeActivity extends BaseNavigationActivity {
     private String firebaseId ;
     private String mbtiCharacteristics;
     private ImageView ivAvatar, imageProfile ;
-    private TextView tvNiceName, welcome ;
+    private TextView welcome ;
     private TextView textName, textPersonalityType, textMatchPercent;
     private LinearLayout detailsLayout, blurredContainer;
     private ImageButton buttonLike , buttonDislike ;
 
     private Map<String,String> questionCategoryMap;
 
-    private List<UserBoundary> potentialMatchesList = new ArrayList<>();
+    private Map<String, String> questionTextMap = new HashMap<>();
+
+    private List<UserBoundary> potentialMatchesList;
     private Map<String, MatchPercentageBoundary> matchPercentageMap = new HashMap<>();
     private int currentMatchIndex = 0;
 
@@ -66,24 +69,41 @@ public class HomeActivity extends BaseNavigationActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_home); // קובץ ה־XML שלך
+        findView();
+        potentialMatchesList = new ArrayList<>();
 
         loggedInUserId = UserSessionManager.getServerUserId(this);
         firebaseId = UserSessionManager.getFirebaseUserId(this);
         AppManager.setContext(this.getApplicationContext());
 
-        findView();
         questionCategoryMap = new HashMap<>();
         preloadQuestionCategories();
         loadUserData();
-        loadMbtiData();
+        //loadMbtiData();
         fetchAndJoinMatches(loggedInUserId);
 
         buttonLike.setOnClickListener(v -> {
+            if (potentialMatchesList == null || potentialMatchesList.isEmpty()) {
+                Toast.makeText(this, "אין התאמות זמינות", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (currentMatchIndex >= potentialMatchesList.size()) {
+                Toast.makeText(this, "אין עוד התאמות", Toast.LENGTH_SHORT).show();
+                return;
+            }
             sendLikeToServer(potentialMatchesList.get(currentMatchIndex)); // שלחי לייק לשרת
             showNextMatch();
         });
 
         buttonDislike.setOnClickListener(v -> {
+            if (potentialMatchesList == null || potentialMatchesList.isEmpty()) {
+                Toast.makeText(this, "אין התאמות זמינות", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (currentMatchIndex >= potentialMatchesList.size()) {
+                Toast.makeText(this, "אין עוד התאמות", Toast.LENGTH_SHORT).show();
+                return;
+            }
             showNextMatch();
         });
     }
@@ -133,11 +153,9 @@ public class HomeActivity extends BaseNavigationActivity {
                 if (r.isSuccessful() && r.body() != null) {
                     for (QuestionsBoundary q : r.body()) {
                         questionCategoryMap.put(q.getId(), q.getQuestionCategory());
+                        questionTextMap.put(q.getId(), q.getQuestionText());
                     }
                     Log.d("HomeActivity", "Loaded " + r.body().size() + " question categories");
-                }
-                else {
-                    Toast.makeText(HomeActivity.this, "שגיאה בטעינת קטגוריות שאלות", Toast.LENGTH_SHORT).show();
                 }
             }
             @Override
@@ -146,11 +164,13 @@ public class HomeActivity extends BaseNavigationActivity {
             }
         });
     }
-
+    // ===================== טעינת התאמות =====================
     // 1. טוען גם את רשימת ההתאמות וגם את אחוזי ההתאמה למפה אחת
+
     private void fetchAndJoinMatches(String userIdLogin) {
         UserApi userApi = User_ApiClient.getRetrofitInstance().create(UserApi.class);
         MatchApi matchApi = Match_ApiClient.getRetrofitInstance().create(MatchApi.class);
+
         Log.d("HomeActivity", "Fetching potential matches for userId: " + userIdLogin);
 
         userApi.getPotentialMatches(userIdLogin).enqueue(new Callback<List<UserBoundary>>() {
@@ -160,39 +180,70 @@ public class HomeActivity extends BaseNavigationActivity {
                     potentialMatchesList = userResponse.body();
                     Log.d("HomeActivity", "Potential matches loaded: " + potentialMatchesList.size());
 
+                    // אם אין התאמות, תציג הודעה
+                    if (potentialMatchesList.isEmpty()) {
+                        Toast.makeText(HomeActivity.this, "אין התאמות כרגע", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // המשך לקרוא את אחוזי ההתאמה
                     matchApi.getMatchesByUserId(userIdLogin).enqueue(new Callback<List<MatchPercentageBoundary>>() {
                         @Override
                         public void onResponse(Call<List<MatchPercentageBoundary>> call, Response<List<MatchPercentageBoundary>> matchResponse) {
+                            Log.d("HomeActivity", "Match API Response Code: " + matchResponse.code());
+                            Log.d("HomeActivity", "Match API Response Message: " + matchResponse.message());
+                            Log.d("HomeActivity", "Match API Request URL: " + call.request().url());
+
                             if (matchResponse.isSuccessful() && matchResponse.body() != null) {
                                 List<MatchPercentageBoundary> matchPercentages = matchResponse.body();
                                 matchPercentageMap.clear();
+                                Log.d("HomeActivity", "Match percentages response body size: " + matchPercentages.size());
+
                                 for (MatchPercentageBoundary mp : matchPercentages) {
                                     String otherUserId = userIdLogin.equals(mp.getUserId1()) ? mp.getUserId2() : mp.getUserId1();
                                     matchPercentageMap.put(otherUserId, mp);
+                                    Log.d("HomeActivity", "Match: " + mp.getUserId1() + " <-> " + mp.getUserId2() + " = " + mp.getMatchPercentage() + "%");
                                 }
+
                                 Log.d("HomeActivity", "Match percentages loaded: " + matchPercentages.size());
-                                currentMatchIndex = 0;
-                                if (!potentialMatchesList.isEmpty()){
-                                    Log.d("HomeActivity", "Displaying first match");
-                                    displayMatch(potentialMatchesList.get(currentMatchIndex));
-                                } else{
-                                    Log.d("HomeActivity", "No matches to display");
-                                    Toast.makeText(HomeActivity.this, "אין התאמות כרגע", Toast.LENGTH_SHORT).show();
-                                }
-                            }else {
+                            } else {
                                 Log.e("HomeActivity", "Failed to load match percentages");
-                            }
+                                Log.e("HomeActivity", "Response code: " + matchResponse.code());
+                                Log.e("HomeActivity", "Response message: " + matchResponse.message());
+
+                                if (matchResponse.errorBody() != null) {
+                                    try {
+                                        String errorBody = matchResponse.errorBody().string();
+                                        Log.e("HomeActivity", "Error body: " + errorBody);
+                                    } catch (Exception e) {
+                                        Log.e("HomeActivity", "Could not read error body", e);
+                                    }
+                                }                            }
+
+                            // הצגת ההתאמה הראשונה בכל מקרה
+                            currentMatchIndex = 0;
+                            displayMatch(potentialMatchesList.get(currentMatchIndex));
                         }
+
                         @Override
                         public void onFailure(Call<List<MatchPercentageBoundary>> call, Throwable t) {
                             Log.e("HomeActivity", "Error loading match percentages", t);
+                            Log.e("HomeActivity", "Request URL: " + call.request().url());
+                            Log.e("HomeActivity", "Error message: " + t.getMessage());
                             Toast.makeText(HomeActivity.this, "שגיאה בטעינת אחוזי התאמה", Toast.LENGTH_SHORT).show();
+
+                            // הצגת ההתאמה הראשונה גם במקרה של כישלון
+                            currentMatchIndex = 0;
+                            displayMatch(potentialMatchesList.get(currentMatchIndex));
                         }
                     });
-                }else {
+
+                } else {
                     Log.e("HomeActivity", "Failed to load potential matches");
+                    Toast.makeText(HomeActivity.this, "שגיאה בטעינת התאמות", Toast.LENGTH_SHORT).show();
                 }
             }
+
             @Override
             public void onFailure(Call<List<UserBoundary>> call, Throwable t) {
                 Log.e("HomeActivity", "Error fetching potential matches", t);
@@ -201,9 +252,11 @@ public class HomeActivity extends BaseNavigationActivity {
         });
     }
 
+
     // ===================== הצגת כרטיס התאמה =====================
     // 2. מציג את הכרטיס של ההתאמה הנוכחית
     private void displayMatch(UserBoundary match) {
+        Log.d("HomeActivity", "ivAvatar is null: " + (ivAvatar == null));
         Log.d("HomeActivity", "Displaying match: " + match.getFirstName() + " " + match.getLastName());
         displayProfileImage(match.getGalleryUrls());
         displayName(match.getFirstName(), match.getLastName());
@@ -244,14 +297,7 @@ public class HomeActivity extends BaseNavigationActivity {
             @Override
             public void onResponse(Call<MbtiBoundary> call, Response<MbtiBoundary> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    String characteristicsJson = response.body().getCharacteristics();
-                    SubmitResponse submitResponse = new Gson().fromJson(characteristicsJson, SubmitResponse.class);
-                    if (submitResponse != null && submitResponse.getAvatarSrcStatic() != null) {
-                        Log.d("HomeActivity", "Loaded MBTI avatar: " + submitResponse.getAvatarSrcStatic());
-                        loadSvgImage(submitResponse.getAvatarSrcStatic(), logoImageView);
-                    } else {
-                        logoImageView.setImageResource(R.drawable.type_logo_placeholder);
-                    }
+                    bindMbti(response.body(), logoImageView);
                 } else {
                     logoImageView.setImageResource(R.drawable.type_logo_placeholder);
                 }
@@ -263,11 +309,27 @@ public class HomeActivity extends BaseNavigationActivity {
         });
     }
 
+    private void bindMbti(MbtiBoundary m, ImageView targetImageView) {
+        mbtiCharacteristics = m.getCharacteristics();
+        SubmitResponse submitResponse = new Gson().fromJson(mbtiCharacteristics, SubmitResponse.class);
+        if (submitResponse != null) {
+            textPersonalityType.setText(submitResponse.getNiceName() + " (" + submitResponse.getFullCode() + ")");
+            loadSvgImage(submitResponse.getAvatarSrcStatic(), targetImageView);
+        }
+    }
+
+
     private void displayMatchPercent(Double percent) {
-        if (percent != null && percent >= 0)
-            textMatchPercent.setText(percent.intValue() + "% ❤️");
-        else
+        if (percent != null && percent >= 0){
+            Log.d("HomeActivity", "Displaying match percent: " + percent);
+            textMatchPercent.setVisibility(View.VISIBLE);
+            int roundedPercent = (int) Math.round(percent);
+            textMatchPercent.setText(roundedPercent + "% ❤️");
+        } else {
+            Log.d("HomeActivity", "Match percent is null or negative, hiding TextView");
+            textMatchPercent.setVisibility(View.GONE);
             textMatchPercent.setText("");
+        }
     }
 
     private void displayGallery(List<String> galleryUrls) {
@@ -306,7 +368,7 @@ public class HomeActivity extends BaseNavigationActivity {
 
     // =========== הצגת פרטי שאלון/אישיים ============
     private void fetchAndBindPersonalDetails(String serverId) {
-        AnswersApi answersApi = User_ApiClient.getRetrofitInstance().create(AnswersApi.class);
+        AnswersApi answersApi = Question_ApiClient.getRetrofitInstance().create(AnswersApi.class);
         Log.d("HomeActivity", "Fetching personal details for user: " + serverId);
         answersApi.getUserAnswers(serverId).enqueue(new Callback<List<UserAnswerBoundary>>() {
             @Override
@@ -322,31 +384,169 @@ public class HomeActivity extends BaseNavigationActivity {
         });
     }
 
+
+//    private void bindPersonalDetails(List<UserAnswerBoundary> answers) {
+//        detailsLayout.removeAllViews();
+//        Log.d("HomeActivity", "Binding " + answers.size() + " personal details");
+//
+//        for (UserAnswerBoundary ans : answers) {
+//            String questionId = ans.getQuestionId();
+//            String answerText = ans.getAnswer();
+//
+//            // נשלוף את הקטגוריה
+//            String category = questionCategoryMap.get(questionId);
+//            if (category == null) continue;
+//
+//            // נשלוף את שם השאלה מתוך רשימת השאלות (אם שמרת אותה מראש)
+//            String questionText = getQuestionTextById(questionId); // פונקציה שנכתוב מיד
+//
+//            // נבנה תצוגה קריאה
+//            String label = "❓ " + questionText + ": " + answerText;
+//
+//            addDetail(detailsLayout, label);
+//        }
+//    }
+
+    private String getQuestionTextById(String questionId) {
+        String text = questionTextMap.get(questionId);
+        return (text != null) ? text : "שאלה לא ידועה";
+    }
     private void bindPersonalDetails(List<UserAnswerBoundary> answers) {
         detailsLayout.removeAllViews();
         Log.d("HomeActivity", "Binding " + answers.size() + " personal details");
+
+        if (answers.isEmpty()) {
+            TextView noDataView = new TextView(this);
+            noDataView.setText("אין פרטים אישיים זמינים");
+            noDataView.setTextColor(getResources().getColor(android.R.color.darker_gray));
+            noDataView.setPadding(0, 16, 0, 16);
+            detailsLayout.addView(noDataView);
+            return;
+        }
+
+        // קבוצת השאלות לפי קטגוריות
+        Map<String, List<UserAnswerBoundary>> answersByCategory = new HashMap<>();
+
         for (UserAnswerBoundary ans : answers) {
-            String cat = questionCategoryMap.get(ans.getQuestionId());
-            if (cat == null) continue;
-            String label;
-            switch (QuestionCategory.valueOf(cat)) {  // enum com.example.meeting_project.enums.QuestionCategory
-                case EDUCATION:
-                    label = "🎓 " + ans.getAnswer();
-                    break;
-                case WORKPLACE:
-                    label = "💼 " + ans.getAnswer();
-                    break;
-                case LEISURE_HABITS:
-                    label = "🎨 " + ans.getAnswer();
-                    break;
-                // הוסף לפי הצורך: PETS, DRINKING_HABITS וכו׳
-                default:
-                    label = ans.getAnswer();
+            String questionId = ans.getQuestionId();
+            String category = questionCategoryMap.get(questionId);
+
+            if (category == null) {
+                category = "כללי"; // קטגוריה ברירת מחדל
             }
-            addDetail(detailsLayout, label);
+
+            if (!answersByCategory.containsKey(category)) {
+                answersByCategory.put(category, new ArrayList<>());
+            }
+            answersByCategory.get(category).add(ans);
+        }
+
+        // הצגת השאלות לפי קטגוריות
+        for (Map.Entry<String, List<UserAnswerBoundary>> entry : answersByCategory.entrySet()) {
+            String category = entry.getKey();
+            List<UserAnswerBoundary> categoryAnswers = entry.getValue();
+
+            // הוספת כותרת קטגוריה
+            addCategoryHeader(detailsLayout, category);
+
+            // הוספת כל התשובות בקטגוריה
+            for (UserAnswerBoundary ans : categoryAnswers) {
+                addDetailAnswer(detailsLayout, ans);
+            }
+
+            // הוספת מרווח בין קטגוריות
+            addSpacing(detailsLayout);
         }
     }
 
+    private void addCategoryHeader(LinearLayout parent, String categoryName) {
+        TextView headerView = new TextView(this);
+        headerView.setText("📋 " + getCategoryDisplayName(categoryName));
+        headerView.setTextSize(16f);
+        headerView.setTextColor(getResources().getColor(android.R.color.black));
+        headerView.setTypeface(headerView.getTypeface(), android.graphics.Typeface.BOLD);
+
+        // מרווחים
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(0, 24, 0, 8);
+        headerView.setLayoutParams(params);
+
+        parent.addView(headerView);
+    }
+
+    private void addDetailAnswer(LinearLayout parent, UserAnswerBoundary answer) {
+        String questionText = getQuestionTextById(answer.getQuestionId());
+        String answerText = answer.getAnswer();
+
+        // יצירת כרטיס לכל שאלה ותשובה
+        LinearLayout answerCard = new LinearLayout(this);
+        answerCard.setOrientation(LinearLayout.VERTICAL);
+        answerCard.setBackgroundResource(R.drawable.bg_answer_card); // תצטרך ליצור את הרקע הזה
+        answerCard.setPadding(16, 12, 16, 12);
+
+        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        cardParams.setMargins(0, 4, 0, 4);
+        answerCard.setLayoutParams(cardParams);
+
+        // טקסט השאלה
+        TextView questionView = new TextView(this);
+        questionView.setText("❓ " + questionText);
+        questionView.setTextSize(14f);
+        questionView.setTextColor(getResources().getColor(android.R.color.darker_gray));
+        questionView.setTypeface(questionView.getTypeface(), android.graphics.Typeface.BOLD);
+
+        // טקסט התשובה
+        TextView answerView = new TextView(this);
+        answerView.setText("💬 " + answerText);
+        answerView.setTextSize(15f);
+        answerView.setTextColor(getResources().getColor(android.R.color.black));
+
+        LinearLayout.LayoutParams answerParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        answerParams.setMargins(0, 4, 0, 0);
+        answerView.setLayoutParams(answerParams);
+
+        answerCard.addView(questionView);
+        answerCard.addView(answerView);
+        parent.addView(answerCard);
+    }
+
+    private void addSpacing(LinearLayout parent) {
+        View spacer = new View(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                16
+        );
+        spacer.setLayoutParams(params);
+        parent.addView(spacer);
+    }
+    private String getCategoryDisplayName(String category) {
+        // המרת שמות קטגוריות לעברית
+        switch (category.toUpperCase()) {
+            case "PERSONAL":
+                return "פרטים אישיים";
+            case "LIFESTYLE":
+                return "אורח חיים";
+            case "RELATIONSHIPS":
+                return "מערכות יחסים";
+            case "CAREER":
+                return "קריירה ועבודה";
+            case "HOBBIES":
+                return "תחביבים ופנוי";
+            case "VALUES":
+                return "ערכים ואמונות";
+            default:
+                return category;
+        }
+    }
     private void addDetail(LinearLayout parent, String text) {
         TextView tv = new TextView(this);
         tv.setText(text);
@@ -377,13 +577,18 @@ public class HomeActivity extends BaseNavigationActivity {
         SubmitResponse response = gson.fromJson(mbtiCharacteristics, SubmitResponse.class);
         // load avatar SVG and niceName similar to Activity_personality_result
         if (response != null) {
-            tvNiceName.setText(response.getNiceName() + " (" + response.getFullCode() + ")");
+            textPersonalityType.setText(response.getNiceName() + " (" + response.getFullCode() + ")");
             // Load SVG image
             loadSvgImage(response.getAvatarSrcStatic(), ivAvatar);
         }
     }
 
     private void loadSvgImage(String url, ImageView imageView) {
+        if (imageView == null) {
+            Log.e("HomeActivity", "ImageView is null, cannot load image");
+            return;
+        }
+        Log.e("HomeActivity", "ImageView load image");
         RequestBuilder<PictureDrawable> requestBuilder = GlideApp.with(this)
                 .as(PictureDrawable.class)
                 .listener(new SvgSoftwareLayerSetter());
@@ -424,8 +629,7 @@ public class HomeActivity extends BaseNavigationActivity {
         textMatchPercent = findViewById(R.id.textMatchPercent);
         detailsLayout = findViewById(R.id.detailsLayout);
         blurredContainer = findViewById(R.id.blurredContainer);
-        ivAvatar = findViewById(R.id.ivAvatar);
-        tvNiceName = findViewById(R.id.tvNiceName);
+        ivAvatar = findViewById(R.id.imagePersonalityLogo);
         buttonLike = findViewById(R.id.buttonLike);
         buttonDislike = findViewById(R.id.buttonDislike);
     }
