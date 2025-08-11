@@ -71,4 +71,11 @@ dependencies {
     //location
     implementation (libs.play.services.maps)
     implementation (libs.play.services.location)
+
+    // Retrofit
+
+    implementation (libs.logging.interceptor.v4120)
+
+    implementation (libs.converter.scalars) // ← זה החלק שחסר
+
 }

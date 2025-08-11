@@ -50,14 +50,14 @@ public class HomeActivity extends BaseNavigationActivity {
     private String firebaseId ;
     private String mbtiCharacteristics;
     private ImageView ivAvatar, imageProfile ;
-    private TextView tvNiceName, welcome ;
+    private TextView welcome ;
     private TextView textName, textPersonalityType, textMatchPercent;
     private LinearLayout detailsLayout, blurredContainer;
     private ImageButton buttonLike , buttonDislike ;
 
     private Map<String,String> questionCategoryMap;
 
-    private List<UserBoundary> potentialMatchesList = new ArrayList<>();
+    private List<UserBoundary> potentialMatchesList;
     private Map<String, MatchPercentageBoundary> matchPercentageMap = new HashMap<>();
     private int currentMatchIndex = 0;
 
@@ -66,24 +66,41 @@ public class HomeActivity extends BaseNavigationActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_home); // קובץ ה־XML שלך
+        findView();
+        potentialMatchesList = new ArrayList<>();
 
         loggedInUserId = UserSessionManager.getServerUserId(this);
         firebaseId = UserSessionManager.getFirebaseUserId(this);
         AppManager.setContext(this.getApplicationContext());
 
-        findView();
         questionCategoryMap = new HashMap<>();
         preloadQuestionCategories();
         loadUserData();
-        loadMbtiData();
+        //loadMbtiData();
         fetchAndJoinMatches(loggedInUserId);
 
         buttonLike.setOnClickListener(v -> {
+            if (potentialMatchesList == null || potentialMatchesList.isEmpty()) {
+                Toast.makeText(this, "אין התאמות זמינות", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (currentMatchIndex >= potentialMatchesList.size()) {
+                Toast.makeText(this, "אין עוד התאמות", Toast.LENGTH_SHORT).show();
+                return;
+            }
             sendLikeToServer(potentialMatchesList.get(currentMatchIndex)); // שלחי לייק לשרת
             showNextMatch();
         });
 
         buttonDislike.setOnClickListener(v -> {
+            if (potentialMatchesList == null || potentialMatchesList.isEmpty()) {
+                Toast.makeText(this, "אין התאמות זמינות", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (currentMatchIndex >= potentialMatchesList.size()) {
+                Toast.makeText(this, "אין עוד התאמות", Toast.LENGTH_SHORT).show();
+                return;
+            }
             showNextMatch();
         });
     }
@@ -148,9 +165,11 @@ public class HomeActivity extends BaseNavigationActivity {
     }
 
     // 1. טוען גם את רשימת ההתאמות וגם את אחוזי ההתאמה למפה אחת
+
     private void fetchAndJoinMatches(String userIdLogin) {
         UserApi userApi = User_ApiClient.getRetrofitInstance().create(UserApi.class);
         MatchApi matchApi = Match_ApiClient.getRetrofitInstance().create(MatchApi.class);
+
         Log.d("HomeActivity", "Fetching potential matches for userId: " + userIdLogin);
 
         userApi.getPotentialMatches(userIdLogin).enqueue(new Callback<List<UserBoundary>>() {
@@ -160,39 +179,52 @@ public class HomeActivity extends BaseNavigationActivity {
                     potentialMatchesList = userResponse.body();
                     Log.d("HomeActivity", "Potential matches loaded: " + potentialMatchesList.size());
 
+                    // אם אין התאמות, תציג הודעה
+                    if (potentialMatchesList.isEmpty()) {
+                        Toast.makeText(HomeActivity.this, "אין התאמות כרגע", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // המשך לקרוא את אחוזי ההתאמה
                     matchApi.getMatchesByUserId(userIdLogin).enqueue(new Callback<List<MatchPercentageBoundary>>() {
                         @Override
                         public void onResponse(Call<List<MatchPercentageBoundary>> call, Response<List<MatchPercentageBoundary>> matchResponse) {
                             if (matchResponse.isSuccessful() && matchResponse.body() != null) {
                                 List<MatchPercentageBoundary> matchPercentages = matchResponse.body();
                                 matchPercentageMap.clear();
+
                                 for (MatchPercentageBoundary mp : matchPercentages) {
                                     String otherUserId = userIdLogin.equals(mp.getUserId1()) ? mp.getUserId2() : mp.getUserId1();
                                     matchPercentageMap.put(otherUserId, mp);
                                 }
+
                                 Log.d("HomeActivity", "Match percentages loaded: " + matchPercentages.size());
-                                currentMatchIndex = 0;
-                                if (!potentialMatchesList.isEmpty()){
-                                    Log.d("HomeActivity", "Displaying first match");
-                                    displayMatch(potentialMatchesList.get(currentMatchIndex));
-                                } else{
-                                    Log.d("HomeActivity", "No matches to display");
-                                    Toast.makeText(HomeActivity.this, "אין התאמות כרגע", Toast.LENGTH_SHORT).show();
-                                }
-                            }else {
+                            } else {
                                 Log.e("HomeActivity", "Failed to load match percentages");
                             }
+
+                            // הצגת ההתאמה הראשונה בכל מקרה
+                            currentMatchIndex = 0;
+                            displayMatch(potentialMatchesList.get(currentMatchIndex));
                         }
+
                         @Override
                         public void onFailure(Call<List<MatchPercentageBoundary>> call, Throwable t) {
                             Log.e("HomeActivity", "Error loading match percentages", t);
                             Toast.makeText(HomeActivity.this, "שגיאה בטעינת אחוזי התאמה", Toast.LENGTH_SHORT).show();
+
+                            // הצגת ההתאמה הראשונה גם במקרה של כישלון
+                            currentMatchIndex = 0;
+                            displayMatch(potentialMatchesList.get(currentMatchIndex));
                         }
                     });
-                }else {
+
+                } else {
                     Log.e("HomeActivity", "Failed to load potential matches");
+                    Toast.makeText(HomeActivity.this, "שגיאה בטעינת התאמות", Toast.LENGTH_SHORT).show();
                 }
             }
+
             @Override
             public void onFailure(Call<List<UserBoundary>> call, Throwable t) {
                 Log.e("HomeActivity", "Error fetching potential matches", t);
@@ -201,9 +233,11 @@ public class HomeActivity extends BaseNavigationActivity {
         });
     }
 
+
     // ===================== הצגת כרטיס התאמה =====================
     // 2. מציג את הכרטיס של ההתאמה הנוכחית
     private void displayMatch(UserBoundary match) {
+        Log.d("HomeActivity", "ivAvatar is null: " + (ivAvatar == null));
         Log.d("HomeActivity", "Displaying match: " + match.getFirstName() + " " + match.getLastName());
         displayProfileImage(match.getGalleryUrls());
         displayName(match.getFirstName(), match.getLastName());
@@ -244,14 +278,7 @@ public class HomeActivity extends BaseNavigationActivity {
             @Override
             public void onResponse(Call<MbtiBoundary> call, Response<MbtiBoundary> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    String characteristicsJson = response.body().getCharacteristics();
-                    SubmitResponse submitResponse = new Gson().fromJson(characteristicsJson, SubmitResponse.class);
-                    if (submitResponse != null && submitResponse.getAvatarSrcStatic() != null) {
-                        Log.d("HomeActivity", "Loaded MBTI avatar: " + submitResponse.getAvatarSrcStatic());
-                        loadSvgImage(submitResponse.getAvatarSrcStatic(), logoImageView);
-                    } else {
-                        logoImageView.setImageResource(R.drawable.type_logo_placeholder);
-                    }
+                    bindMbti(response.body(), logoImageView);
                 } else {
                     logoImageView.setImageResource(R.drawable.type_logo_placeholder);
                 }
@@ -262,6 +289,16 @@ public class HomeActivity extends BaseNavigationActivity {
             }
         });
     }
+
+    private void bindMbti(MbtiBoundary m, ImageView targetImageView) {
+        mbtiCharacteristics = m.getCharacteristics();
+        SubmitResponse submitResponse = new Gson().fromJson(mbtiCharacteristics, SubmitResponse.class);
+        if (submitResponse != null) {
+            textPersonalityType.setText(submitResponse.getNiceName() + " (" + submitResponse.getFullCode() + ")");
+            loadSvgImage(submitResponse.getAvatarSrcStatic(), targetImageView);
+        }
+    }
+
 
     private void displayMatchPercent(Double percent) {
         if (percent != null && percent >= 0)
@@ -377,13 +414,18 @@ public class HomeActivity extends BaseNavigationActivity {
         SubmitResponse response = gson.fromJson(mbtiCharacteristics, SubmitResponse.class);
         // load avatar SVG and niceName similar to Activity_personality_result
         if (response != null) {
-            tvNiceName.setText(response.getNiceName() + " (" + response.getFullCode() + ")");
+            textPersonalityType.setText(response.getNiceName() + " (" + response.getFullCode() + ")");
             // Load SVG image
             loadSvgImage(response.getAvatarSrcStatic(), ivAvatar);
         }
     }
 
     private void loadSvgImage(String url, ImageView imageView) {
+        if (imageView == null) {
+            Log.e("HomeActivity", "ImageView is null, cannot load image");
+            return;
+        }
+        Log.e("HomeActivity", "ImageView load image");
         RequestBuilder<PictureDrawable> requestBuilder = GlideApp.with(this)
                 .as(PictureDrawable.class)
                 .listener(new SvgSoftwareLayerSetter());
@@ -424,8 +466,7 @@ public class HomeActivity extends BaseNavigationActivity {
         textMatchPercent = findViewById(R.id.textMatchPercent);
         detailsLayout = findViewById(R.id.detailsLayout);
         blurredContainer = findViewById(R.id.blurredContainer);
-        ivAvatar = findViewById(R.id.ivAvatar);
-        tvNiceName = findViewById(R.id.tvNiceName);
+        ivAvatar = findViewById(R.id.imagePersonalityLogo);
         buttonLike = findViewById(R.id.buttonLike);
         buttonDislike = findViewById(R.id.buttonDislike);
     }

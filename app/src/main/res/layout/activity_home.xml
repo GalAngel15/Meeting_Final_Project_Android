@@ -226,7 +226,7 @@
                         android:id="@+id/buttonLike"
                         android:layout_width="60dp"
                         android:layout_height="60dp"
-                        android:background="@drawable/bg_button_circle_like"
+                        android:background="@drawable/bg_button_circle"
                         android:src="@drawable/ic_heart"
                         android:contentDescription="@string/like" />
                 </LinearLayout>
