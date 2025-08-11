@@ -190,19 +190,35 @@ public class HomeActivity extends BaseNavigationActivity {
                     matchApi.getMatchesByUserId(userIdLogin).enqueue(new Callback<List<MatchPercentageBoundary>>() {
                         @Override
                         public void onResponse(Call<List<MatchPercentageBoundary>> call, Response<List<MatchPercentageBoundary>> matchResponse) {
+                            Log.d("HomeActivity", "Match API Response Code: " + matchResponse.code());
+                            Log.d("HomeActivity", "Match API Response Message: " + matchResponse.message());
+                            Log.d("HomeActivity", "Match API Request URL: " + call.request().url());
+
                             if (matchResponse.isSuccessful() && matchResponse.body() != null) {
                                 List<MatchPercentageBoundary> matchPercentages = matchResponse.body();
                                 matchPercentageMap.clear();
+                                Log.d("HomeActivity", "Match percentages response body size: " + matchPercentages.size());
 
                                 for (MatchPercentageBoundary mp : matchPercentages) {
                                     String otherUserId = userIdLogin.equals(mp.getUserId1()) ? mp.getUserId2() : mp.getUserId1();
                                     matchPercentageMap.put(otherUserId, mp);
+                                    Log.d("HomeActivity", "Match: " + mp.getUserId1() + " <-> " + mp.getUserId2() + " = " + mp.getMatchPercentage() + "%");
                                 }
 
                                 Log.d("HomeActivity", "Match percentages loaded: " + matchPercentages.size());
                             } else {
                                 Log.e("HomeActivity", "Failed to load match percentages");
-                            }
+                                Log.e("HomeActivity", "Response code: " + matchResponse.code());
+                                Log.e("HomeActivity", "Response message: " + matchResponse.message());
+
+                                if (matchResponse.errorBody() != null) {
+                                    try {
+                                        String errorBody = matchResponse.errorBody().string();
+                                        Log.e("HomeActivity", "Error body: " + errorBody);
+                                    } catch (Exception e) {
+                                        Log.e("HomeActivity", "Could not read error body", e);
+                                    }
+                                }                            }
 
                             // הצגת ההתאמה הראשונה בכל מקרה
                             currentMatchIndex = 0;
@@ -212,6 +228,8 @@ public class HomeActivity extends BaseNavigationActivity {
                         @Override
                         public void onFailure(Call<List<MatchPercentageBoundary>> call, Throwable t) {
                             Log.e("HomeActivity", "Error loading match percentages", t);
+                            Log.e("HomeActivity", "Request URL: " + call.request().url());
+                            Log.e("HomeActivity", "Error message: " + t.getMessage());
                             Toast.makeText(HomeActivity.this, "שגיאה בטעינת אחוזי התאמה", Toast.LENGTH_SHORT).show();
 
                             // הצגת ההתאמה הראשונה גם במקרה של כישלון
@@ -302,10 +320,16 @@ public class HomeActivity extends BaseNavigationActivity {
 
 
     private void displayMatchPercent(Double percent) {
-        if (percent != null && percent >= 0)
-            textMatchPercent.setText(percent.intValue() + "% ❤️");
-        else
+        if (percent != null && percent >= 0){
+            Log.d("HomeActivity", "Displaying match percent: " + percent);
+            textMatchPercent.setVisibility(View.VISIBLE);
+            int roundedPercent = (int) Math.round(percent);
+            textMatchPercent.setText(roundedPercent + "% ❤️");
+        } else {
+            Log.d("HomeActivity", "Match percent is null or negative, hiding TextView");
+            textMatchPercent.setVisibility(View.GONE);
             textMatchPercent.setText("");
+        }
     }
 
     private void displayGallery(List<String> galleryUrls) {
