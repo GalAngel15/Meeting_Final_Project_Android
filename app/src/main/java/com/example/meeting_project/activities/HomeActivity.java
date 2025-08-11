@@ -2,6 +2,7 @@ package com.example.meeting_project.activities;
 
 import android.graphics.drawable.PictureDrawable;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -56,6 +57,8 @@ public class HomeActivity extends BaseNavigationActivity {
     private ImageButton buttonLike , buttonDislike ;
 
     private Map<String,String> questionCategoryMap;
+
+    private Map<String, String> questionTextMap = new HashMap<>();
 
     private List<UserBoundary> potentialMatchesList;
     private Map<String, MatchPercentageBoundary> matchPercentageMap = new HashMap<>();
@@ -150,11 +153,9 @@ public class HomeActivity extends BaseNavigationActivity {
                 if (r.isSuccessful() && r.body() != null) {
                     for (QuestionsBoundary q : r.body()) {
                         questionCategoryMap.put(q.getId(), q.getQuestionCategory());
+                        questionTextMap.put(q.getId(), q.getQuestionText());
                     }
                     Log.d("HomeActivity", "Loaded " + r.body().size() + " question categories");
-                }
-                else {
-                    Toast.makeText(HomeActivity.this, "שגיאה בטעינת קטגוריות שאלות", Toast.LENGTH_SHORT).show();
                 }
             }
             @Override
@@ -163,7 +164,7 @@ public class HomeActivity extends BaseNavigationActivity {
             }
         });
     }
-
+    // ===================== טעינת התאמות =====================
     // 1. טוען גם את רשימת ההתאמות וגם את אחוזי ההתאמה למפה אחת
 
     private void fetchAndJoinMatches(String userIdLogin) {
@@ -343,7 +344,7 @@ public class HomeActivity extends BaseNavigationActivity {
 
     // =========== הצגת פרטי שאלון/אישיים ============
     private void fetchAndBindPersonalDetails(String serverId) {
-        AnswersApi answersApi = User_ApiClient.getRetrofitInstance().create(AnswersApi.class);
+        AnswersApi answersApi = Question_ApiClient.getRetrofitInstance().create(AnswersApi.class);
         Log.d("HomeActivity", "Fetching personal details for user: " + serverId);
         answersApi.getUserAnswers(serverId).enqueue(new Callback<List<UserAnswerBoundary>>() {
             @Override
@@ -359,31 +360,169 @@ public class HomeActivity extends BaseNavigationActivity {
         });
     }
 
+
+//    private void bindPersonalDetails(List<UserAnswerBoundary> answers) {
+//        detailsLayout.removeAllViews();
+//        Log.d("HomeActivity", "Binding " + answers.size() + " personal details");
+//
+//        for (UserAnswerBoundary ans : answers) {
+//            String questionId = ans.getQuestionId();
+//            String answerText = ans.getAnswer();
+//
+//            // נשלוף את הקטגוריה
+//            String category = questionCategoryMap.get(questionId);
+//            if (category == null) continue;
+//
+//            // נשלוף את שם השאלה מתוך רשימת השאלות (אם שמרת אותה מראש)
+//            String questionText = getQuestionTextById(questionId); // פונקציה שנכתוב מיד
+//
+//            // נבנה תצוגה קריאה
+//            String label = "❓ " + questionText + ": " + answerText;
+//
+//            addDetail(detailsLayout, label);
+//        }
+//    }
+
+    private String getQuestionTextById(String questionId) {
+        String text = questionTextMap.get(questionId);
+        return (text != null) ? text : "שאלה לא ידועה";
+    }
     private void bindPersonalDetails(List<UserAnswerBoundary> answers) {
         detailsLayout.removeAllViews();
         Log.d("HomeActivity", "Binding " + answers.size() + " personal details");
+
+        if (answers.isEmpty()) {
+            TextView noDataView = new TextView(this);
+            noDataView.setText("אין פרטים אישיים זמינים");
+            noDataView.setTextColor(getResources().getColor(android.R.color.darker_gray));
+            noDataView.setPadding(0, 16, 0, 16);
+            detailsLayout.addView(noDataView);
+            return;
+        }
+
+        // קבוצת השאלות לפי קטגוריות
+        Map<String, List<UserAnswerBoundary>> answersByCategory = new HashMap<>();
+
         for (UserAnswerBoundary ans : answers) {
-            String cat = questionCategoryMap.get(ans.getQuestionId());
-            if (cat == null) continue;
-            String label;
-            switch (QuestionCategory.valueOf(cat)) {  // enum com.example.meeting_project.enums.QuestionCategory
-                case EDUCATION:
-                    label = "🎓 " + ans.getAnswer();
-                    break;
-                case WORKPLACE:
-                    label = "💼 " + ans.getAnswer();
-                    break;
-                case LEISURE_HABITS:
-                    label = "🎨 " + ans.getAnswer();
-                    break;
-                // הוסף לפי הצורך: PETS, DRINKING_HABITS וכו׳
-                default:
-                    label = ans.getAnswer();
+            String questionId = ans.getQuestionId();
+            String category = questionCategoryMap.get(questionId);
+
+            if (category == null) {
+                category = "כללי"; // קטגוריה ברירת מחדל
             }
-            addDetail(detailsLayout, label);
+
+            if (!answersByCategory.containsKey(category)) {
+                answersByCategory.put(category, new ArrayList<>());
+            }
+            answersByCategory.get(category).add(ans);
+        }
+
+        // הצגת השאלות לפי קטגוריות
+        for (Map.Entry<String, List<UserAnswerBoundary>> entry : answersByCategory.entrySet()) {
+            String category = entry.getKey();
+            List<UserAnswerBoundary> categoryAnswers = entry.getValue();
+
+            // הוספת כותרת קטגוריה
+            addCategoryHeader(detailsLayout, category);
+
+            // הוספת כל התשובות בקטגוריה
+            for (UserAnswerBoundary ans : categoryAnswers) {
+                addDetailAnswer(detailsLayout, ans);
+            }
+
+            // הוספת מרווח בין קטגוריות
+            addSpacing(detailsLayout);
         }
     }
 
+    private void addCategoryHeader(LinearLayout parent, String categoryName) {
+        TextView headerView = new TextView(this);
+        headerView.setText("📋 " + getCategoryDisplayName(categoryName));
+        headerView.setTextSize(16f);
+        headerView.setTextColor(getResources().getColor(android.R.color.black));
+        headerView.setTypeface(headerView.getTypeface(), android.graphics.Typeface.BOLD);
+
+        // מרווחים
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(0, 24, 0, 8);
+        headerView.setLayoutParams(params);
+
+        parent.addView(headerView);
+    }
+
+    private void addDetailAnswer(LinearLayout parent, UserAnswerBoundary answer) {
+        String questionText = getQuestionTextById(answer.getQuestionId());
+        String answerText = answer.getAnswer();
+
+        // יצירת כרטיס לכל שאלה ותשובה
+        LinearLayout answerCard = new LinearLayout(this);
+        answerCard.setOrientation(LinearLayout.VERTICAL);
+        answerCard.setBackgroundResource(R.drawable.bg_answer_card); // תצטרך ליצור את הרקע הזה
+        answerCard.setPadding(16, 12, 16, 12);
+
+        LinearLayout.LayoutParams cardParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        cardParams.setMargins(0, 4, 0, 4);
+        answerCard.setLayoutParams(cardParams);
+
+        // טקסט השאלה
+        TextView questionView = new TextView(this);
+        questionView.setText("❓ " + questionText);
+        questionView.setTextSize(14f);
+        questionView.setTextColor(getResources().getColor(android.R.color.darker_gray));
+        questionView.setTypeface(questionView.getTypeface(), android.graphics.Typeface.BOLD);
+
+        // טקסט התשובה
+        TextView answerView = new TextView(this);
+        answerView.setText("💬 " + answerText);
+        answerView.setTextSize(15f);
+        answerView.setTextColor(getResources().getColor(android.R.color.black));
+
+        LinearLayout.LayoutParams answerParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        answerParams.setMargins(0, 4, 0, 0);
+        answerView.setLayoutParams(answerParams);
+
+        answerCard.addView(questionView);
+        answerCard.addView(answerView);
+        parent.addView(answerCard);
+    }
+
+    private void addSpacing(LinearLayout parent) {
+        View spacer = new View(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                16
+        );
+        spacer.setLayoutParams(params);
+        parent.addView(spacer);
+    }
+    private String getCategoryDisplayName(String category) {
+        // המרת שמות קטגוריות לעברית
+        switch (category.toUpperCase()) {
+            case "PERSONAL":
+                return "פרטים אישיים";
+            case "LIFESTYLE":
+                return "אורח חיים";
+            case "RELATIONSHIPS":
+                return "מערכות יחסים";
+            case "CAREER":
+                return "קריירה ועבודה";
+            case "HOBBIES":
+                return "תחביבים ופנוי";
+            case "VALUES":
+                return "ערכים ואמונות";
+            default:
+                return category;
+        }
+    }
     private void addDetail(LinearLayout parent, String text) {
         TextView tv = new TextView(this);
         tv.setText(text);
