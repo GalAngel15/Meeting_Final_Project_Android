@@ -109,6 +109,19 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent" />
 
+                    <!-- אייקון לב מרכזי לאנימציית Like -->
+                    <ImageView
+                        android:id="@+id/likeOverlay"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:src="@drawable/ic_heart"
+                        android:alpha="0"
+                        android:visibility="gone"
+                        app:layout_constraintTop_toTopOf="@id/imageProfile"
+                        app:layout_constraintBottom_toBottomOf="@id/imageProfile"
+                        app:layout_constraintStart_toStartOf="@id/imageProfile"
+                        app:layout_constraintEnd_toEndOf="@id/imageProfile"/>
+
                     <!-- גרדיינט לכיסוי חלקו התחתון של התמונה -->
                     <View
                         android:id="@+id/gradientOverlay"

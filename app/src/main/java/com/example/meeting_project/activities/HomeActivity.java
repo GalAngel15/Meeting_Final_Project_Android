@@ -2,6 +2,7 @@ package com.example.meeting_project.activities;
 
 import android.graphics.drawable.PictureDrawable;
 import android.os.Bundle;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -33,6 +34,7 @@ import com.example.meeting_project.managers.AppManager;
 import com.example.meeting_project.managers.BaseNavigationActivity;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.example.meeting_project.R;
+import com.example.meeting_project.utilities.CardTransitionAnimator;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -48,13 +50,16 @@ import android.util.Log;
 
 public class HomeActivity extends BaseNavigationActivity {
     private String loggedInUserId;
-    private String firebaseId ;
+    private String firebaseId;
     private String mbtiCharacteristics;
     private ImageView ivAvatar, imageProfile ;
     private TextView welcome ;
     private TextView textName, textPersonalityType, textMatchPercent;
     private LinearLayout detailsLayout, blurredContainer;
+    private ImageView likeOverlay;
+    private View cardProfile;
     private ImageButton buttonLike , buttonDislike ;
+    private CardTransitionAnimator animator;
 
     private Map<String,String> questionCategoryMap;
 
@@ -63,6 +68,7 @@ public class HomeActivity extends BaseNavigationActivity {
     private List<UserBoundary> potentialMatchesList;
     private Map<String, MatchPercentageBoundary> matchPercentageMap = new HashMap<>();
     private int currentMatchIndex = 0;
+
 
 
     @Override
@@ -81,8 +87,13 @@ public class HomeActivity extends BaseNavigationActivity {
         loadUserData();
         //loadMbtiData();
         fetchAndJoinMatches(loggedInUserId);
+        setupButtons();
+    }
 
+    private void setupButtons() {
         buttonLike.setOnClickListener(v -> {
+            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+
             if (potentialMatchesList == null || potentialMatchesList.isEmpty()) {
                 Toast.makeText(this, "אין התאמות זמינות", Toast.LENGTH_SHORT).show();
                 return;
@@ -92,10 +103,11 @@ public class HomeActivity extends BaseNavigationActivity {
                 return;
             }
             sendLikeToServer(potentialMatchesList.get(currentMatchIndex)); // שלחי לייק לשרת
-            showNextMatch();
+            animator.playLike();
         });
 
         buttonDislike.setOnClickListener(v -> {
+            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
             if (potentialMatchesList == null || potentialMatchesList.isEmpty()) {
                 Toast.makeText(this, "אין התאמות זמינות", Toast.LENGTH_SHORT).show();
                 return;
@@ -104,7 +116,7 @@ public class HomeActivity extends BaseNavigationActivity {
                 Toast.makeText(this, "אין עוד התאמות", Toast.LENGTH_SHORT).show();
                 return;
             }
-            showNextMatch();
+            animator.playDislike();
         });
     }
 
@@ -263,13 +275,14 @@ public class HomeActivity extends BaseNavigationActivity {
     // ===================== הצגת כרטיס התאמה =====================
     // 2. מציג את הכרטיס של ההתאמה הנוכחית
     private void displayMatch(UserBoundary match) {
-        Log.d("HomeActivity", "ivAvatar is null: " + (ivAvatar == null));
-        Log.d("HomeActivity", "Displaying match: " + match.getFirstName() + " " + match.getLastName());
+        textMatchPercent.setVisibility(View.GONE);
+
         displayProfileImage(match.getGalleryUrls());
         displayName(match.getFirstName(), match.getLastName());
         displayMbtiType(match.getMbtiType());
         loadMbtiData(match.getId(), ivAvatar);
         displayMatchPercent(getMatchPercentForUser(match.getId()));
+        Log.d("HomeActivity", "Displaying match: " + match);
         displayGallery(match.getGalleryUrls());
         fetchAndBindPersonalDetails(match.getId());
     }
@@ -359,6 +372,7 @@ public class HomeActivity extends BaseNavigationActivity {
 
     private Double getMatchPercentForUser(String userId) {
         MatchPercentageBoundary mpb = matchPercentageMap.get(userId);
+        Log.d("HomeActivity", "Match percentage for user " + userId + ": " + (mpb != null ? mpb.getMatchPercentage() : "null"));
         return (mpb != null) ? mpb.getMatchPercentage() : null;
     }
 
@@ -616,6 +630,30 @@ public class HomeActivity extends BaseNavigationActivity {
         ivAvatar = findViewById(R.id.imagePersonalityLogo);
         buttonLike = findViewById(R.id.buttonLike);
         buttonDislike = findViewById(R.id.buttonDislike);
+        likeOverlay = findViewById(R.id.likeOverlay);
+        cardProfile = findViewById(R.id.card_profile);
+        animator = new CardTransitionAnimator(
+                cardProfile,
+                likeOverlay,
+                buttonLike,
+                buttonDislike,
+                () -> {
+                    // זה המקום שבו אתה מחליף לפרופיל הבא:
+                    showNextMatch();
+
+                    // אם אתה טוען תמונה חדשה עם Glide ורוצה לשחרר כפתורים רק כשהיא מוכנה:
+                    // Glide.with(this)
+                    //      .load(nextUrl)
+                    //      .listener(new RequestListener<Drawable>() {
+                    //          @Override public boolean onResourceReady(...) {
+                    //              animator.onNextProfileImageReady();
+                    //              return false;
+                    //          }
+                    //          @Override public boolean onLoadFailed(...) { return false; }
+                    //      })
+                    //      .into(imageProfile);
+                }
+        );
     }
 
     @Override
