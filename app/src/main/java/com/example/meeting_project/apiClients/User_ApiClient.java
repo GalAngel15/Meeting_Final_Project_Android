@@ -12,9 +12,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class User_ApiClient {
-    //yahav home wifi
-    //private static final String BASE_URL = "http://192.168.68.100:8081/";
-    //emulator address
     private static final String BASE_URL = ApiConfig.USERS_BASE_URL;
     private static Retrofit retrofit = null;
 

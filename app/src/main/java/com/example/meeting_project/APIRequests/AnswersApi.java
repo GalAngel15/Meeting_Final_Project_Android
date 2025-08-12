@@ -13,7 +13,7 @@ import retrofit2.http.Path;
 public interface AnswersApi {
 
     // שמירת תשובה בודדת (POST /answers/save?userId=...&questionId=...&answer=...)
-    @POST("/answers/save")
+    @POST("answers/save")
     Call<String> saveUserAnswer(
             @Query("userId") String userId,
             @Query("questionId") String questionId,
@@ -21,6 +21,6 @@ public interface AnswersApi {
     );
 
     // שליפת כל התשובות של משתמש (GET /answers/user/{userId})
-    @GET("/answers/user/{userId}")
+    @GET("answers/user/{userId}")
     Call<List<UserAnswerBoundary>> getUserAnswers(@Path("userId") String userId);
 }

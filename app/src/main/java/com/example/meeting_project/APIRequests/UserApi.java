@@ -96,5 +96,9 @@ public interface UserApi {
             @Path("userId") String userId,
             @Path("likedUserId") String likedUserId
     );
+
+    @GET("users/by-ids")
+    Call<List<UserBoundary>> getUsersByIds(@Query("ids") List<String> ids);
+
 }
 

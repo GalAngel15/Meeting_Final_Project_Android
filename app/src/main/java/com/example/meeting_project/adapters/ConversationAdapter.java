@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.chatlibrary.models.Chat;
 import com.example.chatlibrary.models.Message;
 import com.example.meeting_project.R;
@@ -23,19 +24,24 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
-/**
- * Conversation list adapter backed by ListAdapter + DiffUtil.
- * Note: we keep a static placeholder image (no network call here) for performance.
- * If you want real avatars here, consider caching by userId to avoid N requests per scroll.
- */
 public class ConversationAdapter extends ListAdapter<Chat, ConversationAdapter.ConversationViewHolder> {
 
     private Context context;
 
+    /** injected from Conversations: userId -> avatarUrl */
+    private Map<String, String> avatarMap = java.util.Collections.emptyMap();
+
     public ConversationAdapter(@NonNull DiffUtil.ItemCallback<Chat> diffCallback) {
         super(diffCallback);
         setHasStableIds(true);
+    }
+
+    public void setAvatarMap(Map<String, String> map) {
+        this.avatarMap = (map != null) ? map : java.util.Collections.<String, String>emptyMap();
+        notifyDataSetChanged();
     }
 
     @Override public long getItemId(int position) {
@@ -54,11 +60,11 @@ public class ConversationAdapter extends ListAdapter<Chat, ConversationAdapter.C
     public void onBindViewHolder(@NonNull ConversationViewHolder holder, int position) {
         Chat chat = getItem(position);
 
-        // Figure out the "other" participant for title/intent extras
-        String currentUserId = AppManager.getAppUser().getId();
+        // Figure out the "other" participant
+        String me = AppManager.getAppUser().getId();
         String otherUsername;
         String receiverId;
-        if (currentUserId.equals(chat.getUser1Id())) {
+        if (Objects.equals(me, chat.getUser1Id())) {
             otherUsername = chat.getUsername2();
             receiverId    = chat.getUser2Id();
         } else {
@@ -67,8 +73,8 @@ public class ConversationAdapter extends ListAdapter<Chat, ConversationAdapter.C
         }
 
         holder.nameTextView.setText(otherUsername);
-        holder.profileImageView.setImageResource(R.drawable.ic_profile); // placeholder
 
+        // Last message preview
         Message lastMsg = getLastMessage(chat);
         if (lastMsg != null) {
             holder.lastMessageTextView.setText(lastMsg.getContent());
@@ -78,11 +84,27 @@ public class ConversationAdapter extends ListAdapter<Chat, ConversationAdapter.C
             holder.timeTextView.setText("");
         }
 
+        // Avatar (no network here)
+        String url = avatarMap.get(receiverId);
+        if (url == null || url.trim().isEmpty() || "null".equalsIgnoreCase(url)) {
+            Glide.with(holder.itemView).clear(holder.profileImageView);
+            holder.profileImageView.setImageResource(R.drawable.ic_profile);
+        } else {
+            Glide.with(holder.itemView)
+                    .load(url)
+                    .placeholder(R.drawable.ic_profile)
+                    .error(R.drawable.ic_profile)
+                    .into(holder.profileImageView);
+        }
+
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, ChatActivity.class);
             intent.putExtra("user_name", otherUsername);
             intent.putExtra("chat_id", chat.getId());
             intent.putExtra("receiver_id", receiverId);
+            if (url != null) {
+                intent.putExtra("user_image", url); // for instant header in ChatActivity
+            }
             context.startActivity(intent);
         });
     }
