@@ -3,7 +3,9 @@ package com.example.meeting_project.managers;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
@@ -29,7 +31,8 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class BaseNavigationActivity extends AppCompatActivity {
+public abstract class BaseNavigationActivity extends AppCompatActivity
+        implements NotificationManager.NotificationChangeListener {
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -37,6 +40,10 @@ public abstract class BaseNavigationActivity extends AppCompatActivity {
     private ImageButton menuButton;
 
     private MaterialButton navHome, navProfile, navChats, navNotifications;
+    private TextView notificationBadge;
+
+    protected NotificationManager notificationManager;
+    protected String currentUserId;
 
     // מיפוי של התפריט הצדדי
     private static final Map<Integer, Class<?>> drawerMap = new HashMap<>();
@@ -58,11 +65,32 @@ public abstract class BaseNavigationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(getLayoutResourceId());
+
+        notificationManager = NotificationManager.getInstance(this);
+        currentUserId = getCurrentUserId();
+
         initDrawerViews();
         initDrawerLogic();
         initBottomNavViews();
         initBottomNavLogic();
+        initNotificationBadge();
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // הרשמה למאזין התראות
+        notificationManager.addListener(this);
+        updateNotificationBadge();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // ביטול הרשמה למאזין התראות
+        notificationManager.removeListener(this);
+    }
+
 
     private void initDrawerViews() {
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -100,6 +128,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity {
         navProfile = findViewById(R.id.navigation_profile);
         navChats = findViewById(R.id.navigation_chats);
         navNotifications = findViewById(R.id.navigation_notifications);
+        notificationBadge = findViewById(R.id.notification_badge);
     }
 
     private void initBottomNavLogic() {
@@ -112,6 +141,50 @@ public abstract class BaseNavigationActivity extends AppCompatActivity {
         updateBottomSelection();
     }
 
+    private void initNotificationBadge() {
+        updateNotificationBadge();
+    }
+    protected void updateNotificationBadge() {
+        if (notificationBadge != null && currentUserId != null) {
+            int unreadCount = notificationManager.getUnreadCount(currentUserId);
+
+            if (unreadCount > 0) {
+                notificationBadge.setVisibility(View.VISIBLE);
+                notificationBadge.setText(unreadCount > 99 ? "99+" : String.valueOf(unreadCount));
+            } else {
+                notificationBadge.setVisibility(View.GONE);
+            }
+        }
+    }
+    protected void createMessageNotification(String fromUserId, String fromUserName,
+                                             String fromUserImage, String chatId, String messageContent) {
+        if (currentUserId != null) {
+            notificationManager.createNotificationFromMessage(
+                    currentUserId, fromUserId, fromUserName, fromUserImage, chatId, messageContent);
+        }
+    }
+    protected void createLikeNotification(String fromUserId, String fromUserName, String fromUserImage) {
+        if (currentUserId != null) {
+            notificationManager.createNotificationFromLike(
+                    currentUserId, fromUserId, fromUserName, fromUserImage);
+        }
+    }
+    protected void createMatchNotification(String matchUserId, String matchUserName,
+                                           String matchUserImage, String matchId) {
+        if (currentUserId != null) {
+            notificationManager.createNotificationFromMatch(
+                    currentUserId, matchUserId, matchUserName, matchUserImage, matchId);
+        }
+    }
+    @Override
+    public void onNotificationsChanged() {
+        runOnUiThread(this::updateNotificationBadge);
+    }
+
+    @Override
+    public void onUnreadCountChanged(int count) {
+        runOnUiThread(this::updateNotificationBadge);
+    }
     private void setButton(MaterialButton button, int id) {
         button.setOnClickListener(v -> {
             Class<?> targetActivity = bottomMap.get(id);
@@ -135,4 +208,5 @@ public abstract class BaseNavigationActivity extends AppCompatActivity {
     protected abstract @LayoutRes int getLayoutResourceId();
     protected abstract @IdRes int getDrawerMenuItemId();
     protected abstract @IdRes int getBottomMenuItemId();
+    protected abstract String getCurrentUserId();
 }

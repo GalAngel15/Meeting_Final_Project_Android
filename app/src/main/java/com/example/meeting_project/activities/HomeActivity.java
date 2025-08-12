@@ -633,6 +633,11 @@ public class HomeActivity extends BaseNavigationActivity {
         return R.id.navigation_home;  // זה המזהה של הפריט בתפריט התחתון שמתאים ל-Home
     }
 
+    @Override
+    protected String getCurrentUserId() {
+        return loggedInUserId;
+    }
+
     private boolean isAlive() {
         return !isFinishing() && !isDestroyed();
     }

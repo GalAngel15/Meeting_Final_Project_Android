@@ -1,10 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.AlertsActivity">
+    android:background="@color/light_purple">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- תוכן ראשי -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Toolbar -->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            android:elevation="4dp"
+            app:title="התראות"
+            android:textColor="@android:color/white">
+
+            <ImageButton
+                android:id="@+id/btn_menu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="תפריט"
+                android:textColor="@android:color/white" />
+
+        </androidx.appcompat.widget.Toolbar>
+
+        <!-- תוכן מרכזי -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <!-- רשימת התראות -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- כפתורי פעולה -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp"
+                    android:gravity="center">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_mark_all_read"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:text="סמן הכל כנקרא"
+                        android:textSize="12sp"
+                        app:icon="@drawable/ic_mark_read"
+                        app:iconSize="18dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_clear_all"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:text="מחק הכל"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorError"
+                        app:icon="@drawable/ic_delete"
+                        app:iconSize="18dp"
+                        app:iconTint="@color/colorError" />
+
+                </LinearLayout>
+
+                <!-- RecyclerView להתראות -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_notifications"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingBottom="80dp"
+                    tools:listitem="@layout/item_notification" />
+
+            </LinearLayout>
+
+            <!-- מצב ריק -->
+            <LinearLayout
+                android:id="@+id/empty_state_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_marginBottom="24dp"
+                    android:src="@drawable/ic_notifications_empty"
+                    android:alpha="0.3"
+                    app:tint="@color/colorOnSurface" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/empty_state_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="אין התראות חדשות"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/colorOnSurface"
+                    android:alpha="0.6" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="התראות על הודעות, לייקים ומאטצ'ים\nיופיעו כאן"
+                    android:textSize="14sp"
+                    android:textColor="@color/colorOnSurface"
+                    android:alpha="0.5"
+                    android:gravity="center"
+                    android:lineSpacingExtra="4dp" />
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <!-- Bottom Navigation -->
+        <include layout="@layout/activity_nevigation" />
+
+    </LinearLayout>
+
+    <!-- Navigation Drawer -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigation_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/drawer_menu"
+        app:headerLayout="@layout/drawer_header" />
+
+
+</androidx.drawerlayout.widget.DrawerLayout>

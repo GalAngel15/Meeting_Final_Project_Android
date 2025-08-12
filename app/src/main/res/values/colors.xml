@@ -34,4 +34,7 @@
     <color name="gray">#BDBDBD</color>
     <color name="backgroundLight">#F3EEFD</color>
 
+    <color name="colorSuccess">#4CAF50</color>
+    <color name="colorError">#F44336</color>
+    <color name="colorOnSurface">#000000</color>
 </resources>

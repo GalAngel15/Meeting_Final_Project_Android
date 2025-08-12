@@ -232,4 +232,9 @@ public class activity_preferences extends BaseNavigationActivity {
     protected int getBottomMenuItemId() {
         return 0;
     }
+
+    @Override
+    protected String getCurrentUserId() {
+        return userId;
+    }
 }

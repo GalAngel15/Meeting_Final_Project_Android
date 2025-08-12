@@ -176,4 +176,9 @@ public class Activity_personality_result extends BaseNavigationActivity {
     protected int getBottomMenuItemId() {
         return 0;  // כי במסך הזה אין סימון בתפריט התחתון
     }
+
+    @Override
+    protected String getCurrentUserId() {
+        return userId;
+    }
 }

@@ -190,6 +190,11 @@ public class Conversations extends BaseNavigationActivity {
         return R.id.navigation_chats;
     }
 
+    @Override
+    protected String getCurrentUserId() {
+        return AppManager.getAppUser().getId();
+    }
+
     static class ConversationDiff extends DiffUtil.ItemCallback<Chat> {
         @Override public boolean areItemsTheSame(@NonNull Chat o, @NonNull Chat n) {
             return o.getId().equals(n.getId());

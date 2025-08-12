@@ -49,7 +49,7 @@ public class ProfileActivity extends BaseNavigationActivity {
     private TextView tvFullName;
     private EditText etFirstName, etLastName, etPersonalityType, etEmail, etPhone, etDob, etGender;
     private Button btnEditProfile;
-
+    private String userId;
     private UserApi userApi;
     private boolean isEditMode = false;  // מעקב אחר מצב העריכה
 
@@ -61,7 +61,7 @@ public class ProfileActivity extends BaseNavigationActivity {
         setupEditButton();
 
         userApi = User_ApiClient.getRetrofitInstance().create(UserApi.class);
-        String userId = UserSessionManager.getServerUserId(this);
+        userId = UserSessionManager.getServerUserId(this);
         if (userId != null) {
             fetchUserProfile(userId);
         } else {
@@ -210,5 +210,10 @@ public class ProfileActivity extends BaseNavigationActivity {
     @Override
     protected int getBottomMenuItemId() {
         return R.id.navigation_profile;  // עכשיו עובד לפי ה־navigation_ שלך
+    }
+
+    @Override
+    protected String getCurrentUserId() {
+        return userId;
     }
 }
