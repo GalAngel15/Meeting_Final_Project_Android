@@ -35,6 +35,7 @@ import com.example.meeting_project.managers.BaseNavigationActivity;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.example.meeting_project.R;
 import com.example.meeting_project.utilities.CardTransitionAnimator;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -606,7 +607,10 @@ public class HomeActivity extends BaseNavigationActivity {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {
-                    Toast.makeText(HomeActivity.this, "לייק נשלח בהצלחה", Toast.LENGTH_SHORT).show();
+                    Snackbar.make(buttonLike, "לייק נשלח בהצלחה", Snackbar.LENGTH_SHORT)
+                            .setAction("אישור", v -> {})
+                            .show();
+                    //Toast.makeText(HomeActivity.this, "לייק נשלח בהצלחה", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(HomeActivity.this, "שגיאה בשליחת הלייק", Toast.LENGTH_SHORT).show();
                 }
