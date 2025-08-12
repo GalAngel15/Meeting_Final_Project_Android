@@ -108,6 +108,7 @@ public class HomeActivity extends BaseNavigationActivity {
 
         buttonDislike.setOnClickListener(v -> {
             v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+
             if (potentialMatchesList == null || potentialMatchesList.isEmpty()) {
                 Toast.makeText(this, "אין התאמות זמינות", Toast.LENGTH_SHORT).show();
                 return;
