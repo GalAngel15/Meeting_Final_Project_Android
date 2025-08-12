@@ -10,19 +10,19 @@ import java.util.List;
 
 public interface MbtiServiceApi {
 
-    @GET("/mbti/all")
+    @GET("mbti/all")
     Call<List<MbtiBoundary>> getAllProfiles();
 
-    @GET("/mbti/user/{userId}")
+    @GET("mbti/user/{userId}")
     Call<MbtiBoundary> getProfileByUserId(@Path("userId") String userId);
 
-    @GET("/mbti/type/{mbtiType}")
+    @GET("mbti/type/{mbtiType}")
     Call<MbtiBoundary> getProfileByType(@Path("mbtiType") String mbtiType);
 
-    @PUT("/mbti/update/{userId}")
+    @PUT("mbti/update/{userId}")
     Call<String> updateProfile(@Path("userId") String userId, @Body MbtiBoundary profile);
 
-    @POST("/mbti/create")
+    @POST("mbti/create")
     Call<ResponseBody> createProfile(@Body MbtiBoundary profile);
 
 }

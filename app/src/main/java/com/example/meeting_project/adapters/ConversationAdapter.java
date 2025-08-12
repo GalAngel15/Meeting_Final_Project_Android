@@ -9,6 +9,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.chatlibrary.models.Chat;
@@ -18,29 +20,30 @@ import com.example.meeting_project.activities.ChatActivity;
 import com.example.meeting_project.managers.AppManager;
 
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * ConversationAdapter – מציג רשימת צ'אטים עם הודעה אחרונה ושעה.
- * תומך בשני פורמטים של timestamp:
- *  1. long millis (Number)
- *  2. ISO-8601 String ("2025-06-23T12:34:56.123")
+ * Conversation list adapter backed by ListAdapter + DiffUtil.
+ * Note: we keep a static placeholder image (no network call here) for performance.
+ * If you want real avatars here, consider caching by userId to avoid N requests per scroll.
  */
-public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapter.ConversationViewHolder> {
+public class ConversationAdapter extends ListAdapter<Chat, ConversationAdapter.ConversationViewHolder> {
 
-    private final List<Chat> chatList;
     private Context context;
 
-    public ConversationAdapter(List<Chat> chatList) {
-        this.chatList = chatList;
+    public ConversationAdapter(@NonNull DiffUtil.ItemCallback<Chat> diffCallback) {
+        super(diffCallback);
+        setHasStableIds(true);
     }
 
-    @NonNull
-    @Override
+    @Override public long getItemId(int position) {
+        Chat c = getItem(position);
+        return c.getId() != null ? c.getId().hashCode() : RecyclerView.NO_ID;
+    }
+
+    @NonNull @Override
     public ConversationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         context = parent.getContext();
         View view = LayoutInflater.from(context).inflate(R.layout.item_conversation, parent, false);
@@ -49,30 +52,27 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ConversationViewHolder holder, int position) {
-        Chat chat = chatList.get(position);
-        String currentUserId = AppManager.getAppUser().getId();
+        Chat chat = getItem(position);
 
+        // Figure out the "other" participant for title/intent extras
+        String currentUserId = AppManager.getAppUser().getId();
         String otherUsername;
         String receiverId;
         if (currentUserId.equals(chat.getUser1Id())) {
             otherUsername = chat.getUsername2();
-            receiverId   = chat.getUser2Id();
+            receiverId    = chat.getUser2Id();
         } else {
             otherUsername = chat.getUsername1();
-            receiverId   = chat.getUser1Id();
+            receiverId    = chat.getUser1Id();
         }
 
         holder.nameTextView.setText(otherUsername);
-        holder.profileImageView.setImageResource(R.drawable.account_circle);
+        holder.profileImageView.setImageResource(R.drawable.ic_profile); // placeholder
 
-        // הודעה אחרונה + שעה
-        Message lastMsg = chat.getAllMessages().isEmpty() ? null
-                : chat.getAllMessages().get(chat.getAllMessages().size() - 1);
+        Message lastMsg = getLastMessage(chat);
         if (lastMsg != null) {
             holder.lastMessageTextView.setText(lastMsg.getContent());
-
-            String timeStr = formatTime(lastMsg.getTimestamp());
-            holder.timeTextView.setText(timeStr);
+            holder.timeTextView.setText(formatTime(lastMsg.getTimestamp()));
         } else {
             holder.lastMessageTextView.setText("");
             holder.timeTextView.setText("");
@@ -87,25 +87,20 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
         });
     }
 
-    private String formatTime(Object timestamp) {
-        long millis;
-        if (timestamp instanceof Number) {
-            millis = ((Number) timestamp).longValue();
-        } else {
-            // assume String ISO
-            try {
-                Instant inst = Instant.parse(String.valueOf(timestamp));
-                millis = inst.toEpochMilli();
-            } catch (DateTimeParseException e) {
-                return ""; // unknown format
-            }
-        }
-        return new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(millis));
+    private Message getLastMessage(Chat chat) {
+        List<Message> all = chat.getAllMessages();
+        if (all == null || all.isEmpty()) return null;
+        return all.get(all.size() - 1);
     }
 
-    @Override
-    public int getItemCount() {
-        return chatList.size();
+    private String formatTime(Object timestamp) {
+        long millis;
+        try {
+            millis = Long.parseLong(String.valueOf(timestamp));
+        } catch (Exception e) {
+            return "";
+        }
+        return new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date(millis));
     }
 
     static class ConversationViewHolder extends RecyclerView.ViewHolder {
@@ -113,10 +108,10 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
         ImageView profileImageView;
         ConversationViewHolder(@NonNull View itemView) {
             super(itemView);
-            nameTextView = itemView.findViewById(R.id.name_text_view);
+            nameTextView        = itemView.findViewById(R.id.name_text_view);
             lastMessageTextView = itemView.findViewById(R.id.last_message_text_view);
-            timeTextView = itemView.findViewById(R.id.time_text_view);
-            profileImageView = itemView.findViewById(R.id.profile_image);
+            timeTextView        = itemView.findViewById(R.id.time_text_view);
+            profileImageView    = itemView.findViewById(R.id.profile_image);
         }
     }
 }

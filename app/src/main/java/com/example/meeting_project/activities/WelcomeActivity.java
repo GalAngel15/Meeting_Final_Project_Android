@@ -2,12 +2,14 @@ package com.example.meeting_project.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.meeting_project.R;
+import com.example.meeting_project.apiClients.ApiConfig;
 import com.example.meeting_project.managers.AppManager;
 
 public class WelcomeActivity extends AppCompatActivity {
@@ -21,6 +23,11 @@ public class WelcomeActivity extends AppCompatActivity {
         setBtnClick();
         AppManager.initAppManager();
         checkUserLoggedIn();
+        if (!com.example.chatlibrary.network.RetrofitClient.isInitialized()) {
+            com.example.chatlibrary.network.RetrofitClient.init(ApiConfig.CHATS_BASE_URL);
+            Log.d("WelcomeActivity", "Chat RetrofitClient initialized to " + ApiConfig.BASE_IP);
+        }
+
         AppManager.setContext(this.getApplicationContext());
     }
 

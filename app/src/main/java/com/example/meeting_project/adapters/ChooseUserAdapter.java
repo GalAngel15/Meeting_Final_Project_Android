@@ -42,9 +42,15 @@ public class ChooseUserAdapter extends RecyclerView.Adapter<ChooseUserAdapter.Us
         UserBoundary u = users.get(pos);
         h.name.setText(u.getFirstName() + " " + u.getLastName());
 
-        Glide.with(h.itemView.getContext())
-                .load(u.getProfilePhotoUrl())
+        String imageUrl = null;
+        if (u.getGalleryUrls() != null && !u.getGalleryUrls().isEmpty()) {
+            imageUrl = u.getGalleryUrls().get(0);
+        }
+
+        Glide.with(h.itemView)
+                .load(imageUrl)
                 .placeholder(R.drawable.account_circle)
+                .error(R.drawable.account_circle)
                 .into(h.pic);
 
         h.itemView.setOnClickListener(v -> listener.onUserClick(u));

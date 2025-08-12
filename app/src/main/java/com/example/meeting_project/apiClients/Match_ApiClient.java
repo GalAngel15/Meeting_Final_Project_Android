@@ -10,7 +10,7 @@ public class Match_ApiClient {
     //yahav home wifi
     //private static final String BASE_URL = "http://192.168.68.100:8084/";
     //emulator address
-    private static final String BASE_URL = ApiConfig.BASE_IP + ":8084/";//change the port
+    private static final String BASE_URL = ApiConfig.MATCH_BASE_URL;
 
     private static Retrofit retrofit = null;
 

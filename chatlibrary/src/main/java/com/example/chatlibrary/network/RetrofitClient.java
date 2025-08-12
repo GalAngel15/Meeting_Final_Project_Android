@@ -1,5 +1,9 @@
 package com.example.chatlibrary.network;
 
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -8,8 +12,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitClient {
 
     //private static final String BASE_URL = "http://10.0.2.2:8080";
-    private static final String BASE_URL = "http://192.168.68.110:8080";
+    private static String baseUrl;
     private static Retrofit retrofit;
+
+    public static void init(@NonNull String url) {
+        baseUrl=url;
+        Log.d("RetrofitClient", "RetrofitClient initialized to " + baseUrl);
+        retrofit = null; // רענון במקרה ומשנים כתובת
+    }
 
     public static Retrofit getInstance() {
         if (retrofit == null) {
@@ -21,11 +31,16 @@ public class RetrofitClient {
                     .build();
 
             retrofit = new Retrofit.Builder()
-                    .baseUrl(BASE_URL)
+                    .baseUrl(baseUrl)
                     .client(client)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
         return retrofit;
     }
+
+    public static boolean isInitialized() {
+        return baseUrl != null && retrofit != null;
+    }
+
 }

@@ -13,7 +13,7 @@ public class MbtiTest_ApiClient {
     //yahav home wifi
     //    private static final String BASE_URL = "http://192.168.68.100:3000/";
     //emulator address
-    private static final String BASE_URL = ApiConfig.BASE_IP + ":3000/";
+    private static final String BASE_URL = ApiConfig.MBTI_TEST_URL;
 
     private static Retrofit retrofit= null;
 

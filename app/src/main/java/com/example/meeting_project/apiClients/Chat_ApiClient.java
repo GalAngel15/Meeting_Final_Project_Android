@@ -13,7 +13,7 @@ public class Chat_ApiClient {
     //yahav home wifi
     //private static final String BASE_URL = "http://192.168.68.100:8080/";
     //emulator address
-    private static final String BASE_URL = ApiConfig.BASE_IP + ":8080/"; //change the port
+    private static final String BASE_URL = ApiConfig.CHATS_BASE_URL;
     private static Retrofit retrofit = null;
 
     public static synchronized Retrofit getRetrofitInstance() {

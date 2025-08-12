@@ -103,9 +103,16 @@ public class ChooseUserForChat extends AppCompatActivity
     private void openChatScreen(Chat chat, UserBoundary other) {
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra("chat_id", chat.getId());
+        intent.putExtra("receiver_id", other.getId());
         intent.putExtra("user_name", other.getFirstName() + " " + other.getLastName());
-        intent.putExtra("user_image", other.getProfilePhotoUrl());
+
+        String imageUrl = null;
+        if (other.getGalleryUrls() != null && !other.getGalleryUrls().isEmpty()) {
+            imageUrl = other.getGalleryUrls().get(0);
+        }
+        intent.putExtra("user_image", imageUrl);
         startActivity(intent);
         finish();
     }
+
 }

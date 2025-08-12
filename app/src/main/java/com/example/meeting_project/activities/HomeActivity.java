@@ -220,7 +220,10 @@ public class HomeActivity extends BaseNavigationActivity {
                                     }
                                 }                            }
 
-                            // הצגת ההתאמה הראשונה בכל מקרה
+                            if (!isAlive()) {
+                                Log.w("HomeActivity", "Skipped image load — Activity destroyed");
+                                return;
+                            }                            // הצגת ההתאמה הראשונה בכל מקרה
                             currentMatchIndex = 0;
                             displayMatch(potentialMatchesList.get(currentMatchIndex));
                         }
@@ -232,6 +235,10 @@ public class HomeActivity extends BaseNavigationActivity {
                             Log.e("HomeActivity", "Error message: " + t.getMessage());
                             Toast.makeText(HomeActivity.this, "שגיאה בטעינת אחוזי התאמה", Toast.LENGTH_SHORT).show();
 
+                            if (!isAlive()) {
+                                Log.w("HomeActivity", "Skipped image load — Activity destroyed");
+                                return;
+                            }
                             // הצגת ההתאמה הראשונה גם במקרה של כישלון
                             currentMatchIndex = 0;
                             displayMatch(potentialMatchesList.get(currentMatchIndex));
@@ -269,7 +276,7 @@ public class HomeActivity extends BaseNavigationActivity {
 
     private void displayProfileImage(List<String> galleryUrls) {
         if (galleryUrls != null && !galleryUrls.isEmpty()) {
-            Glide.with(this)
+            Glide.with(imageProfile)
                     .load(galleryUrls.get(0))
                     .placeholder(R.drawable.ic_placeholder_profile)
                     .into(imageProfile);
@@ -340,7 +347,7 @@ public class HomeActivity extends BaseNavigationActivity {
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(60, 60);
                 params.setMargins(0, 0, 8, 0);
                 iv.setLayoutParams(params);
-                Glide.with(this)
+                Glide.with(iv)
                         .load(url)
                         .placeholder(R.drawable.ic_placeholder_profile)
                         //.transform(new BlurTransformation(this, 15)) // אם תרצי טשטוש
@@ -383,29 +390,6 @@ public class HomeActivity extends BaseNavigationActivity {
             }
         });
     }
-
-
-//    private void bindPersonalDetails(List<UserAnswerBoundary> answers) {
-//        detailsLayout.removeAllViews();
-//        Log.d("HomeActivity", "Binding " + answers.size() + " personal details");
-//
-//        for (UserAnswerBoundary ans : answers) {
-//            String questionId = ans.getQuestionId();
-//            String answerText = ans.getAnswer();
-//
-//            // נשלוף את הקטגוריה
-//            String category = questionCategoryMap.get(questionId);
-//            if (category == null) continue;
-//
-//            // נשלוף את שם השאלה מתוך רשימת השאלות (אם שמרת אותה מראש)
-//            String questionText = getQuestionTextById(questionId); // פונקציה שנכתוב מיד
-//
-//            // נבנה תצוגה קריאה
-//            String label = "❓ " + questionText + ": " + answerText;
-//
-//            addDetail(detailsLayout, label);
-//        }
-//    }
 
     private String getQuestionTextById(String questionId) {
         String text = questionTextMap.get(questionId);
@@ -648,4 +632,9 @@ public class HomeActivity extends BaseNavigationActivity {
     protected int getBottomMenuItemId() {
         return R.id.navigation_home;  // זה המזהה של הפריט בתפריט התחתון שמתאים ל-Home
     }
+
+    private boolean isAlive() {
+        return !isFinishing() && !isDestroyed();
+    }
+
 }
