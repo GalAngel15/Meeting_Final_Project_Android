@@ -80,6 +80,10 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_chat);
+        getWindow().setSoftInputMode(
+                android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+        );
+
         AppManager.setContext(getApplicationContext());
 
         bindViews();
@@ -147,11 +151,19 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void initRecycler() {
+        // RecyclerView ----
         messageAdapter = new ChatMessageAdapter(messageList);
         LinearLayoutManager lm = new LinearLayoutManager(this);
-        lm.setStackFromEnd(true); // keep list anchored to bottom (latest messages)
+        lm.setStackFromEnd(true);
         chatRecyclerView.setLayoutManager(lm);
         chatRecyclerView.setAdapter(messageAdapter);
+
+        chatRecyclerView.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+            if (messageAdapter != null && messageAdapter.getItemCount() > 0) {
+                chatRecyclerView.scrollToPosition(messageAdapter.getItemCount() - 1);
+            }
+        });
+
     }
 
     private void initHeader() {
