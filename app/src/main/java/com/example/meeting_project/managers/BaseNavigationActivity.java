@@ -162,23 +162,32 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
-
+        //  ודאי שה-Header קיים: אם לא קיים, ננפח אותו ידנית
         if (navigationView != null) {
-            View header = navigationView.getHeaderView(0); // חשוב: דורש app:headerLayout ב-XML
-            if (header != null) {
-                headerTitle = header.findViewById(R.id.header_title);
+            View header;
+            if (navigationView.getHeaderCount() > 0) {
+                header = navigationView.getHeaderView(0);
+            } else {
+                header = navigationView.inflateHeaderView(R.layout.drawer_header);
             }
+            headerTitle = header.findViewById(R.id.header_title);
         }
+
+        //  רענון שם ממש לפני פתיחת המגרה (כדי לתפוס שינויי User בזמן-אמת)
+        menuButton.setOnClickListener(v -> {
+            refreshHeaderTitle();
+            drawerLayout.openDrawer(GravityCompat.START);
+        });
     }
     private void refreshHeaderTitle() {
         if (headerTitle == null) return;
 
         String display = "שלום 👋"; // ברירת מחדל
         try {
-            if (AppManager.getAppUser() != null && AppManager.getAppUser().getFirstName() != null) {
-                String first = AppManager.getAppUser().getFirstName().trim();
-                if (!first.isEmpty()) {
+            if (AppManager.getAppUser() != null) {
+                String first = AppManager.getAppUser().getFirstName();
+                if (first != null) first = first.trim();
+                if (first != null && !first.isEmpty()) {
                     display = "שלום, " + first + " 👋";
                 }
             }
@@ -186,6 +195,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
 
         headerTitle.setText(display);
     }
+
 
     private void initDrawerLogic() {
         navigationView.setNavigationItemSelectedListener(item -> {
