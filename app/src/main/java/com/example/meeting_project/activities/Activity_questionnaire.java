@@ -23,7 +23,9 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,6 +40,9 @@ public class Activity_questionnaire extends AppCompatActivity {
     private List<UserAnswerBoundary> answers = new ArrayList<>();
     private int currentPage = 0;
     private static final int QUESTIONS_PER_PAGE = 5;
+    private Map<String, String> existingAnswers = new HashMap<>();
+    private boolean questionsLoaded = false;
+    private boolean answersLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +56,7 @@ public class Activity_questionnaire extends AppCompatActivity {
         setContentView(R.layout.activity_questionnaire);
         findViews();
         fetchQuestions();
+        loadExistingAnswersIfLoggedIn();
         AppManager.setContext(this.getApplicationContext());
 
 
@@ -87,6 +93,7 @@ public class Activity_questionnaire extends AppCompatActivity {
                             String joinedAnswers = String.join(",", question.getPossibleAnswers());
                             question.setPossibleAnswers(Arrays.asList(joinedAnswers.split(",")));                        }
                     }
+                    questionsLoaded = true;
                     loadQuestionsForCurrentPage();
                 } else {
                     Toast.makeText(Activity_questionnaire.this, "Failed to load intro questions", Toast.LENGTH_SHORT).show();
@@ -99,13 +106,72 @@ public class Activity_questionnaire extends AppCompatActivity {
             }
         });
     }
+    private void loadExistingAnswersIfLoggedIn() {
+        String userId = getCurrentUserIdSafe();
+        if (userId == null || userId.trim().isEmpty()) {
+            answersLoaded = true;
+            tryBindAdapterIfReady();
+            return;
+        }
+
+        QuestionsApi api = Question_ApiClient.getRetrofitInstance().create(QuestionsApi.class);
+        api.getUserAnswers(userId).enqueue(new Callback<List<UserAnswerBoundary>>() {
+            @Override
+            public void onResponse(Call<List<UserAnswerBoundary>> call, Response<List<UserAnswerBoundary>> resp) {
+                if (resp.isSuccessful() && resp.body() != null) {
+                    existingAnswers.clear();
+                    // נמלא גם את answers כדי שהוולידציה didAnswerAllCurrentQuestions תזהה כענו
+                    answers.clear();
+
+                    for (UserAnswerBoundary a : resp.body()) {
+                        String qid = a.getQuestionId();
+                        if (qid == null) continue;
+
+                        String val = a.getAnswer();
+                        if (val != null) {
+                            val = val.trim();
+                        }
+                        if (val != null && !val.isEmpty()) {
+                            existingAnswers.put(qid, val);
+                            answers.add(new UserAnswerBoundary(qid, val));
+                        }
+                    }
+                }
+                answersLoaded = true;
+                tryBindAdapterIfReady();
+            }
+
+            @Override
+            public void onFailure(Call<List<UserAnswerBoundary>> call, Throwable t) {
+                answersLoaded = true;
+                tryBindAdapterIfReady();
+            }
+        });
+    }
+
+
+    private void tryBindAdapterIfReady() {
+        if (!questionsLoaded || !answersLoaded) return;
+        loadQuestionsForCurrentPage();
+    }
+
+    private String getCurrentUserIdSafe() {
+        try {
+            if (AppManager.getAppUser() != null && AppManager.getAppUser().getId() != null)
+                return AppManager.getAppUser().getId();
+        } catch (Exception ignore) {}
+        return UserSessionManager.getServerUserId(this);
+    }
+
 
     private void loadQuestionsForCurrentPage() {
         List<QuestionsBoundary> currentQuestions = getCurrentQuestions();
+
         if (questionAdapter == null) {
-            questionAdapter = new QuestionIntroAdapter(currentQuestions, this::updateAnswers);
+            questionAdapter = new QuestionIntroAdapter(currentQuestions, existingAnswers, this::updateAnswers);
             recyclerViewQuestions.setAdapter(questionAdapter);
         } else {
+            questionAdapter.updatePrefill(existingAnswers);
             questionAdapter.updateQuestions(currentQuestions);
         }
 
@@ -115,6 +181,7 @@ public class Activity_questionnaire extends AppCompatActivity {
             nextButton.setText("Next");
         }
     }
+
 
     private List<QuestionsBoundary> getCurrentQuestions() {
         int start = currentPage * QUESTIONS_PER_PAGE;
@@ -146,6 +213,9 @@ public class Activity_questionnaire extends AppCompatActivity {
             }
         }
         answers.add(new UserAnswerBoundary(questionId, answerText));
+
+        // עדכון פרה-פיל מקומי כדי שהמעבר בין עמודים ישמר בחירה
+        existingAnswers.put(questionId, answerText);
     }
 
     private void submitAnswers() {

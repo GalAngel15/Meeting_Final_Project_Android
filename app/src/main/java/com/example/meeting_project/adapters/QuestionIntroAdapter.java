@@ -17,25 +17,37 @@ import com.example.meeting_project.R;
 import com.example.meeting_project.boundaries.QuestionsBoundary;
 import com.example.meeting_project.enums.QuestionType;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 //the questions of the server
 
 public class QuestionIntroAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private List<QuestionsBoundary> questions;
     private OnAnswerSelectedListener listener;
+    private Map<String, String> prefill;
 
     public interface OnAnswerSelectedListener {
         void onAnswerSelected(String questionId, String answerText);
     }
 
-    public QuestionIntroAdapter(List<QuestionsBoundary> questions, OnAnswerSelectedListener listener) {
+    public QuestionIntroAdapter(List<QuestionsBoundary> questions,
+                                Map<String, String> prefill,
+                                OnAnswerSelectedListener listener) {
         this.questions = questions;
+        this.prefill = (prefill != null) ? prefill : new HashMap<>();
         this.listener = listener;
     }
 
+
     public void updateQuestions(List<QuestionsBoundary> newQuestions) {
         this.questions = newQuestions;
+        notifyDataSetChanged();
+    }
+
+    public void updatePrefill(Map<String, String> prefill) {
+        this.prefill = (prefill != null) ? prefill : new HashMap<>();
         notifyDataSetChanged();
     }
 
@@ -84,7 +96,9 @@ public class QuestionIntroAdapter extends RecyclerView.Adapter<RecyclerView.View
 
         void bind(QuestionsBoundary question) {
             questionText.setText(question.getQuestionText());
+            radioGroup.setOnCheckedChangeListener(null); // נטרל לרגע כדי לא להצית ליסינר בזמן פרה-פיל
             radioGroup.removeAllViews();
+
             List<String> options = question.getPossibleAnswers();
             if (options != null) {
                 for (String option : options) {
@@ -93,6 +107,26 @@ public class QuestionIntroAdapter extends RecyclerView.Adapter<RecyclerView.View
                     radioGroup.addView(radioButton);
                 }
             }
+
+            // פרה-פיל בחירה קיימת אם יש
+            String saved = (prefill != null) ? prefill.get(question.getId()) : null;
+            if (saved != null) {
+                final int count = radioGroup.getChildCount();
+                for (int i = 0; i < count; i++) {
+                    View v = radioGroup.getChildAt(i);
+                    if (v instanceof RadioButton) {
+                        RadioButton rb = (RadioButton) v;
+                        if (saved.equalsIgnoreCase(rb.getText().toString().trim())) {
+                            rb.setChecked(true);
+                            break;
+                        }
+                    }
+                }
+            } else {
+                radioGroup.clearCheck();
+            }
+
+            // עכשיו מפעילים מאזין
             radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
                 RadioButton selected = group.findViewById(checkedId);
                 if (selected != null) {
@@ -105,7 +139,7 @@ public class QuestionIntroAdapter extends RecyclerView.Adapter<RecyclerView.View
     class OpenQuestionViewHolder extends RecyclerView.ViewHolder {
         TextView questionText;
         EditText answerInput;
-
+        private TextWatcher watcher;
         OpenQuestionViewHolder(View itemView) {
             super(itemView);
             questionText = itemView.findViewById(R.id.textViewQuestion);
@@ -114,18 +148,30 @@ public class QuestionIntroAdapter extends RecyclerView.Adapter<RecyclerView.View
 
         void bind(QuestionsBoundary question) {
             questionText.setText(question.getQuestionText());
-            answerInput.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
+            // ננטרל מאזין קודם אם יש
+            if (watcher != null) answerInput.removeTextChangedListener(watcher);
+
+            // פרה-פיל ערך קיים אם יש
+            String saved = (prefill != null) ? prefill.get(question.getId()) : null;
+            String current = answerInput.getText() != null ? answerInput.getText().toString() : "";
+            if (saved != null && !saved.equals(current)) {
+                answerInput.setText(saved);
+                answerInput.setSelection(answerInput.getText().length());
+            } else if (saved == null && !current.isEmpty()) {
+                // אם אין פרה-פיל ושדה ממוחזר מכיל ערך ישן – ננקה
+                answerInput.setText("");
+            }
+
+            // מאזין חדש
+            watcher = new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                     listener.onAnswerSelected(question.getId(), s.toString());
                 }
-
-                @Override
-                public void afterTextChanged(Editable s) { }
-            });
+                @Override public void afterTextChanged(Editable s) {}
+            };
+            answerInput.addTextChangedListener(watcher);
         }
     }
 }
