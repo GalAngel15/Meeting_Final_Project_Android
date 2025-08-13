@@ -119,7 +119,7 @@ public class NotificationApiService {
                 }
 
                 // מחליף את כל ההתראות המקומיות של המשתמש ברשימה החדשה
-                NotificationManager.getInstance(ctx).replaceAllForUser(userId, mapped);
+                NotificationManager.getInstance(ctx).upsertFromServer(userId, mapped);
 
                 if (cb != null) cb.onSuccess(mapped);
             }

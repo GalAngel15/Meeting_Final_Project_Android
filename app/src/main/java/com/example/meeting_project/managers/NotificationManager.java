@@ -1,20 +1,23 @@
+// NotificationManager.java
 package com.example.meeting_project.managers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.example.meeting_project.UserSessionManager;
 import com.example.meeting_project.models.Notification;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class NotificationManager {
@@ -22,12 +25,14 @@ public class NotificationManager {
     private static final String TAG = "NotificationManager";
     private static final String PREFS_NAME = "notifications_prefs";
     private static final String NOTIFICATIONS_KEY = "notifications_list";
+    private static final String CLEARED_TS_PREFIX = "cleared_ts_";
+    private static final String READ_SET_PREFIX   = "read_set_";
 
     private static NotificationManager instance;
-    private Context context;
-    private SharedPreferences sharedPreferences;
-    private Gson gson;
-    private List<NotificationChangeListener> listeners;
+    private final Context context;
+    private final SharedPreferences sharedPreferences;
+    private final Gson gson;
+    private final List<NotificationChangeListener> listeners;
 
     public interface NotificationChangeListener {
         void onNotificationsChanged();
@@ -36,7 +41,7 @@ public class NotificationManager {
 
     private NotificationManager(Context context) {
         this.context = context.getApplicationContext();
-        this.sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        this.sharedPreferences = this.context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         this.gson = new Gson();
         this.listeners = new ArrayList<>();
     }
@@ -48,241 +53,318 @@ public class NotificationManager {
         return instance;
     }
 
-    // הוספת מאזין לשינויים
+    // ========= מאזינים =========
     public void addListener(NotificationChangeListener listener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener);
-        }
+        if (!listeners.contains(listener)) listeners.add(listener);
     }
-
-    // הסרת מאזין
     public void removeListener(NotificationChangeListener listener) {
         listeners.remove(listener);
     }
 
-    // הוספת התראה חדשה
-    public void addNotification(Notification notification) {
-        List<Notification> notifications = getAllNotifications();
+    // ========= לוגיקה עיקרית =========
 
-        // בדיקה אם ההתראה כבר קיימת (למניעת כפילויות)
-        // עבור התראות מ-Firebase, נבדוק לפי זמן קרוב כי אין ID ייחודי
-        boolean exists = notifications.stream()
-                .anyMatch(n -> {
-                    if (notification.getFromUserId() != null && n.getFromUserId() != null) {
-                        return n.getFromUserId().equals(notification.getFromUserId())
-                                && n.getType().equals(notification.getType())
-                                && Math.abs(n.getTimestamp() - notification.getTimestamp()) < 5000; // תוך 5 שניות
-                    } else {
-                        // אם אין fromUserId, נשווה לפי תוכן וזמן
-                        return n.getTitle().equals(notification.getTitle())
-                                && n.getMessage().equals(notification.getMessage())
-                                && Math.abs(n.getTimestamp() - notification.getTimestamp()) < 5000;
-                    }
-                });
+    public void addNotification(Notification n) {
+        if (n == null) return;
 
-        if (!exists) {
-            notifications.add(0, notification); // הוספה בתחילת הרשימה
-            saveNotifications(notifications);
-            notifyListeners();
-            Log.d(TAG, "Added notification: " + notification.getTitle());
-        } else {
-            Log.d(TAG, "Notification already exists, skipping: " + notification.getTitle());
+        // אל תצרי התראה על הודעה ש"אני" שלחתי (במכשיר של השולח)
+        if (n.getType() == Notification.NotificationType.MESSAGE) {
+            String current = getCurrentUserId();
+            if (current != null && current.equals(n.getFromUserId())) {
+                Log.d(TAG, "Skipping self-sent message notification on sender device");
+                return;
+            }
         }
+
+        List<Notification> list = getAllNotifications();
+
+        // מניעת כפילויות גס (על סמך fromUserId+type+טווח זמן קצר)
+        boolean exists = list.stream().anyMatch(x -> {
+            if (n.getFromUserId() != null && x.getFromUserId() != null) {
+                return x.getFromUserId().equals(n.getFromUserId())
+                        && x.getType() == n.getType()
+                        && Math.abs(x.getTimestamp() - n.getTimestamp()) < 5000;
+            } else {
+                return safe(x.getTitle()).equals(safe(n.getTitle()))
+                        && safe(x.getMessage()).equals(safe(n.getMessage()))
+                        && Math.abs(x.getTimestamp() - n.getTimestamp()) < 5000;
+            }
+        });
+
+        if (exists) {
+            Log.d(TAG, "Notification already exists, skipping: " + n.getTitle());
+            return;
+        }
+
+        list.add(0, n);
+        saveNotifications(list);
+        notifyListeners();
     }
 
-    // פונקציה מיוחדת להוספת התראה מ-Firebase
     public void addFirebaseNotification(String userId, String title, String body, Map<String, String> data) {
-        Notification notification = Notification.fromFirebaseData(userId, title, body, data);
-        addNotification(notification);
+        // אם זו הודעה שמגיעה מהשולח לעצמו — דלג
+        if (data != null && "message".equals(data.get("type"))) {
+            String from = data.get("fromUserId");
+            if (from != null && from.equals(userId)) {
+                Log.d(TAG, "Skipping Firebase self message for userId=" + userId);
+                return;
+            }
+        }
+        Notification n = Notification.fromFirebaseData(userId, title, body, data);
+        addNotification(n);
     }
 
-    // קבלת כל ההתראות של משתמש מסוים
     public List<Notification> getNotificationsForUser(String userId) {
-        List<Notification> allNotifications = getAllNotifications();
-        return allNotifications.stream()
-                .filter(n -> n.getUserId().equals(userId))
+        long cut = getClearedTs(userId);
+        Set<String> readSet = getReadSet(userId);
+
+        return getAllNotifications().stream()
+                .filter(n -> userId.equals(n.getUserId()))
+                .filter(n -> n.getTimestamp() > cut) // אל תציג ישנות לפני מחיקה אחרונה
+                .peek(n -> { if (readSet.contains(signature(n))) n.setRead(true); })
                 .sorted(Comparator.comparingLong(Notification::getTimestamp).reversed())
                 .collect(Collectors.toList());
     }
 
-    // קבלת כמות התראות לא נקראו
     public int getUnreadCount(String userId) {
         return (int) getNotificationsForUser(userId).stream()
-                .filter(n -> !n.isRead())
-                .count();
+                .filter(n -> !n.isRead()).count();
     }
 
-    // סימון התראה כנקראה
     public void markAsRead(String notificationId) {
-        List<Notification> notifications = getAllNotifications();
+        List<Notification> list = getAllNotifications();
         boolean changed = false;
+        String userForReadSet = null;
 
-        for (Notification notification : notifications) {
-            if (notification.getId().equals(notificationId)) {
-                notification.setRead(true);
+        for (Notification n : list) {
+            if (n.getId().equals(notificationId)) {
+                n.setRead(true);
+                userForReadSet = n.getUserId();
+                addToReadSet(userForReadSet, signature(n));
                 changed = true;
                 break;
             }
         }
-
         if (changed) {
-            saveNotifications(notifications);
+            saveNotifications(list);
             notifyListeners();
+            if (userForReadSet != null) notifyUnread(userForReadSet);
         }
     }
 
-    // סימון כל ההתראות של משתמש כנקראו
     public void markAllAsReadForUser(String userId) {
-        List<Notification> notifications = getAllNotifications();
+        List<Notification> list = getAllNotifications();
         boolean changed = false;
+        Set<String> set = getReadSet(userId);
 
-        for (Notification notification : notifications) {
-            if (notification.getUserId().equals(userId) && !notification.isRead()) {
-                notification.setRead(true);
+        for (Notification n : list) {
+            if (userId.equals(n.getUserId()) && !n.isRead()) {
+                n.setRead(true);
+                set.add(signature(n));
                 changed = true;
             }
         }
-
         if (changed) {
-            saveNotifications(notifications);
+            saveReadSet(userId, set);
+            saveNotifications(list);
             notifyListeners();
+            notifyUnread(userId);
         }
     }
 
-    // מחיקת התראה
     public void deleteNotification(String notificationId) {
-        List<Notification> notifications = getAllNotifications();
-        notifications.removeIf(n -> n.getId().equals(notificationId));
-        saveNotifications(notifications);
+        List<Notification> list = getAllNotifications();
+        String userId = null;
+        Iterator<Notification> it = list.iterator();
+        while (it.hasNext()) {
+            Notification n = it.next();
+            if (n.getId().equals(notificationId)) {
+                userId = n.getUserId();
+                it.remove();
+                break;
+            }
+        }
+        saveNotifications(list);
         notifyListeners();
+        if (userId != null) notifyUnread(userId);
     }
 
-    // מחיקת כל ההתראות של משתמש
     public void deleteAllForUser(String userId) {
-        List<Notification> notifications = getAllNotifications();
-        notifications.removeIf(n -> n.getUserId().equals(userId));
-        saveNotifications(notifications);
+        List<Notification> list = getAllNotifications();
+        long now = System.currentTimeMillis();
+        setClearedTs(userId, now); // זכרי מתי נמחק הכל
+
+        list.removeIf(n -> userId.equals(n.getUserId()));
+        saveNotifications(list);
+
         notifyListeners();
+        notifyUnread(userId);
     }
 
-    // יצירת התראות על בסיס נתונים מהשרת
     public void createNotificationFromMessage(String userId, String fromUserId, String fromUserName,
                                               String fromUserImage, String chatId, String messageContent) {
-        String title = fromUserName + " שלח/ה לך הודעה";
-        String message = messageContent.length() > 50 ?
-                messageContent.substring(0, 50) + "..." : messageContent;
+        // אל תצרי התראה אם ה"יוזר היעד" הוא השולח עצמו
+        if (userId != null && userId.equals(fromUserId)) return;
 
-        Notification notification = new Notification(
+        String title = fromUserName + " שלח/ה לך הודעה";
+        String message = (messageContent != null && messageContent.length() > 50)
+                ? messageContent.substring(0, 50) + "..." : messageContent;
+
+        Notification n = new Notification(
                 userId, fromUserId, fromUserName, fromUserImage,
                 Notification.NotificationType.MESSAGE, title, message, chatId
         );
-
-        addNotification(notification);
+        addNotification(n);
     }
 
     public void createNotificationFromLike(String userId, String fromUserId, String fromUserName,
                                            String fromUserImage) {
         String title = fromUserName + " עשה/תה לך לייק!";
         String message = "לחץ כדי לראות את הפרופיל";
-
-        Notification notification = new Notification(
+        Notification n = new Notification(
                 userId, fromUserId, fromUserName, fromUserImage,
                 Notification.NotificationType.LIKE, title, message, fromUserId
         );
-
-        addNotification(notification);
+        addNotification(n);
     }
 
     public void createNotificationFromMatch(String userId, String matchUserId, String matchUserName,
                                             String matchUserImage, String matchId) {
         String title = "מאטץ' חדש!";
         String message = "יש לך מאטץ' עם " + matchUserName + "!";
-
-        Notification notification = new Notification(
+        Notification n = new Notification(
                 userId, matchUserId, matchUserName, matchUserImage,
                 Notification.NotificationType.MATCH, title, message, matchId
         );
-
-        addNotification(notification);
+        addNotification(n);
     }
 
-    // פונקציות עזר פרטיות
-    private List<Notification> getAllNotifications() {
-        String json = sharedPreferences.getString(NOTIFICATIONS_KEY, null);
-        if (json == null || json.isEmpty()) {
-            return new ArrayList<>();
+    /** החלפה מלאה של רשימת המשתמש מהשרת + החלת cleared-ts ו-read-set. */
+    public synchronized void upsertFromServer(String userId, List<Notification> serverList) {
+        if (userId == null) return;
+
+        List<Notification> all = getAllNotifications();
+        long cut = getClearedTs(userId);
+        Set<String> readSet = getReadSet(userId);
+
+        // אינדקס מהיר לפי id קיים אצל המשתמש הזה
+        java.util.HashMap<String, Integer> idx = new java.util.HashMap<>();
+        for (int i = 0; i < all.size(); i++) {
+            Notification n = all.get(i);
+            if (userId.equals(n.getUserId()) && n.getId() != null) idx.put(n.getId(), i);
         }
 
+        if (serverList != null && !serverList.isEmpty()) {
+            for (Notification n : serverList) {
+                if (n == null) continue;
+                if (n.getUserId() == null)  n.setUserId(userId);
+                if (n.getId() == null)      n.setId("srv_" + System.currentTimeMillis());
+                if (n.getTimestamp() == 0L) n.setTimestamp(System.currentTimeMillis());
+                if (n.getTimestamp() <= cut) continue;                 // כובד "מחק הכל"
+                if (readSet.contains(signature(n))) n.setRead(true);   // כובד "נקרא"
+
+                Integer pos = idx.get(n.getId());
+                if (pos != null) all.set(pos, n); else all.add(n);
+            }
+            saveNotifications(all);
+            notifyListeners();
+            notifyUnread(userId);
+        } else {
+            // שרת החזיר ריק? לא נוגעים ברשימה המקומית (שומר על FCM/מקומי)
+            notifyListeners();
+            notifyUnread(userId);
+        }
+    }
+
+    // ========= אחסון/עזר =========
+
+    private List<Notification> getAllNotifications() {
+        String json = sharedPreferences.getString(NOTIFICATIONS_KEY, null);
+        if (json == null || json.isEmpty()) return new ArrayList<>();
         try {
             Type listType = new TypeToken<List<Notification>>(){}.getType();
-            List<Notification> notifications = gson.fromJson(json, listType);
-            return notifications != null ? notifications : new ArrayList<>();
+            List<Notification> list = gson.fromJson(json, listType);
+            return list != null ? list : new ArrayList<>();
         } catch (Exception e) {
             Log.e(TAG, "Error parsing notifications: " + e.getMessage());
             return new ArrayList<>();
         }
     }
 
-    private void saveNotifications(List<Notification> notifications) {
+    private void saveNotifications(List<Notification> list) {
         try {
-            String json = gson.toJson(notifications);
-            sharedPreferences.edit().putString(NOTIFICATIONS_KEY, json).apply();
+            sharedPreferences.edit().putString(NOTIFICATIONS_KEY, gson.toJson(list)).apply();
         } catch (Exception e) {
             Log.e(TAG, "Error saving notifications: " + e.getMessage());
         }
     }
 
-    private void notifyListeners() {
-        for (NotificationChangeListener listener : listeners) {
-            try {
-                listener.onNotificationsChanged();
-                // אפשר להוסיף כאן לוגיקה לחישוב unread count ספציפי למשתמש
-            } catch (Exception e) {
-                Log.e(TAG, "Error notifying listener: " + e.getMessage());
-            }
+    private String safe(String s) { return s == null ? "" : s.trim(); }
+
+    private String signature(Notification n) {
+        String t   = n.getType() != null ? n.getType().name() : "UNK";
+        String from= safe(n.getFromUserId());
+        String rel = safe(n.getRelatedId());
+        String hm  = String.valueOf((safe(n.getTitle()) + "|" + safe(n.getMessage())).hashCode());
+        return t + "|" + from + "|" + rel + "|" + hm;
+    }
+
+    private String readSetKey(String userId) { return READ_SET_PREFIX + safe(userId); }
+    private String clearedKey(String userId) { return CLEARED_TS_PREFIX + safe(userId); }
+
+    private Set<String> getReadSet(String userId) {
+        String json = sharedPreferences.getString(readSetKey(userId), null);
+        if (json == null || json.isEmpty()) return new HashSet<>();
+        try {
+            Type t = new TypeToken<Set<String>>(){}.getType();
+            Set<String> set = gson.fromJson(json, t);
+            return set != null ? set : new HashSet<>();
+        } catch (Exception e) {
+            return new HashSet<>();
         }
     }
 
-    // פונקציות עזר נוספות
-    public boolean hasUnreadNotifications(String userId) {
-        return getUnreadCount(userId) > 0;
+    private void saveReadSet(String userId, Set<String> set) {
+        sharedPreferences.edit().putString(readSetKey(userId), gson.toJson(set)).apply();
     }
+
+    private void addToReadSet(String userId, String sig) {
+        if (userId == null || sig == null) return;
+        Set<String> set = getReadSet(userId);
+        if (set.add(sig)) saveReadSet(userId, set);
+    }
+
+    private long getClearedTs(String userId) {
+        return sharedPreferences.getLong(clearedKey(userId), 0L);
+    }
+
+    private void setClearedTs(String userId, long ts) {
+        sharedPreferences.edit().putLong(clearedKey(userId), ts).apply();
+    }
+
+    private void notifyListeners() {
+        for (NotificationChangeListener l : new ArrayList<>(listeners)) {
+            try { l.onNotificationsChanged(); } catch (Exception e) { Log.e(TAG, "notify err", e); }
+        }
+    }
+    private void notifyUnread(String userId) {
+        int count = getUnreadCount(userId);
+        for (NotificationChangeListener l : new ArrayList<>(listeners)) {
+            try { l.onUnreadCountChanged(count); } catch (Exception e) { Log.e(TAG, "notify unread err", e); }
+        }
+    }
+
+    private String getCurrentUserId() {
+        String id = null;
+        try { if (AppManager.getAppUser() != null) id = AppManager.getAppUser().getId(); } catch (Exception ignored) {}
+        if (id == null) id = UserSessionManager.getServerUserId(context);
+        return id;
+    }
+
+    public boolean hasUnreadNotifications(String userId) { return getUnreadCount(userId) > 0; }
 
     public void clearAllNotifications() {
         sharedPreferences.edit().remove(NOTIFICATIONS_KEY).apply();
+        // לא קורא פה ל-clearedTs כי זה מחיקה גלובלית (כל המשתמשים)
         notifyListeners();
     }
-    // בתוך NotificationManager.java
-    // בתוך NotificationManager.java – החלפה מלאה של המתודה
-    public synchronized void replaceAllForUser(String userId, List<Notification> newList) {
-        // טען את כל ההתראות הקיימות מה-SharedPreferences
-        List<Notification> all = getAllNotifications();
-
-        // הסר את כל ההתראות של המשתמש הזה
-        Iterator<Notification> it = all.iterator();
-        while (it.hasNext()) {
-            Notification n = it.next();
-            if (userId != null && userId.equals(n.getUserId())) {
-                it.remove();
-            }
-        }
-
-        // הוסף את ההתראות שהגיעו מהשרת (עם מיגון לשדות חיוניים)
-        if (newList != null) {
-            for (Notification n : newList) {
-                if (n.getUserId() == null)     n.setUserId(userId);
-                if (n.getId() == null)         n.setId("notif_" + System.currentTimeMillis());
-                if (n.getTimestamp() == 0L)    n.setTimestamp(System.currentTimeMillis());
-                all.add(n);
-            }
-        }
-
-        // שמירה חזרה ל-SharedPreferences
-        saveNotifications(all);
-
-        // עדכני את המאזינים (המסכים/הבאדג’)
-        notifyListeners();
-    }
-
-
 }

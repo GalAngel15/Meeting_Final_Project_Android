@@ -158,9 +158,14 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
     }
     protected void createMessageNotification(String fromUserId, String fromUserName,
                                              String fromUserImage, String chatId, String messageContent) {
+        // אם אני השולח/ת – לא יוצרים התראה לעצמי
+        if (currentUserId != null && currentUserId.equals(fromUserId)) {
+            return;
+        }
         if (currentUserId != null) {
             notificationManager.createNotificationFromMessage(
-                    currentUserId, fromUserId, fromUserName, fromUserImage, chatId, messageContent);
+                    currentUserId, fromUserId, fromUserName, fromUserImage, chatId, messageContent
+            );
         }
     }
     protected void createLikeNotification(String fromUserId, String fromUserName, String fromUserImage) {
