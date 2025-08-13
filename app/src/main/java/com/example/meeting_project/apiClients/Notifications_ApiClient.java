@@ -8,9 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class Notifications_ApiClient {
     private static Retrofit retrofit;
 
-    // חשוב: השתמש באותו baseUrl כמו ב-User_ApiClient/Match_ApiClient
-    private static final String BASE_URL = ApiConfig.USERS_BASE_URL; // אם קיים שם קבוע כזה
-    // אם אין, שים כאן אותו URL שמשמש בשאר ה-ApiClient שלך.
+    private static final String BASE_URL = ApiConfig.USERS_BASE_URL;
 
     public static NotificationsApi getApi() {
         if (retrofit == null) {

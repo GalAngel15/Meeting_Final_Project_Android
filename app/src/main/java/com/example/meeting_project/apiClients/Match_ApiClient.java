@@ -7,9 +7,6 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class Match_ApiClient {
-    //yahav home wifi
-    //private static final String BASE_URL = "http://192.168.68.100:8084/";
-    //emulator address
     private static final String BASE_URL = ApiConfig.MATCH_BASE_URL;
 
     private static Retrofit retrofit = null;
@@ -17,7 +14,7 @@ public class Match_ApiClient {
     public static synchronized Retrofit getRetrofitInstance() {
         if (retrofit == null) {
             OkHttpClient client = new OkHttpClient.Builder()
-                    .connectTimeout(60, TimeUnit.SECONDS)  // הוסיפי כאן
+                    .connectTimeout(60, TimeUnit.SECONDS)
                     .readTimeout(120, TimeUnit.SECONDS)
                     .writeTimeout(120, TimeUnit.SECONDS)
                     .build();
