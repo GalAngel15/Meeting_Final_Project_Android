@@ -1,22 +1,39 @@
 package com.example.meeting_project.models;
 
 import java.io.Serializable;
+import java.util.Map;
 
 public class Notification implements Serializable {
 
     public enum NotificationType {
-        MESSAGE("הודעה חדשה"),
-        LIKE("מישהו עשה לך לייק"),
-        MATCH("יש לך מאטץ' חדש!");
+        MESSAGE("הודעה חדשה", "message"),
+        LIKE("מישהו עשה לך לייק", "like"),
+        MATCH("יש לך מאטץ' חדש!", "match");
 
         private final String displayName;
+        private final String firebaseType;
 
-        NotificationType(String displayName) {
+        NotificationType(String displayName, String firebaseType) {
             this.displayName = displayName;
+            this.firebaseType = firebaseType;
         }
 
         public String getDisplayName() {
             return displayName;
+        }
+
+        public String getFirebaseType() {
+            return firebaseType;
+        }
+
+        // המרה מ-Firebase type לסוג התראה
+        public static NotificationType fromFirebaseType(String firebaseType) {
+            for (NotificationType type : values()) {
+                if (type.firebaseType.equals(firebaseType)) {
+                    return type;
+                }
+            }
+            return MESSAGE; // ברירת מחדל
         }
     }
 
@@ -31,6 +48,7 @@ public class Notification implements Serializable {
     private boolean isRead;
     private long timestamp;
     private String relatedId;       // chat ID או match ID
+    private Map<String, String> firebaseData; // הנתונים מ-Firebase
 
     // בנאי ריק
     public Notification() {
@@ -52,6 +70,39 @@ public class Notification implements Serializable {
         this.title = title;
         this.message = message;
         this.relatedId = relatedId;
+    }
+
+    // בנאי מ-Firebase data
+    public static Notification fromFirebaseData(String userId, String title, String body, Map<String, String> data) {
+        Notification notification = new Notification();
+        notification.userId = userId;
+        notification.title = title;
+        notification.message = body;
+        notification.firebaseData = data;
+
+        String typeStr = data.get("type");
+        notification.type = NotificationType.fromFirebaseType(typeStr);
+
+        switch (notification.type) {
+            case MESSAGE:
+                notification.relatedId = data.get("chatId");
+                notification.fromUserId = data.get("fromUserId"); // ← להוסיף
+                notification.fromUserName = data.get("fromName");
+                break;
+
+            case MATCH:
+                notification.fromUserId = data.get("otherUserId");
+                notification.fromUserName = data.get("otherName");
+                notification.relatedId = "match_" + userId + "_" + notification.fromUserId;
+                break;
+
+            case LIKE:
+                notification.fromUserId = data.get("fromUserId"); // אם יש
+                notification.fromUserName = data.get("fromName"); // אם יש
+                break;
+        }
+
+        return notification;
     }
 
     // יצירת ID ייחודי
@@ -92,6 +143,9 @@ public class Notification implements Serializable {
 
     public String getRelatedId() { return relatedId; }
     public void setRelatedId(String relatedId) { this.relatedId = relatedId; }
+
+    public Map<String, String> getFirebaseData() { return firebaseData; }
+    public void setFirebaseData(Map<String, String> firebaseData) { this.firebaseData = firebaseData; }
 
     // פונקציה ליצירת זמן יחסי (לפני 5 דקות, אתמול וכו')
     public String getTimeAgo() {

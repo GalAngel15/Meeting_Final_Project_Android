@@ -12,7 +12,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class NotificationManager {
@@ -63,17 +65,35 @@ public class NotificationManager {
         List<Notification> notifications = getAllNotifications();
 
         // בדיקה אם ההתראה כבר קיימת (למניעת כפילויות)
+        // עבור התראות מ-Firebase, נבדוק לפי זמן קרוב כי אין ID ייחודי
         boolean exists = notifications.stream()
-                .anyMatch(n -> n.getFromUserId().equals(notification.getFromUserId())
-                        && n.getType().equals(notification.getType())
-                        && n.getRelatedId().equals(notification.getRelatedId()));
+                .anyMatch(n -> {
+                    if (notification.getFromUserId() != null && n.getFromUserId() != null) {
+                        return n.getFromUserId().equals(notification.getFromUserId())
+                                && n.getType().equals(notification.getType())
+                                && Math.abs(n.getTimestamp() - notification.getTimestamp()) < 5000; // תוך 5 שניות
+                    } else {
+                        // אם אין fromUserId, נשווה לפי תוכן וזמן
+                        return n.getTitle().equals(notification.getTitle())
+                                && n.getMessage().equals(notification.getMessage())
+                                && Math.abs(n.getTimestamp() - notification.getTimestamp()) < 5000;
+                    }
+                });
 
         if (!exists) {
             notifications.add(0, notification); // הוספה בתחילת הרשימה
             saveNotifications(notifications);
             notifyListeners();
             Log.d(TAG, "Added notification: " + notification.getTitle());
+        } else {
+            Log.d(TAG, "Notification already exists, skipping: " + notification.getTitle());
         }
+    }
+
+    // פונקציה מיוחדת להוספת התראה מ-Firebase
+    public void addFirebaseNotification(String userId, String title, String body, Map<String, String> data) {
+        Notification notification = Notification.fromFirebaseData(userId, title, body, data);
+        addNotification(notification);
     }
 
     // קבלת כל ההתראות של משתמש מסוים
@@ -232,4 +252,37 @@ public class NotificationManager {
         sharedPreferences.edit().remove(NOTIFICATIONS_KEY).apply();
         notifyListeners();
     }
+    // בתוך NotificationManager.java
+    // בתוך NotificationManager.java – החלפה מלאה של המתודה
+    public synchronized void replaceAllForUser(String userId, List<Notification> newList) {
+        // טען את כל ההתראות הקיימות מה-SharedPreferences
+        List<Notification> all = getAllNotifications();
+
+        // הסר את כל ההתראות של המשתמש הזה
+        Iterator<Notification> it = all.iterator();
+        while (it.hasNext()) {
+            Notification n = it.next();
+            if (userId != null && userId.equals(n.getUserId())) {
+                it.remove();
+            }
+        }
+
+        // הוסף את ההתראות שהגיעו מהשרת (עם מיגון לשדות חיוניים)
+        if (newList != null) {
+            for (Notification n : newList) {
+                if (n.getUserId() == null)     n.setUserId(userId);
+                if (n.getId() == null)         n.setId("notif_" + System.currentTimeMillis());
+                if (n.getTimestamp() == 0L)    n.setTimestamp(System.currentTimeMillis());
+                all.add(n);
+            }
+        }
+
+        // שמירה חזרה ל-SharedPreferences
+        saveNotifications(all);
+
+        // עדכני את המאזינים (המסכים/הבאדג’)
+        notifyListeners();
+    }
+
+
 }

@@ -1,10 +1,18 @@
 package com.example.meeting_project.APIRequests;
 
+import com.example.meeting_project.models.NotificationDto;
+
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 
 public interface NotificationsApi {
+    @GET("api/notifications/user/{userId}")
+    Call<List<NotificationDto>> getUserNotifications(@Path("userId") String userId);
 
     @POST("api/notifications/register-token")
     Call<Void> registerToken(@Body RegisterTokenRequest body);
