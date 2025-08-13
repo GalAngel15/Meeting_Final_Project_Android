@@ -2,6 +2,7 @@ package com.example.meeting_project.activities;
 
 import android.graphics.drawable.PictureDrawable;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.widget.ImageButton;
@@ -354,23 +355,43 @@ public class HomeActivity extends BaseNavigationActivity {
         }
     }
 
+    private int dp(int v) {
+        return (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, v, getResources().getDisplayMetrics());
+    }
+
     private void displayGallery(List<String> galleryUrls) {
         blurredContainer.removeAllViews();
-        if (galleryUrls != null) {
-            for (String url : galleryUrls) {
-                ImageView iv = new ImageView(this);
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(60, 60);
-                params.setMargins(0, 0, 8, 0);
-                iv.setLayoutParams(params);
-                Glide.with(iv)
-                        .load(url)
-                        .placeholder(R.drawable.ic_placeholder_profile)
-                        //.transform(new BlurTransformation(this, 15)) // אם תרצי טשטוש
-                        .into(iv);
-                blurredContainer.addView(iv);
-            }
+        if (galleryUrls == null) return;
+
+        int sizeDp = 96; // נסה/י 120–140dp
+        int sizePx = dp(sizeDp);
+        int marginPx = dp(8);
+
+        for (String url : galleryUrls) {
+            ImageView iv = new ImageView(this);
+            LinearLayout.LayoutParams params =
+                    new LinearLayout.LayoutParams(sizePx, sizePx);
+            params.setMargins(0, 0, marginPx, 0);
+            iv.setLayoutParams(params);
+            iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            iv.setAdjustViewBounds(true);
+
+            Glide.with(this)
+                    .load(url)
+                    .placeholder(R.drawable.ic_placeholder_profile)
+                    .override(sizePx, sizePx)
+                    .into(iv);
+
+            // לחיצה שתגדיל לתמונה הראשית
+            iv.setOnClickListener(v ->
+                    Glide.with(this).load(url).into(imageProfile) // imageProfile מה-XML
+            );
+
+            blurredContainer.addView(iv);
         }
     }
+
 
     private Double getMatchPercentForUser(String userId) {
         MatchPercentageBoundary mpb = matchPercentageMap.get(userId);
