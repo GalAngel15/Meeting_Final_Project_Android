@@ -3,6 +3,8 @@ agp = "8.7.2"
 androidsvgAar = "1.4"
 circleimageview = "3.1.0"
 compilerVersion = "4.15.1"
+coreKtx = "1.16.0"
+firebaseBom = "33.2.0"
 firebaseBomVersion = "33.1.2"
 firebaseStorage = "21.0.1"
 firebaseuiFirebaseUiAuth = "8.0.2"
@@ -21,6 +23,7 @@ okhttp = "4.9.1"
 playServicesLocation = "21.0.1"
 playServicesMaps = "18.2.0"
 retrofit = "2.9.0"
+volley = "1.2.1"
 
 [libraries]
 androidsvg = { module = "com.caverock:androidsvg", version.ref = "androidsvgAar" }
@@ -29,8 +32,11 @@ circleimageview = { module = "de.hdodenhof:circleimageview", version.ref = "circ
 com-firebaseui-firebase-ui-auth = { module = "com.firebaseui:firebase-ui-auth", version.ref = "firebaseuiFirebaseUiAuth" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 converter-scalars = { module = "com.squareup.retrofit2:converter-scalars", version.ref = "retrofit" }
+core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-bom-v3320 = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-database = { module = "com.google.firebase:firebase-database" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseStorage" }
 github-glide = { module = "com.github.bumptech.glide:glide", version.ref = "glideVersion" }
 glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compilerVersion" }
@@ -51,6 +57,7 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+volley = { group = "com.android.volley", name = "volley", version.ref = "volley" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

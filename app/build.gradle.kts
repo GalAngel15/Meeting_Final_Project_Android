@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.meeting_project"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.meeting_project"
@@ -41,6 +41,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth:22.0.0")
     implementation (libs.gson)
     implementation(project(":chatlibrary"))
+    implementation(libs.volley)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -53,21 +54,20 @@ dependencies {
     implementation(libs.converter.gson)
 
     // firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation(platform(libs.firebase.bom.v3320))
+    implementation (libs.firebase.messaging)
     implementation ("com.firebaseui:firebase-ui-auth:8.0.2")
-    implementation ("com.github.bumptech.glide:glide:4.15.1")
-    annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.database)
     implementation(libs.google.firebase.auth)
-//    implementation(libs.androidsvg.aar)
     implementation (libs.firebase.storage)
+
+    implementation ("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
+
     implementation (libs.circleimageview)
     implementation (libs.androidsvg)
-//    implementation (libs.com.firebaseui.firebase.ui.auth)
-//    implementation (libs.github.glide)
-//    annotationProcessor (libs.glide.compiler)
-//    implementation(platform(libs.google.firebase.bom))
+
     //location
     implementation (libs.play.services.maps)
     implementation (libs.play.services.location)
@@ -76,6 +76,8 @@ dependencies {
 
     implementation (libs.logging.interceptor.v4120)
 
-    implementation (libs.converter.scalars) // ← זה החלק שחסר
+    implementation (libs.converter.scalars)
+    implementation (libs.core.ktx) // או Java, לא חובה
+
 
 }

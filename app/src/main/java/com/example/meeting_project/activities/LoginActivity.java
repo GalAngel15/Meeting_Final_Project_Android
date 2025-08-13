@@ -2,6 +2,7 @@ package com.example.meeting_project.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -16,10 +17,12 @@ import com.example.meeting_project.boundaries.UserResponse;
 import com.example.meeting_project.apiClients.User_ApiClient;
 import com.example.meeting_project.APIRequests.UserApi;
 import com.example.meeting_project.managers.AppManager;
+import com.example.meeting_project.notifications.TokenUploader;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -78,7 +81,8 @@ public class LoginActivity extends AppCompatActivity {
                         UserSessionManager.saveFirebaseUserId(LoginActivity.this, fbUser.getUid());
                     }
                     Toast.makeText(LoginActivity.this, "התחברת בהצלחה", Toast.LENGTH_SHORT).show();
-
+                    // עדכון טוקן של המשתמש
+                    registerTokenToServer();
                     // מעבר למסך הבית
                     Intent intent = new Intent(LoginActivity.this, HomeActivity.class); // שים לב להתאים את השם
                     startActivity(intent);
@@ -95,6 +99,14 @@ public class LoginActivity extends AppCompatActivity {
                 showError("שגיאה בשרת: " + t.getMessage());
             }
         });
+    }
+
+    private void registerTokenToServer() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnSuccessListener(token ->
+                        TokenUploader.sendTokenToServer(getApplicationContext(), token))
+                .addOnFailureListener(e -> Log.e("FCM", "getToken failed", e));
+
     }
 
     private void showError(String message) {

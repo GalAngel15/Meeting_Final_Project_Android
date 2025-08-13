@@ -1,9 +1,9 @@
 package com.example.meeting_project.activities;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,6 +28,9 @@ public class WelcomeActivity extends AppCompatActivity {
             Log.d("WelcomeActivity", "Chat RetrofitClient initialized to " + ApiConfig.BASE_IP);
         }
 
+        // Ask for notification permission on Android 13 and above
+        requestNotificationPermission();
+
         AppManager.setContext(this.getApplicationContext());
     }
 
@@ -44,22 +47,23 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void setBtnClick(){
-        btnRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(WelcomeActivity.this, RegisterActivity.class);
-                //Intent intent = new Intent(WelcomeActivity.this, Activity_quiz_mbti.class);
-                //Intent intent = new Intent(WelcomeActivity.this, Activity_questionnaire.class);
-                startActivity(intent);
-            }
+        btnRegister.setOnClickListener(v -> {
+            Intent intent = new Intent(WelcomeActivity.this, RegisterActivity.class);
+            startActivity(intent);
         });
 
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(WelcomeActivity.this, LoginActivity.class);
-                startActivity(intent);
-            }
+        btnLogin.setOnClickListener(v -> {
+            Intent intent = new Intent(WelcomeActivity.this, LoginActivity.class);
+            startActivity(intent);
         });
+
+    }
+
+    private void requestNotificationPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 1001);
+            }
+        }
     }
 }
