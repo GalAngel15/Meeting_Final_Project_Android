@@ -135,7 +135,7 @@ public class NotificationApiService {
     private static Notification mapDto(NotificationDto dto, String fallbackUserId) {
         Notification n = new Notification();
         n.setId(dto.id != null ? dto.id : ("notif_" + UUID.randomUUID()));
-        n.setUserId(dto.id != null ? dto.id : fallbackUserId);
+        n.setUserId(fallbackUserId);
         n.setFromUserId(dto.fromUserId);
         n.setFromUserName(dto.fromUserName);
         n.setFromUserImage(dto.fromUserImage);

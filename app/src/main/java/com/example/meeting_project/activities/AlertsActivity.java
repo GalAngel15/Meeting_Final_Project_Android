@@ -117,12 +117,16 @@ public class AlertsActivity extends BaseNavigationActivity implements Notificati
 
         NotificationApiService.fetchUserNotifications(this, uid, new NotificationApiService.FetchCallback() {
             @Override
-            public void onSuccess(List<Notification> notifications) {
+            public void onSuccess(List<Notification> serverList) {
                 runOnUiThread(() -> {
-                    // אל תדרוך על מחיקה שבוצעה בזמן הטעינה
+                    // מיזוג לתוך המקומי (לא דריסה)
+                    notificationManager.upsertFromServer(uid, serverList);
+
+                    // מציגים תמיד את המקומי אחרי המיזוג
+                    List<Notification> local = notificationManager.getNotificationsForUser(uid);
                     if (!justClearedAll && adapter != null) {
-                        adapter.updateNotifications(notifications);
-                        toggleEmptyState(notifications == null || notifications.isEmpty());
+                        adapter.updateNotifications(local);
+                        toggleEmptyState(local == null || local.isEmpty());
                     }
                     setLoading(false);
                 });
@@ -131,7 +135,7 @@ public class AlertsActivity extends BaseNavigationActivity implements Notificati
             @Override
             public void onFailure(String error) {
                 runOnUiThread(() -> {
-                    // נפילה: הצג מקומי
+                    // נפילה – פשוט מציגים את המקומי הקיים
                     List<Notification> local = notificationManager.getNotificationsForUser(uid);
                     if (!justClearedAll && adapter != null) {
                         adapter.updateNotifications(local);
@@ -142,6 +146,7 @@ public class AlertsActivity extends BaseNavigationActivity implements Notificati
             }
         });
     }
+
 
     private void toggleEmptyState(boolean isEmpty) {
         if (isEmpty) {

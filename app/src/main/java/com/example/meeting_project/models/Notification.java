@@ -88,11 +88,18 @@ public class Notification implements Serializable {
                 notification.relatedId = data.get("chatId");
                 notification.fromUserId = data.get("fromUserId"); // ← להוסיף
                 notification.fromUserName = data.get("fromName");
+                if (data.get("fromUserImage") != null) {
+                    notification.fromUserImage = data.get("fromUserImage");
+                }
                 break;
 
             case MATCH:
                 notification.fromUserId = data.get("otherUserId");
                 notification.fromUserName = data.get("otherName");
+                String img = data.get("otherImage");
+                if (img == null || img.trim().isEmpty()) img = data.get("fromUserImage");
+                notification.fromUserImage = img;
+
                 notification.relatedId = "match_" + userId + "_" + notification.fromUserId;
                 break;
 

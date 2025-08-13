@@ -44,11 +44,12 @@ public class NotificationHelper {
 
     public static void showMessage(Context ctx, String title, String body, String chatId) {
         Intent open = new Intent(ctx, ChatActivity.class);
-        open.putExtra("chatId", chatId);
+        open.putExtra("chat_id", chatId);
         open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pi = PendingIntent.getActivity(
-                ctx, chatId.hashCode(), open,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                ctx, chatId != null ? chatId.hashCode() : 0,
+                open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
 
         NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CHANNEL_MESSAGES)
                 .setSmallIcon(R.mipmap.ic_launcher)

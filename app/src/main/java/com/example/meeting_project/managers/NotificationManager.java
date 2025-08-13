@@ -13,6 +13,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -239,6 +240,43 @@ public class NotificationManager {
     }
 
     /** החלפה מלאה של רשימת המשתמש מהשרת + החלת cleared-ts ו-read-set. */
+//    public synchronized void upsertFromServer(String userId, List<Notification> serverList) {
+//        if (userId == null) return;
+//
+//        List<Notification> all = getAllNotifications();
+//        long cut = getClearedTs(userId);
+//        Set<String> readSet = getReadSet(userId);
+//
+//        // אינדקס מהיר לפי id קיים אצל המשתמש הזה
+//        HashMap<String, Integer> idx = new HashMap<>();
+//        for (int i = 0; i < all.size(); i++) {
+//            Notification n = all.get(i);
+//            if (userId.equals(n.getUserId()) && n.getId() != null) idx.put(n.getId(), i);
+//        }
+//        boolean changed = false;
+//
+//        if (serverList != null && !serverList.isEmpty()) {
+//            for (Notification n : serverList) {
+//                if (n == null) continue;
+//                if (n.getUserId() == null)  n.setUserId(userId);
+//                if (n.getId() == null)      n.setId("srv_" + System.currentTimeMillis());
+//                if (n.getTimestamp() == 0L) n.setTimestamp(System.currentTimeMillis());
+//                if (n.getTimestamp() <= cut) continue;                 // כובד "מחק הכל"
+//                if (readSet.contains(signature(n))) n.setRead(true);   // כובד "נקרא"
+//
+//                Integer pos = idx.get(n.getId());
+//                if (pos != null) all.set(pos, n); else all.add(n);
+//            }
+//            saveNotifications(all);
+//            notifyListeners();
+//            notifyUnread(userId);
+//        } else {
+//            // שרת החזיר ריק? לא נוגעים ברשימה המקומית (שומר על FCM/מקומי)
+//            notifyListeners();
+//            notifyUnread(userId);
+//        }
+//    }
+
     public synchronized void upsertFromServer(String userId, List<Notification> serverList) {
         if (userId == null) return;
 
@@ -246,33 +284,81 @@ public class NotificationManager {
         long cut = getClearedTs(userId);
         Set<String> readSet = getReadSet(userId);
 
-        // אינדקס מהיר לפי id קיים אצל המשתמש הזה
+        // אינדקס מהיר לרשומות קיימות של המשתמש לפי id
         java.util.HashMap<String, Integer> idx = new java.util.HashMap<>();
         for (int i = 0; i < all.size(); i++) {
             Notification n = all.get(i);
-            if (userId.equals(n.getUserId()) && n.getId() != null) idx.put(n.getId(), i);
+            if (userId.equals(n.getUserId()) && n.getId() != null) {
+                idx.put(n.getId(), i);
+            }
         }
+
+        boolean changed = false;
 
         if (serverList != null && !serverList.isEmpty()) {
             for (Notification n : serverList) {
                 if (n == null) continue;
+
                 if (n.getUserId() == null)  n.setUserId(userId);
-                if (n.getId() == null)      n.setId("srv_" + System.currentTimeMillis());
+                if (n.getId() == null)      n.setId("srv_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID());
                 if (n.getTimestamp() == 0L) n.setTimestamp(System.currentTimeMillis());
-                if (n.getTimestamp() <= cut) continue;                 // כובד "מחק הכל"
-                if (readSet.contains(signature(n))) n.setRead(true);   // כובד "נקרא"
+
+                // כיבוד "מחק הכל" למשתמש הזה
+                if (n.getTimestamp() <= cut) continue;
+
+                // אם המשתמש סימן בעבר כנקרא לפי signature – שמור נקרא
+                if (readSet.contains(signature(n))) n.setRead(true);
 
                 Integer pos = idx.get(n.getId());
-                if (pos != null) all.set(pos, n); else all.add(n);
+                if (pos != null) {
+                    // שמור isRead=true אם היה כבר מקומית
+                    Notification existed = all.get(pos);
+                    if (existed.isRead()) n.setRead(true);
+
+                    // עדכון במקום
+                    if (!equalsShallow(existed, n)) {
+                        all.set(pos, n);
+                        changed = true;
+                    }
+                } else {
+                    all.add(n);
+                    idx.put(n.getId(), all.size() - 1); // חשוב כדי למנוע כפילויות מאותה תשובה
+                    changed = true;
+                }
             }
-            saveNotifications(all);
-            notifyListeners();
-            notifyUnread(userId);
+
+            if (changed) {
+                saveNotifications(all);
+                notifyListeners();
+                notifyUnread(userId);
+            } else {
+                // אין שינוי ממשי – עדיין לעדכן badge אם צריך
+                notifyUnread(userId);
+            }
         } else {
-            // שרת החזיר ריק? לא נוגעים ברשימה המקומית (שומר על FCM/מקומי)
+            // שרת החזיר ריק? לא נוגעים במקומי (שומר על מה שהגיע ב-FCM)
             notifyListeners();
             notifyUnread(userId);
         }
+    }
+
+    /** השוואה שטחית לשיקול "האם באמת השתנה" (אפשר להרחיב לפי שדות רלוונטיים) */
+    private boolean equalsShallow(Notification a, Notification b) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
+        return safeEq(a.getTitle(), b.getTitle())
+                && safeEq(a.getMessage(), b.getMessage())
+                && safeEq(a.getFromUserId(), b.getFromUserId())
+                && safeEq(a.getFromUserName(), b.getFromUserName())
+                && safeEq(a.getFromUserImage(), b.getFromUserImage())
+                && a.getType() == b.getType()
+                && a.isRead() == b.isRead()
+                && a.getTimestamp() == b.getTimestamp()
+                && safeEq(a.getRelatedId(), b.getRelatedId());
+    }
+
+    private boolean safeEq(Object x, Object y) {
+        return (x == y) || (x != null && x.equals(y));
     }
 
     // ========= אחסון/עזר =========
