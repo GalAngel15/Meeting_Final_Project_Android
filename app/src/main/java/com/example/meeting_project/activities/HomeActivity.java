@@ -33,6 +33,7 @@ import com.example.meeting_project.APIRequests.QuestionsApi;
 import com.example.meeting_project.APIRequests.UserApi;
 import com.example.meeting_project.managers.AppManager;
 import com.example.meeting_project.managers.BaseNavigationActivity;
+import com.example.meeting_project.managers.NotificationManager;
 import com.example.meeting_project.objectOfMbtiTest.SubmitResponse;
 import com.example.meeting_project.R;
 import com.example.meeting_project.utilities.CardTransitionAnimator;
@@ -76,13 +77,19 @@ public class HomeActivity extends BaseNavigationActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_home); // קובץ ה־XML שלך
         findView();
         potentialMatchesList = new ArrayList<>();
 
         loggedInUserId = UserSessionManager.getServerUserId(this);
         firebaseId = UserSessionManager.getFirebaseUserId(this);
         AppManager.setContext(this.getApplicationContext());
+
+        NotificationManager notificationManager = NotificationManager.getInstance(this);
+
+        int count = notificationManager.getUnreadCount(loggedInUserId);
+        Log.d("HomeActivity", "Unread notifications count: " + count);
+
+        updateNotificationBadge();
 
         questionCategoryMap = new HashMap<>();
         preloadQuestionCategories();

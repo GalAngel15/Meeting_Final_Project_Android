@@ -2,6 +2,7 @@ package com.example.meeting_project.managers;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageButton;
@@ -24,11 +25,13 @@ import com.example.meeting_project.activities.Conversations;
 import com.example.meeting_project.activities.HomeActivity;
 import com.example.meeting_project.activities.ProfileActivity;
 import com.example.meeting_project.activities.activity_preferences;
+import com.example.meeting_project.models.Notification;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class BaseNavigationActivity extends AppCompatActivity
@@ -66,31 +69,85 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(getLayoutResourceId());
 
-        notificationManager = NotificationManager.getInstance(this);
         currentUserId = getCurrentUserId();
+        notificationManager = NotificationManager.getInstance(this);
 
         initDrawerViews();
         initDrawerLogic();
         initBottomNavViews();
         initBottomNavLogic();
+
+        // רישום מוקדם למאזין
+        if (notificationManager != null && currentUserId != null) {
+            notificationManager.addListener(this);
+        }
+
         initNotificationBadge();
+
+        // טעינה מוקדמת של התראות
+        loadNotificationsAndUpdateBadge();
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        // ודא רישום מאזין וטעינת באדג'
+        if (notificationManager != null && currentUserId != null) {
+            notificationManager.addListener(this);
+            updateNotificationBadge();
+        }
+    }
+    
+    @Override
     protected void onResume() {
         super.onResume();
-        // הרשמה למאזין התראות
-        notificationManager.addListener(this);
+        // ודא שהמאזין עדיין רשום ועדכן באדג'
+        if (notificationManager != null && currentUserId != null) {
+            notificationManager.addListener(this);
+            updateNotificationBadge();
+            // טען מהשרת ברקע
+            loadNotificationsAndUpdateBadge();
+        }
+    }
+
+    private void loadNotificationsAndUpdateBadge() {
+        if (currentUserId == null || currentUserId.isEmpty()) return;
+
+        // עדכון מיידי מהמקומי
         updateNotificationBadge();
+
+        // טעינה מהשרת ברקע
+        NotificationApiService.fetchUserNotifications(
+                this,
+                currentUserId,
+                new NotificationApiService.FetchCallback() {
+                    @Override
+                    public void onSuccess(List<Notification> serverList) {
+                        // הנתונים יתעדכנו אוטומטית דרך המאזין
+                    }
+
+                    @Override
+                    public void onFailure(String error) {
+                        // נשאר עם הנתונים המקומיים
+                    }
+                }
+        );
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        // ביטול הרשמה למאזין התראות
-        notificationManager.removeListener(this);
+        // שמור על המאזין למען הבאדג' - אל תסיר!
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // הסרת מאזין רק כשהאקטיביטי מושמד
+        if (notificationManager != null) {
+            notificationManager.removeListener(this);
+        }
+    }
 
     private void initDrawerViews() {
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -141,20 +198,30 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
     }
 
     private void initNotificationBadge() {
-        updateNotificationBadge();
+        if (currentUserId != null) {
+            updateNotificationBadge();
+        }
     }
-    protected void updateNotificationBadge() {
-        if (notificationBadge != null && currentUserId != null) {
-            int unreadCount = notificationManager.getUnreadCount(currentUserId);
 
-            if (unreadCount > 0) {
-                notificationBadge.setVisibility(View.VISIBLE);
-                notificationBadge.setText(unreadCount > 99 ? "99+" : String.valueOf(unreadCount));
-            } else {
-                notificationBadge.setVisibility(View.GONE);
+    protected void updateNotificationBadge() {
+        if (notificationBadge != null && currentUserId != null && notificationManager != null) {
+            try {
+                int unreadCount = notificationManager.getUnreadCount(currentUserId);
+
+                runOnUiThread(() -> {
+                    if (unreadCount > 0) {
+                        notificationBadge.setVisibility(View.VISIBLE);
+                        notificationBadge.setText(unreadCount > 99 ? "99+" : String.valueOf(unreadCount));
+                    } else {
+                        notificationBadge.setVisibility(View.GONE);
+                    }
+                });
+            } catch (Exception e) {
+                Log.e("BaseNavigationActivity", "Error updating notification badge", e);
             }
         }
     }
+
     protected void createMessageNotification(String fromUserId, String fromUserName,
                                              String fromUserImage, String chatId, String messageContent) {
         // אם אני השולח/ת – לא יוצרים התראה לעצמי
@@ -182,13 +249,14 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
     }
     @Override
     public void onNotificationsChanged() {
-        runOnUiThread(this::updateNotificationBadge);
+        updateNotificationBadge();
     }
 
     @Override
     public void onUnreadCountChanged(int count) {
-        runOnUiThread(this::updateNotificationBadge);
+        updateNotificationBadge();
     }
+
     private void setButton(MaterialButton button, int id) {
         button.setOnClickListener(v -> {
             Class<?> targetActivity = bottomMap.get(id);

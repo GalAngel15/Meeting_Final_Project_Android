@@ -21,6 +21,7 @@ import com.example.meeting_project.models.Notification;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textview.MaterialTextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AlertsActivity extends BaseNavigationActivity implements NotificationAdapter.OnNotificationClickListener {
@@ -72,10 +73,20 @@ public class AlertsActivity extends BaseNavigationActivity implements Notificati
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new NotificationAdapter(this, this);
         recyclerView.setAdapter(adapter);
+
         // טען בתחילה מהמקומי כדי להציג משהו מהר
-        List<Notification> local = notificationManager.getNotificationsForUser(userId);
-        adapter.updateNotifications(local);
-        toggleEmptyState(local == null || local.isEmpty());
+        List<Notification> all = notificationManager.getNotificationsForUser(userId);
+
+        // ✨ סינון מקומי – רק התראות ממשתמשים אחרים
+        List<Notification> filtered = new ArrayList<>();
+        for (Notification n : all) {
+            if (n != null && n.getFromUserId() != null && !n.getFromUserId().equals(userId)) {
+                filtered.add(n);
+            }
+        }
+
+        adapter.updateNotifications(filtered);
+        toggleEmptyState(filtered.isEmpty());
     }
 
     private void setupButtons() {
@@ -148,6 +159,7 @@ public class AlertsActivity extends BaseNavigationActivity implements Notificati
     }
 
 
+
     private void toggleEmptyState(boolean isEmpty) {
         if (isEmpty) {
             showEmptyState();
@@ -211,22 +223,100 @@ public class AlertsActivity extends BaseNavigationActivity implements Notificati
         Toast.makeText(this, "התראה נמחקה", Toast.LENGTH_SHORT).show();
     }
 
+//    private void openChatFromNotification(Notification n) {
+//        try {
+//            Intent i = new Intent(this, ChatActivity.class);
+//            if (n.getRelatedId() != null && !n.getRelatedId().trim().isEmpty())
+//                i.putExtra("chat_id", n.getRelatedId().trim());
+//            if (n.getFromUserId() != null && !n.getFromUserId().trim().isEmpty())
+//                i.putExtra("receiver_id", n.getFromUserId().trim());
+//            if (n.getFromUserName() != null && !n.getFromUserName().trim().isEmpty())
+//                i.putExtra("user_name", n.getFromUserName().trim());
+//            if (n.getFromUserImage() != null && !n.getFromUserImage().trim().isEmpty())
+//                i.putExtra("user_image", n.getFromUserImage().trim());
+//            startActivity(i);
+//        } catch (Exception e) {
+//            Log.e("AlertsActivity", "Error opening chat: " + e.getMessage(), e);
+//            Toast.makeText(this, "שגיאה בפתיחת הצ'אט", Toast.LENGTH_LONG).show();
+//        }
+//    }
+
     private void openChatFromNotification(Notification n) {
         try {
+            Log.d("AlertsActivity", "Opening chat from notification: " + n.toString());
+
+            // בדיקות בסיסיות
+            if (n.getFromUserId() == null || n.getFromUserId().trim().isEmpty()) {
+                Toast.makeText(this, "לא ניתן לפתוח צ'אט - חסר מזהה משתמש", Toast.LENGTH_SHORT).show();
+                Log.e("AlertsActivity", "FromUserId is null or empty");
+                return;
+            }
+
+            String senderId = n.getFromUserId().trim();
+            String chatId = null;
+
+            // נסה לקבל chatId מהמקומות השונים
+            if (isNotEmpty(n.getRelatedId())) {
+                chatId = n.getRelatedId().trim();
+            }
+
             Intent i = new Intent(this, ChatActivity.class);
-            if (n.getRelatedId() != null && !n.getRelatedId().trim().isEmpty())
-                i.putExtra("chat_id", n.getRelatedId().trim());
-            if (n.getFromUserId() != null && !n.getFromUserId().trim().isEmpty())
-                i.putExtra("receiver_id", n.getFromUserId().trim());
-            if (n.getFromUserName() != null && !n.getFromUserName().trim().isEmpty())
+
+            // הוסף את כל הפרמטרים הנדרשים
+            i.putExtra("receiver_id", senderId);
+
+            if (chatId != null) {
+                i.putExtra("chat_id", chatId);
+                Log.d("AlertsActivity", "Using chatId: " + chatId);
+            }
+
+            if (isNotEmpty(n.getFromUserName())) {
                 i.putExtra("user_name", n.getFromUserName().trim());
-            if (n.getFromUserImage() != null && !n.getFromUserImage().trim().isEmpty())
+                i.putExtra("receiver_name", n.getFromUserName().trim()); // שם נוסף למקרה
+            }
+
+            if (isNotEmpty(n.getFromUserImage())) {
                 i.putExtra("user_image", n.getFromUserImage().trim());
+                i.putExtra("receiver_image", n.getFromUserImage().trim()); // שם נוסף למקרה
+            }
+
+            // הוסף המשתמש הנוכחי
+            if (isNotEmpty(userId)) {
+                i.putExtra("sender_id", userId);
+            }
+
+            // הוסף פלגים מיוחדים
+            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+            Log.d("AlertsActivity", "Starting ChatActivity with receiver_id: " + senderId);
             startActivity(i);
+
         } catch (Exception e) {
             Log.e("AlertsActivity", "Error opening chat: " + e.getMessage(), e);
-            Toast.makeText(this, "שגיאה בפתיחת הצ'אט", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "שגיאה בפתיחת הצ'אט: " + e.getMessage(), Toast.LENGTH_LONG).show();
+
+            // נסה פתיחה חלופית
+            tryAlternativeChatOpen(n);
         }
+    }
+    private void tryAlternativeChatOpen(Notification n) {
+        try {
+            // נסה דרך ChooseUserForChat במקום
+            Intent i = new Intent(this, ChooseUserForChat.class);
+            if (isNotEmpty(n.getFromUserId())) {
+                i.putExtra("selected_user_id", n.getFromUserId());
+            }
+            startActivity(i);
+            Toast.makeText(this, "נפתח מסך בחירת צ'אט", Toast.LENGTH_SHORT).show();
+        } catch (Exception e2) {
+            Log.e("AlertsActivity", "Alternative chat open also failed", e2);
+            Toast.makeText(this, "לא ניתן לפתוח צ'אט", Toast.LENGTH_LONG).show();
+        }
+    }
+    // פונקציה עוזרת לבדיקת מחרוזות
+    private boolean isNotEmpty(String s) {
+        return s != null && !s.trim().isEmpty() && !"null".equalsIgnoreCase(s.trim());
     }
 
     private void navigateToProfile(String userId) {

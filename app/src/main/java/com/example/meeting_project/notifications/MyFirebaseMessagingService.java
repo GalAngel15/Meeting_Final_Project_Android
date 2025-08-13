@@ -1,6 +1,7 @@
 package com.example.meeting_project.notifications;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -46,16 +47,16 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(@NonNull RemoteMessage msg) {
         final Context ctx = getApplicationContext();
 
-        // דאגי שהערוצים קיימים (אנדרואיד 8+)
-        com.example.meeting_project.notifications.NotificationHelper.ensureChannels(ctx);
+        // ודא שהערוצים קיימים
+        NotificationHelper.ensureChannels(ctx);
 
         // data מה־FCM
         Map<String, String> data = msg.getData() != null ? msg.getData() : java.util.Collections.emptyMap();
 
-        // טיפוס ההתראה: "message" / "match" / "like" / ...
+        // טיפוס ההתראה
         String type = data.get("type");
 
-        // כותרת/תוכן: קודם מה־notification, אחרת מה־data
+        // כותרת/תוכן
         String title = (msg.getNotification() != null && msg.getNotification().getTitle() != null)
                 ? msg.getNotification().getTitle()
                 : firstNonEmpty(data.get("title"), "התראה");
@@ -64,37 +65,56 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 : firstNonEmpty(data.get("body"), "");
 
         // המשתמש שמחובר במכשיר
-        String currentUserId = com.example.meeting_project.UserSessionManager.getServerUserId(ctx);
+        String currentUserId = UserSessionManager.getServerUserId(ctx);
         if (isEmpty(currentUserId)) {
-            // אין משתמש מקומי – עדיין אפשר להראות נוטיפיקציה, אבל לא נשמור מקומית
+            Log.d("FCM", "No current user - showing system notification only");
             showSystemNotificationByType(ctx, type, title, body, data);
             return;
         }
 
-        // אם השרת שלח שדה נמען – ודאי שההתראה מיועדת למשתמש הזה
+        // ** בדיקות חזקות למניעת התראות עצמיות **
+        String fromUserId = firstNonEmpty(data.get("fromUserId"), data.get("senderId"));
         String toUserId = firstNonEmpty(data.get("toUserId"), data.get("userId"), data.get("recipientId"));
-        if (!isEmpty(toUserId) && !toUserId.equals(currentUserId)) {
-            // ההתראה לא שייכת למשתמש שמחובר במכשיר הזה
+
+        // אם יש שולח מפורש - ודא שזה לא המשתמש הנוכחי
+        if (!isEmpty(fromUserId) && fromUserId.equals(currentUserId)) {
+            Log.d("FCM", "Notification from current user to themselves - ignoring");
             return;
         }
 
-        // 1) שמירה מקומית – כדי שיופיע במסך ההתראות (AlertsActivity)
-        com.example.meeting_project.managers.NotificationManager
-                .getInstance(ctx)
+        // אם יש נמען מפורש - ודא שזה המשתמש הנוכחי
+        if (!isEmpty(toUserId) && !toUserId.equals(currentUserId)) {
+            Log.d("FCM", "Notification not for current user - ignoring");
+            return;
+        }
+
+        Log.d("FCM", String.format("Processing notification: type=%s, from=%s, to=%s, current=%s",
+                type, fromUserId, toUserId, currentUserId));
+
+        // 1) שמירה מקומית
+        NotificationManager.getInstance(ctx)
                 .addFirebaseNotification(currentUserId, title, body, data);
 
-        // 2) הצגה גם במגש המערכת לפי הטיפוס
+        // 2) הצגה במגש המערכת
         showSystemNotificationByType(ctx, type, title, body, data);
     }
 
+
     private void showSystemNotificationByType(Context ctx, String type, String title, String body, Map<String, String> data) {
-        String currentUserId = com.example.meeting_project.UserSessionManager.getServerUserId(ctx);
+        String currentUserId = UserSessionManager.getServerUserId(ctx);
+
+        // בדיקה נוספת - אל תציג אם המשתמש הנוכחי הוא השולח
+        String fromUserId = firstNonEmpty(data.get("fromUserId"), data.get("senderId"));
+        if (!isEmpty(fromUserId) && !isEmpty(currentUserId) && fromUserId.equals(currentUserId)) {
+            Log.d("FCM", "Skipping system notification - current user is sender");
+            return;
+        }
 
         if ("match".equalsIgnoreCase(type)) {
-            // אם קיים מזהה היוזם – דלג אם זה המשתמש הנוכחי
             String initiator = firstNonEmpty(data.get("initiatorUserId"), data.get("fromUserId"));
-            if (!isEmpty(initiator) && initiator.equals(currentUserId)) {
-                return; // אל תציג התראה ליוזם
+            if (!isEmpty(initiator) && !isEmpty(currentUserId) && initiator.equals(currentUserId)) {
+                Log.d("FCM", "Skipping match notification - current user is initiator");
+                return;
             }
 
             String otherUserId = firstNonEmpty(data.get("otherUserId"), data.get("fromUserId"));
@@ -108,6 +128,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             return;
         }
 
+        // ברירת מחדל
         String chatId = firstNonEmpty(data.get("chatId"), data.get("chat_id"), data.get("relatedId"));
         NotificationHelper.showMessage(ctx, title, body, firstNonEmpty(chatId, ""));
     }

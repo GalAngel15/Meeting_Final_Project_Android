@@ -67,18 +67,38 @@ public class NotificationManager {
     public void addNotification(Notification n) {
         if (n == null) return;
 
-        // אל תצרי התראה על הודעה ש"אני" שלחתי (במכשיר של השולח)
+        String currentUser = getCurrentUserId();
+
+        // בדיקה חזקה: אל תוסיף התראות שהמשתמש הנוכחי שלח
+        if (currentUser != null && n.getFromUserId() != null) {
+            if (currentUser.equals(n.getFromUserId())) {
+                Log.d(TAG, "Skipping notification - user sent to themselves: " + currentUser);
+                return;
+            }
+        }
+
+        // בדיקה נוספת למשתמש היעד
+        if (n.getUserId() == null) {
+            Log.d(TAG, "Notification has no target userId, skipping");
+            return;
+        }
+
+        if (currentUser != null && !currentUser.equals(n.getUserId())) {
+            Log.d(TAG, "Notification not for current user, skipping");
+            return;
+        }
+
+        // אל תצור התראה על הודעה שאני שלחתי (בדיקה נוספת)
         if (n.getType() == Notification.NotificationType.MESSAGE) {
-            String current = getCurrentUserId();
-            if (current != null && current.equals(n.getFromUserId())) {
-                Log.d(TAG, "Skipping self-sent message notification on sender device");
+            if (currentUser != null && currentUser.equals(n.getFromUserId())) {
+                Log.d(TAG, "Skipping self-sent message notification");
                 return;
             }
         }
 
         List<Notification> list = getAllNotifications();
 
-        // מניעת כפילויות גס (על סמך fromUserId+type+טווח זמן קצר)
+        // מניעת כפילויות בסיסית
         boolean exists = list.stream().anyMatch(x -> {
             if (n.getFromUserId() != null && x.getFromUserId() != null) {
                 return x.getFromUserId().equals(n.getFromUserId())
@@ -101,26 +121,63 @@ public class NotificationManager {
         notifyListeners();
     }
 
+
+//    public void addFirebaseNotification(String userId, String title, String body, Map<String, String> data) {
+//        // אם זו הודעה שמגיעה מהשולח לעצמו — דלג
+//        if (data != null && "message".equals(data.get("type"))) {
+//            String from = data.get("fromUserId");
+//            if (from != null && from.equals(userId)) {
+//                Log.d(TAG, "Skipping Firebase self message for userId=" + userId);
+//                return;
+//            }
+//        }
+//        Notification n = Notification.fromFirebaseData(userId, title, body, data);
+//        addNotification(n);
+//    }
+
     public void addFirebaseNotification(String userId, String title, String body, Map<String, String> data) {
-        // אם זו הודעה שמגיעה מהשולח לעצמו — דלג
-        if (data != null && "message".equals(data.get("type"))) {
-            String from = data.get("fromUserId");
-            if (from != null && from.equals(userId)) {
-                Log.d(TAG, "Skipping Firebase self message for userId=" + userId);
+        String currentUser = getCurrentUserId();
+
+        // בדיקה ראשונית - ודא שהמשתמש הנוכחי הוא המיועד
+        if (currentUser == null || !currentUser.equals(userId)) {
+            Log.d(TAG, "Firebase notification not for current user");
+            return;
+        }
+
+        // בדיקה מוקדמת - אם זו הודעה מהמשתמש לעצמו – דלג
+        if (data != null) {
+            String fromUserId = data.get("fromUserId");
+            String senderId = data.get("senderId");
+            String actualSender = fromUserId != null ? fromUserId : senderId;
+
+            if (actualSender != null && actualSender.equals(currentUser)) {
+                Log.d(TAG, "Skipping Firebase notification - user sent to themselves: " + currentUser);
+                return;
+            }
+
+            // בדיקה נוספת לסוג הודעה
+            String type = data.get("type");
+            if ("message".equals(type) && actualSender != null && actualSender.equals(currentUser)) {
+                Log.d(TAG, "Skipping Firebase self message for userId=" + currentUser);
                 return;
             }
         }
+
         Notification n = Notification.fromFirebaseData(userId, title, body, data);
         addNotification(n);
     }
 
     public List<Notification> getNotificationsForUser(String userId) {
+        if (userId == null) return new ArrayList<>();
+
         long cut = getClearedTs(userId);
         Set<String> readSet = getReadSet(userId);
 
         return getAllNotifications().stream()
                 .filter(n -> userId.equals(n.getUserId()))
                 .filter(n -> n.getTimestamp() > cut) // אל תציג ישנות לפני מחיקה אחרונה
+                // **פילטור חזק: רק התראות שהמשתמש לא שלח בעצמו**
+                .filter(n -> n.getFromUserId() == null || !userId.equals(n.getFromUserId()))
                 .peek(n -> { if (readSet.contains(signature(n))) n.setRead(true); })
                 .sorted(Comparator.comparingLong(Notification::getTimestamp).reversed())
                 .collect(Collectors.toList());
