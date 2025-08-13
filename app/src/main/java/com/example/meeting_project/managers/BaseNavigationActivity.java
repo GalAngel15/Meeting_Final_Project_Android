@@ -112,7 +112,6 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
             Class<?> targetActivity = drawerMap.get(item.getItemId());
             if (targetActivity != null && !targetActivity.equals(this.getClass())) {
                 startActivity(new Intent(this, targetActivity));
-                finish();
             }
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
