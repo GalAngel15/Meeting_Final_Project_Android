@@ -32,6 +32,11 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class Activity_questionnaire extends AppCompatActivity {
+    public static final String EXTRA_FLOW = "extra_flow";
+    public static final String FLOW_FROM_APP = "from_app";           // נכנסנו מתוך האפליקציה (בית/צ'אט/התראות/פרופיל)
+    public static final String FLOW_FROM_MBTI = "from_mbti_finish";  // נכנסנו אחרי סיום שאלון MBTI
+
+    private String flowSource = FLOW_FROM_APP; // ברירת מחדל
 
     private RecyclerView recyclerViewQuestions;
     private QuestionIntroAdapter questionAdapter;
@@ -54,6 +59,11 @@ public class Activity_questionnaire extends AppCompatActivity {
             return;
         }
         setContentView(R.layout.activity_questionnaire);
+        String passedFlow = getIntent().getStringExtra(EXTRA_FLOW);
+        if (passedFlow != null && !passedFlow.trim().isEmpty()) {
+            flowSource = passedFlow;
+        }
+        Log.d("INTRO_QUIZ", "Flow source: " + flowSource);
         findViews();
         fetchQuestions();
         loadExistingAnswersIfLoggedIn();
@@ -223,6 +233,8 @@ public class Activity_questionnaire extends AppCompatActivity {
         String userId = UserSessionManager.getServerUserId(this);
         if (userId == null) {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(Activity_questionnaire.this, LoginActivity.class));
+            finish();
             return;
         }
 
@@ -249,9 +261,17 @@ public class Activity_questionnaire extends AppCompatActivity {
 
         Toast.makeText(this, "Answers submitted", Toast.LENGTH_SHORT).show();
         Log.d("INTRO_QUIZ", "Answers: " + new Gson().toJson(answers));
-//        Intent intent = new Intent(Activity_questionnaire.this, HomeActivity.class);
-        Intent intent = new Intent(Activity_questionnaire.this, activity_preferences.class);
-        startActivity(intent);
-        finish();
+        if (FLOW_FROM_MBTI.equals(flowSource)) {
+            // באנו מסיום שאלון MBTI -> עוברים לשאלון העדפות
+            Intent intent = new Intent(Activity_questionnaire.this, activity_preferences.class);
+            // השאירי את ה-back stack הגיוני; CLEAR_TOP לא חובה כאן, אבל אם השאלון יכול להיפתח כמה פעמים –
+            // אפשר לשקול להוסיף FLAG כדי שלא יצטברו שכבות.
+            startActivity(intent);
+            finish();
+        } else {
+            // באנו מתוך האפליקציה (בית/צ'אט/התראות/פרופיל) -> פשוט חוזרים למסך שמתחת
+            setResult(RESULT_OK); // אופציונלי: אם המסך שמתחת רוצה לרענן נתונים
+            finish();
+        }
     }
 }
