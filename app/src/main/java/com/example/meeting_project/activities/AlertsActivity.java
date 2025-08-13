@@ -2,6 +2,7 @@ package com.example.meeting_project.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -23,6 +24,7 @@ import com.google.android.material.textview.MaterialTextView;
 import java.util.List;
 
 public class AlertsActivity extends BaseNavigationActivity implements NotificationAdapter.OnNotificationClickListener {
+
     private View emptyContainer;
     private RecyclerView recyclerView;
     private NotificationAdapter adapter;
@@ -30,122 +32,124 @@ public class AlertsActivity extends BaseNavigationActivity implements Notificati
     private ProgressBar progressBar;
     private MaterialButton clearAllButton;
     private MaterialButton markAllReadButton;
+
     private NotificationManager notificationManager;
     private String userId;
+
+    private boolean justClearedAll = false;
+    private boolean isLoading = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         notificationManager = NotificationManager.getInstance(this);
-        AppManager.setContext(this.getApplicationContext());
+        AppManager.setContext(getApplicationContext());
         userId = getCurrentUserId();
+
         initViews();
         setupRecyclerView();
-        loadNotifications();
         setupButtons();
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        notificationManager.addListener(this);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        notificationManager.removeListener(this);
-    }
-
-    @Override
     protected void onResume() {
-        super.onResume();
-        loadNotifications();
+        super.onResume(); // BaseNavigationActivity נרשם למאזין כאן
+        loadNotificationsFromServer();
     }
+
+    /** אין addListener/removeListener כאן! הבסיס כבר עושה את זה. */
 
     private void initViews() {
-        recyclerView = findViewById(R.id.recycler_notifications);
-        emptyStateText = findViewById(R.id.empty_state_text);
-        progressBar        = findViewById(R.id.progress_bar);
-        clearAllButton = findViewById(R.id.btn_clear_all);
+        recyclerView      = findViewById(R.id.recycler_notifications);
+        emptyStateText    = findViewById(R.id.empty_state_text);
+        progressBar       = findViewById(R.id.progress_bar);
+        clearAllButton    = findViewById(R.id.btn_clear_all);
         markAllReadButton = findViewById(R.id.btn_mark_all_read);
-        emptyContainer  = findViewById(R.id.empty_state_container);
+        emptyContainer    = findViewById(R.id.empty_state_container);
     }
 
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new NotificationAdapter(this, this);
         recyclerView.setAdapter(adapter);
+        // טען בתחילה מהמקומי כדי להציג משהו מהר
+        List<Notification> local = notificationManager.getNotificationsForUser(userId);
+        adapter.updateNotifications(local);
+        toggleEmptyState(local == null || local.isEmpty());
     }
 
     private void setupButtons() {
-        // סימון הכל כנקרא – עדכון מיידי UI + עדכון מנהל ההתראות
+        // סימון הכל כנקרא – עדכון מנהל + UI
         markAllReadButton.setOnClickListener(v -> {
             notificationManager.markAllAsReadForUser(userId);
-            if (adapter != null) adapter.markAllRead();   // UI מיידי
+            if (adapter != null) adapter.markAllRead();
             Toast.makeText(this, "כל ההתראות סומנו כנקראו", Toast.LENGTH_SHORT).show();
+            toggleEmptyState(adapter.getItemCount() == 0);
         });
 
-        // מחיקת הכל – עדכון מיידי UI + empty state
+        // מחיקת הכל – עדכון מנהל + UI + מצב ריק
         clearAllButton.setOnClickListener(v -> {
+            justClearedAll = true;
             notificationManager.deleteAllForUser(userId);
-            if (adapter != null) {
-                adapter.clearAll();      // UI מיידי
-            }
-            // חשוב - עדכון מיידי של ה-empty state
-            toggleEmptyState(true);
-            // הסתרת הכפתורים כשאין התראות
-            clearAllButton.setVisibility(View.GONE);
-            markAllReadButton.setVisibility(View.GONE);
+            if (adapter != null) adapter.clearAll();
+            showEmptyState();
             Toast.makeText(this, "כל ההתראות נמחקו", Toast.LENGTH_SHORT).show();
+
+            // אפשר לשחרר את הדגל אחרי זמן קצר
+            v.postDelayed(() -> justClearedAll = false, 800);
         });
     }
 
     private void setLoading(boolean loading) {
+        isLoading = loading;
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         recyclerView.setAlpha(loading ? 0.3f : 1f);
         clearAllButton.setEnabled(!loading);
         markAllReadButton.setEnabled(!loading);
     }
 
-    private void loadNotifications() {
+    /** טעינה מהשרת ביוזמה שלנו בלבד (לא מתוך מאזין) כדי למנוע לולאות. */
+    private void loadNotificationsFromServer() {
+        if (justClearedAll || isLoading) return;
+
         setLoading(true);
         final String uid = getCurrentUserId();
 
         NotificationApiService.fetchUserNotifications(this, uid, new NotificationApiService.FetchCallback() {
             @Override
-            public void onSuccess(List<com.example.meeting_project.models.Notification> notifications) {
+            public void onSuccess(List<Notification> notifications) {
                 runOnUiThread(() -> {
-                    adapter.updateNotifications(notifications);
-                    toggleEmptyState(notifications == null || notifications.isEmpty());
+                    // אל תדרוך על מחיקה שבוצעה בזמן הטעינה
+                    if (!justClearedAll && adapter != null) {
+                        adapter.updateNotifications(notifications);
+                        toggleEmptyState(notifications == null || notifications.isEmpty());
+                    }
                     setLoading(false);
                 });
             }
 
             @Override
             public void onFailure(String error) {
-                // Fallback: טעינה מהאחסון המקומי
-                recyclerView.post(() -> {
+                runOnUiThread(() -> {
+                    // נפילה: הצג מקומי
                     List<Notification> local = notificationManager.getNotificationsForUser(uid);
-                    adapter.updateNotifications(local);
-                    toggleEmptyState(local == null || local.isEmpty());
+                    if (!justClearedAll && adapter != null) {
+                        adapter.updateNotifications(local);
+                        toggleEmptyState(local == null || local.isEmpty());
+                    }
                     setLoading(false);
                 });
             }
         });
     }
 
-
     private void toggleEmptyState(boolean isEmpty) {
-        if (emptyContainer != null) {
-            emptyContainer.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-        }
-        recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-
-        // הצגה/הסתרה של כפתורים לפי מצב
         if (isEmpty) {
-            clearAllButton.setVisibility(View.GONE);
-            markAllReadButton.setVisibility(View.GONE);
+            showEmptyState();
         } else {
+            if (emptyContainer != null) emptyContainer.setVisibility(View.GONE);
+            if (emptyStateText != null) emptyStateText.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
             clearAllButton.setVisibility(View.VISIBLE);
             markAllReadButton.setVisibility(View.VISIBLE);
         }
@@ -153,152 +157,98 @@ public class AlertsActivity extends BaseNavigationActivity implements Notificati
 
     private void showEmptyState() {
         recyclerView.setVisibility(View.GONE);
-        emptyStateText.setVisibility(View.VISIBLE);
+        if (emptyContainer != null) emptyContainer.setVisibility(View.VISIBLE);
+        if (emptyStateText != null) emptyStateText.setVisibility(View.VISIBLE);
         clearAllButton.setVisibility(View.GONE);
         markAllReadButton.setVisibility(View.GONE);
     }
 
-    private void showNotifications(List<Notification> notifications) {
-        recyclerView.setVisibility(View.VISIBLE);
-        emptyStateText.setVisibility(View.GONE);
-        clearAllButton.setVisibility(View.VISIBLE);
-        markAllReadButton.setVisibility(View.VISIBLE);
-        adapter.updateNotifications(notifications);
+    /** רענון מקומי כשיש שינוי במנהל – בלי לפנות לשרת (שובר את הלולאה). */
+    @Override
+    public void onNotificationsChanged() {
+        super.onNotificationsChanged(); // יעדכן את הבדג' בתחתית
+        if (adapter == null || justClearedAll) return;
+
+        runOnUiThread(() -> {
+            List<Notification> local = notificationManager.getNotificationsForUser(userId);
+            adapter.updateNotifications(local);
+            toggleEmptyState(local == null || local.isEmpty());
+        });
     }
 
+    // ====== לחיצות על פריט ברשימה ======
     @Override
-    public void onNotificationClick(Notification notification) {
-        // סימון ההתראה כנקראה + עדכון מיידי ברשימה
-        notificationManager.markAsRead(notification.getId());
-        if (adapter != null) adapter.markItemRead(notification.getId());
+    public void onNotificationClick(Notification n) {
+        // סימון כנקרא
+        notificationManager.markAsRead(n.getId());
+        if (adapter != null) adapter.markItemRead(n.getId());
 
-        // ניווט לפי סוג ההתראה
-        switch (notification.getType()) {
+        switch (n.getType()) {
             case MESSAGE:
-                openChatFromNotification(notification);
+                openChatFromNotification(n);
                 break;
             case LIKE:
-                navigateToProfile(notification.getFromUserId());
+                navigateToProfile(n.getFromUserId());
                 break;
             case MATCH:
-                navigateToMatch(notification.getRelatedId());
+                navigateToMatch(n.getRelatedId());
                 break;
         }
     }
 
-
     @Override
-    public void onNotificationLongClick(Notification notification) {
-        notificationManager.deleteNotification(notification.getId());
-        // רענון מהיר: אפשר גם להסיר מהאדפטר בלבד, אבל זה פשוט וברור
-        loadNotifications();
+    public void onNotificationLongClick(Notification n) {
+        notificationManager.deleteNotification(n.getId());
+        // רענון מקומי
+        List<Notification> local = notificationManager.getNotificationsForUser(userId);
+        adapter.updateNotifications(local);
+        toggleEmptyState(local == null || local.isEmpty());
         Toast.makeText(this, "התראה נמחקה", Toast.LENGTH_SHORT).show();
     }
 
     private void openChatFromNotification(Notification n) {
-        // דיבוג - בדוק מה יש בהתראה
-        android.util.Log.d("AlertsActivity", "Opening chat from notification:");
-        android.util.Log.d("AlertsActivity", "- Type: " + n.getType());
-        android.util.Log.d("AlertsActivity", "- FromUserId: " + n.getFromUserId());
-        android.util.Log.d("AlertsActivity", "- FromUserName: " + n.getFromUserName());
-        android.util.Log.d("AlertsActivity", "- RelatedId: " + n.getRelatedId());
-
         try {
             Intent i = new Intent(this, ChatActivity.class);
-
-            // ChatActivity יטען הודעות אם יש chat_id, ואם אין – ינסה ליצור לפי receiver_id
-            if (n.getRelatedId() != null && !n.getRelatedId().trim().isEmpty()) {
+            if (n.getRelatedId() != null && !n.getRelatedId().trim().isEmpty())
                 i.putExtra("chat_id", n.getRelatedId().trim());
-                android.util.Log.d("AlertsActivity", "Added chat_id: " + n.getRelatedId().trim());
-            }
-
-            if (n.getFromUserId() != null && !n.getFromUserId().trim().isEmpty()) {
+            if (n.getFromUserId() != null && !n.getFromUserId().trim().isEmpty())
                 i.putExtra("receiver_id", n.getFromUserId().trim());
-                android.util.Log.d("AlertsActivity", "Added receiver_id: " + n.getFromUserId().trim());
-            }
-            if (n.getFromUserName() != null && !n.getFromUserName().trim().isEmpty()) {
+            if (n.getFromUserName() != null && !n.getFromUserName().trim().isEmpty())
                 i.putExtra("user_name", n.getFromUserName().trim());
-                android.util.Log.d("AlertsActivity", "Added user_name: " + n.getFromUserName().trim());
-            }
-            if (n.getFromUserImage() != null && !n.getFromUserImage().trim().isEmpty()) {
+            if (n.getFromUserImage() != null && !n.getFromUserImage().trim().isEmpty())
                 i.putExtra("user_image", n.getFromUserImage().trim());
-                android.util.Log.d("AlertsActivity", "Added user_image: " + n.getFromUserImage().trim());
-            }
-
-            android.util.Log.d("AlertsActivity", "Starting ChatActivity...");
             startActivity(i);
-            android.util.Log.d("AlertsActivity", "ChatActivity started successfully");
-
         } catch (Exception e) {
-            android.util.Log.e("AlertsActivity", "Error opening chat: " + e.getMessage(), e);
-            Toast.makeText(this, "שגיאה בפתיחת הצ'אט: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("AlertsActivity", "Error opening chat: " + e.getMessage(), e);
+            Toast.makeText(this, "שגיאה בפתיחת הצ'אט", Toast.LENGTH_LONG).show();
         }
     }
 
     private void navigateToProfile(String userId) {
-        // ניווט לפרופיל של המשתמש
-        // Intent intent = new Intent(this, UserProfileActivity.class);
-        // intent.putExtra("userId", userId);
-        // startActivity(intent);
-
-        // בינתיים רק הודעה
         Toast.makeText(this, "ניווט לפרופיל: " + userId, Toast.LENGTH_SHORT).show();
     }
 
     private void navigateToMatch(String matchId) {
-        // ניווט למסך המאטצ'ים או פרטים על המאטץ'
-        // Intent intent = new Intent(this, MatchDetailsActivity.class);
-        // intent.putExtra("matchId", matchId);
-        // startActivity(intent);
-
-        // בינתיים רק הודעה
         Toast.makeText(this, "ניווט למאטץ': " + matchId, Toast.LENGTH_SHORT).show();
     }
 
-    // יישום הפונקציות המופשטות
+    // ====== הפונקציות המופשטות מהבסיס ======
     @Override
-    protected int getLayoutResourceId() {
-        return R.layout.activity_alerts;
-    }
+    protected int getLayoutResourceId() { return R.layout.activity_alerts; }
 
     @Override
-    protected int getDrawerMenuItemId() {
-        return 0; // אין פריט תואם בתפריט הצדדי
-    }
+    protected int getDrawerMenuItemId() { return 0; }
 
     @Override
-    protected int getBottomMenuItemId() {
-        return R.id.navigation_notifications;
-    }
-
-//    @Override
-//    protected String getCurrentUserId() {
-//        // כאן צריך לקבל את ה-ID של המשתמש הנוכחי
-//        // לדוגמה מ-SharedPreferences או מ-AppManager
-//        return AppManager.getAppUser().getId();
-//    }
+    protected int getBottomMenuItemId() { return R.id.navigation_notifications; }
 
     @Override
     protected String getCurrentUserId() {
-        // קודם מה-AppManager (אם מוגדר), אחרת מ-UserSessionManager
         String id = null;
         try {
-            if (AppManager.getAppUser() != null) {
-                id = AppManager.getAppUser().getId();
-            }
+            if (AppManager.getAppUser() != null) id = AppManager.getAppUser().getId();
         } catch (Exception ignored) {}
-
-        if (id == null) {
-            id = UserSessionManager.getServerUserId(this);
-        }
+        if (id == null) id = UserSessionManager.getServerUserId(this);
         return id;
-    }
-
-
-    // יישום ממשק NotificationChangeListener מהמחלקה האב
-    @Override
-    public void onNotificationsChanged() {
-        super.onNotificationsChanged();
-        runOnUiThread(this::loadNotifications);
     }
 }

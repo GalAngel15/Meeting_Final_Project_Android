@@ -17,7 +17,7 @@ import com.example.meeting_project.models.Notification;
 import com.google.android.material.textview.MaterialTextView;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -37,30 +37,34 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         this.context = context;
         this.listener = listener;
         this.notifications = new ArrayList<>();
+        setHasStableIds(true);
     }
 
-    /** מחליף את הרשימה ומסנן כפילויות לפי id (אם קיים). */
+    /** מחליף את הרשימה, מסנן כפילויות לפי id, ושומר על null-safety. */
     public void updateNotifications(List<Notification> newNotifications) {
-        if (notifications == null) {
-            notifications = new ArrayList<>();
-        }
-
-        notifications.clear();
+        List<Notification> fresh = new ArrayList<>();
         if (newNotifications != null) {
-            java.util.LinkedHashSet<String> seen = new java.util.LinkedHashSet<>();
+            LinkedHashSet<String> seen = new LinkedHashSet<>();
             for (Notification n : newNotifications) {
                 if (n == null) continue;
                 String id = n.getId();
                 if (id != null) {
-                    if (seen.add(id)) notifications.add(n);   // נוסף רק אם לא נראה קודם
+                    if (seen.add(id)) fresh.add(n);
                 } else {
-                    notifications.add(n);                     // בלי id? מוסיפים כרגיל
+                    fresh.add(n);
                 }
             }
         }
+        this.notifications = fresh;
         notifyDataSetChanged();
     }
 
+    @Override
+    public long getItemId(int position) {
+        Notification n = notifications.get(position);
+        String id = n.getId();
+        return id != null ? id.hashCode() : RecyclerView.NO_ID;
+    }
 
     @NonNull
     @Override
@@ -71,39 +75,58 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     @Override
     public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
-        Notification notification = notifications.get(position);
+        Notification n = notifications.get(position);
 
-        // כותרת/תוכן/זמן
-        holder.title.setText(notification.getTitle());
-        holder.message.setText(notification.getMessage());
-        holder.time.setText(notification.getTimeAgo());
+        // שם השולח אם יש, אחרת הכותרת המקורית
+        String displayTitle = isNotEmpty(n.getFromUserName()) ? n.getFromUserName() : n.getTitle();
+        holder.title.setText(displayTitle);
 
-        // תמונת פרופיל
-        if (notification.getFromUserImage() != null && !notification.getFromUserImage().isEmpty()) {
-            Glide.with(holder.userImage)
-                    .load(notification.getFromUserImage())
-                    .placeholder(R.drawable.ic_placeholder_profile)
-                    .error(R.drawable.ic_placeholder_profile)
-                    .into(holder.userImage);
-        } else {
-            holder.userImage.setImageResource(R.drawable.ic_placeholder_profile);
-        }
+        // תוכן ההתראה/תקציר
+        holder.message.setText(n.getMessage());
+        holder.time.setText(n.getTimeAgo());
+
+        // תמונת פרופיל של השולח (URL מההתראה). אם חסר — placeholder.
+        loadUserImage(holder.userImage, n.getFromUserImage());
 
         // אייקון לפי סוג
-        setNotificationTypeIcon(holder, notification.getType());
+        setNotificationTypeIcon(holder, n.getType());
 
-        // חיווי נקרא/לא נקרא
-        boolean unread = !notification.isRead();
+        // נקרא/לא נקרא
+        boolean unread = !n.isRead();
         holder.unreadIndicator.setVisibility(unread ? View.VISIBLE : View.GONE);
         holder.title.setTypeface(null, unread ? Typeface.BOLD : Typeface.NORMAL);
         holder.container.setAlpha(unread ? 1.0f : 0.7f);
-
-        // (אין צורך להגדיר כאן קליקים — זה כבר נעשה בתוך ה-ViewHolder על ה-container)
+        holder.container.setBackground(unread
+                ? ContextCompat.getDrawable(context, R.drawable.notification_unread_bg)
+                : null);
     }
 
     @Override
     public int getItemCount() {
-        return notifications != null ? notifications.size() : 0; // הגנה נוספת
+        return notifications != null ? notifications.size() : 0;
+    }
+
+    private static boolean isNotEmpty(String s) {
+        return s != null && !s.trim().isEmpty() && !"null".equalsIgnoreCase(s);
+    }
+
+    /** טעינת תמונה בטוחה ל-CircleImageView: דחייה ל־post כדי להבטיח שיש מידות, ו־Glide גם ל-placeholder. */
+    private void loadUserImage(@NonNull CircleImageView imageView, String imageUrl) {
+        // נקה בקשות קודמות על אותו View
+        Glide.with(imageView).clear(imageView);
+
+        imageView.post(() -> {
+            if (!imageView.isAttachedToWindow()) return;
+
+            boolean hasUrl = isNotEmpty(imageUrl);
+
+            Glide.with(imageView)
+                    .load(hasUrl ? imageUrl : R.drawable.ic_placeholder_profile)
+                    .placeholder(R.drawable.ic_placeholder_profile)
+                    .error(R.drawable.ic_placeholder_profile)
+                    .dontAnimate()
+                    .into(imageView);
+        });
     }
 
     private void setNotificationTypeIcon(@NonNull NotificationViewHolder holder,
@@ -137,18 +160,16 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     class NotificationViewHolder extends RecyclerView.ViewHolder {
-
-        private CircleImageView userImage;
-        private MaterialTextView title;
-        private MaterialTextView message;
-        private MaterialTextView time;
-        private ImageView notificationTypeIcon;
-        private View unreadIndicator;
-        private View container;
+        private final CircleImageView userImage;
+        private final MaterialTextView title;
+        private final MaterialTextView message;
+        private final MaterialTextView time;
+        private final ImageView notificationTypeIcon;
+        private final View unreadIndicator;
+        private final View container;
 
         public NotificationViewHolder(@NonNull View itemView) {
             super(itemView);
-
             userImage = itemView.findViewById(R.id.iv_user_image);
             title = itemView.findViewById(R.id.tv_title);
             message = itemView.findViewById(R.id.tv_message);
@@ -157,92 +178,27 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             unreadIndicator = itemView.findViewById(R.id.unread_indicator);
             container = itemView.findViewById(R.id.notification_container);
 
-            // הגדרת לחיצות
             container.setOnClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION && listener != null) {
-                    listener.onNotificationClick(notifications.get(position));
+                int pos = getAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION && listener != null) {
+                    listener.onNotificationClick(notifications.get(pos));
                 }
             });
 
             container.setOnLongClickListener(v -> {
-                int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION && listener != null) {
-                    listener.onNotificationLongClick(notifications.get(position));
+                int pos = getAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION && listener != null) {
+                    listener.onNotificationLongClick(notifications.get(pos));
                     return true;
                 }
                 return false;
             });
         }
-
-        public void bind(Notification notification) {
-            // כותרת
-            title.setText(notification.getTitle());
-
-            // הודעה
-            message.setText(notification.getMessage());
-
-            // זמן
-            time.setText(notification.getTimeAgo());
-
-            // תמונת פרופיל
-            if (notification.getFromUserImage() != null && !notification.getFromUserImage().isEmpty()) {
-                Glide.with(context)
-                        .load(notification.getFromUserImage())
-                        .placeholder(R.drawable.ic_placeholder_profile)
-                        .error(R.drawable.ic_placeholder_profile)
-                        .into(userImage);
-            } else {
-                userImage.setImageResource(R.drawable.ic_placeholder_profile);
-            }
-
-            // אייקון סוג התראה
-            setNotificationTypeIcon(notification.getType());
-
-            // אינדיקטור לא נקרא
-            unreadIndicator.setVisibility(notification.isRead() ? View.GONE : View.VISIBLE);
-
-            // שינוי רקע לפי מצב נקרא/לא נקרא
-            float alpha = notification.isRead() ? 0.7f : 1.0f;
-            container.setAlpha(alpha);
-
-            // הדגשה של התראות לא נקראו
-            if (!notification.isRead()) {
-                container.setBackgroundResource(R.drawable.notification_unread_bg);
-            } else {
-                container.setBackground(null);
-            }
-        }
-
-        private void setNotificationTypeIcon(Notification.NotificationType type) {
-            int iconRes;
-            int tintColor;
-
-            switch (type) {
-                case MESSAGE:
-                    iconRes = R.drawable.ic_message;
-                    tintColor = R.color.colorPrimary;
-                    break;
-                case LIKE:
-                    iconRes = R.drawable.ic_favorite;
-                    tintColor = R.color.colorError;
-                    break;
-                case MATCH:
-                    iconRes = R.drawable.ic_match;
-                    tintColor = R.color.colorSuccess;
-                    break;
-                default:
-                    iconRes = R.drawable.ic_notifications;
-                    tintColor = R.color.colorOnSurface;
-                    break;
-            }
-
-            notificationTypeIcon.setImageResource(iconRes);
-            notificationTypeIcon.setColorFilter(context.getColor(tintColor));
-        }
     }
-    // ב-NotificationAdapter
+
+    /** סימון פריט כנקרא (UI בלבד). */
     public void markItemRead(String id) {
+        if (notifications == null || id == null) return;
         for (int i = 0; i < notifications.size(); i++) {
             Notification n = notifications.get(i);
             if (id.equals(n.getId())) {
@@ -255,7 +211,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
     }
 
+    /** סימון הכל כנקרא (UI בלבד). */
     public void markAllRead() {
+        if (notifications == null) return;
         boolean changed = false;
         for (Notification n : notifications) {
             if (!n.isRead()) { n.setRead(true); changed = true; }
@@ -263,9 +221,10 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         if (changed) notifyDataSetChanged();
     }
 
+    /** ניקוי כל הרשימה (UI). */
     public void clearAll() {
+        if (notifications == null) notifications = new ArrayList<>();
         notifications.clear();
         notifyDataSetChanged();
     }
-
 }
