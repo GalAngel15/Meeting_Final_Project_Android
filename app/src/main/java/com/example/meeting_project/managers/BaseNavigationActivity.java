@@ -36,6 +36,7 @@ import java.util.Map;
 
 public abstract class BaseNavigationActivity extends AppCompatActivity
         implements NotificationManager.NotificationChangeListener {
+    private TextView headerTitle;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -56,7 +57,6 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
         drawerMap.put(R.id.nav_my_personality, Activity_personality_result.class);
         drawerMap.put(R.id.nav_edit_preferences, activity_preferences.class);
         drawerMap.put(R.id.nav_edit_intro, Activity_questionnaire.class);
-        //drawerMap.put(R.id.nav_settings, SettingsActivity.class);
 
         bottomMap.put(R.id.navigation_home, HomeActivity.class);
         bottomMap.put(R.id.navigation_profile, ProfileActivity.class);
@@ -83,7 +83,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
         }
 
         initNotificationBadge();
-
+        refreshHeaderTitle();
         // טעינה מוקדמת של התראות
         loadNotificationsAndUpdateBadge();
     }
@@ -105,6 +105,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
         if (notificationManager != null && currentUserId != null) {
             notificationManager.addListener(this);
             updateNotificationBadge();
+            refreshHeaderTitle();
             // טען מהשרת ברקע
             loadNotificationsAndUpdateBadge();
         }
@@ -162,6 +163,28 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
         toggle.syncState();
 
         menuButton.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+
+        if (navigationView != null) {
+            View header = navigationView.getHeaderView(0); // חשוב: דורש app:headerLayout ב-XML
+            if (header != null) {
+                headerTitle = header.findViewById(R.id.header_title);
+            }
+        }
+    }
+    private void refreshHeaderTitle() {
+        if (headerTitle == null) return;
+
+        String display = "שלום 👋"; // ברירת מחדל
+        try {
+            if (AppManager.getAppUser() != null && AppManager.getAppUser().getFirstName() != null) {
+                String first = AppManager.getAppUser().getFirstName().trim();
+                if (!first.isEmpty()) {
+                    display = "שלום, " + first + " 👋";
+                }
+            }
+        } catch (Exception ignore) {}
+
+        headerTitle.setText(display);
     }
 
     private void initDrawerLogic() {
@@ -241,12 +264,21 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
         }
     }
     protected void createMatchNotification(String matchUserId, String matchUserName,
-                                           String matchUserImage, String matchId) {
-        if (currentUserId != null) {
-            notificationManager.createNotificationFromMatch(
-                    currentUserId, matchUserId, matchUserName, matchUserImage, matchId);
-        }
+                                           String matchUserImage, String matchId,
+                                           String currentUserName, String currentUserImage) {
+        if (currentUserId == null || matchUserId == null) return;
+
+        // שלח התראה לעצמי
+        notificationManager.createNotificationFromMatch(
+                currentUserId, matchUserId, matchUserName, matchUserImage, matchId
+        );
+
+        // שלח התראה לצד השני
+        notificationManager.createNotificationFromMatch(
+                matchUserId, currentUserId, currentUserName, currentUserImage, matchId
+        );
     }
+
     @Override
     public void onNotificationsChanged() {
         updateNotificationBadge();
