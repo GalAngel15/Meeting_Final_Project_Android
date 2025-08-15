@@ -13,6 +13,11 @@
         <item
             android:id="@+id/nav_my_personality"
             android:title="טיפוס האישיות שלי" />
+        <item
+            android:id="@+id/nav_logout"
+            android:title="התנתקות"/>
+        <!--android:icon="@drawable/ic_logout-->
+
     </group>
 
 </menu>

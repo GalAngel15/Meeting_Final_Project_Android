@@ -24,11 +24,14 @@ import com.example.meeting_project.activities.ChooseUserForChat;
 import com.example.meeting_project.activities.Conversations;
 import com.example.meeting_project.activities.HomeActivity;
 import com.example.meeting_project.activities.ProfileActivity;
+import com.example.meeting_project.activities.WelcomeActivity;
 import com.example.meeting_project.activities.activity_preferences;
 import com.example.meeting_project.models.Notification;
+import com.example.meeting_project.notifications.TokenUploader;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.HashMap;
 import java.util.List;
@@ -199,6 +202,15 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
 
     private void initDrawerLogic() {
         navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_logout) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+                // מריצים אחרי סגירת המגרה כדי להימנע מריצוד
+                drawerLayout.post(this::handleLogout);
+                return true;
+            }
+
             Class<?> targetActivity = drawerMap.get(item.getItemId());
             if (targetActivity != null && !targetActivity.equals(this.getClass())) {
                 startActivity(new Intent(this, targetActivity));
@@ -255,6 +267,25 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
         }
     }
 
+    private void handleLogout() {
+        // FirebaseAuth.getInstance().signOut();
+        // AppSession.getInstance().clear();
+        // getSharedPreferences("app_prefs", MODE_PRIVATE).edit().clear().apply();
+        unregisterTokenToServer();
+
+        Intent intent = new Intent(this, WelcomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        startActivity(intent);
+    }
+
+    private void unregisterTokenToServer() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnSuccessListener(token ->
+                        TokenUploader.removeTokenToServer(getApplicationContext(), token))
+                .addOnFailureListener(e -> Log.e("FCM", "getToken failed", e));
+
+    }
     protected void createMessageNotification(String fromUserId, String fromUserName,
                                              String fromUserImage, String chatId, String messageContent) {
         // אם אני השולח/ת – לא יוצרים התראה לעצמי
