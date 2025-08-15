@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+app/src/main/java/com/example/meeting_project/apiClients/ApiConfig.java
+app/src/main/res/xml/network_security_config.xml
