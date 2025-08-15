@@ -39,7 +39,6 @@ public class AppManager {
         String previousUserId = getCurrentUserId();
         sharedPreferences.edit().putString(CURRENT_USER_ID_KEY, userId).apply();
 
-        // אם יש משתמש חדש, רשום אותו לקבלת התראות
         if (userId != null && !userId.equals(previousUserId)) {
             registerForNotifications();
         }
@@ -95,16 +94,13 @@ public class AppManager {
         instance.appContext = context;
     }
     public void logoutUser() {
-        // נקה את ID המשתמש
         setCurrentUserId(null);
         unregisterFromNotifications();
 
-        // נקה את ההתראות של המשתמש הנוכחי
         NotificationManager.getInstance(appContext).clearAllNotifications();
         appUser = null;
     }
 
-    // רישום לקבלת התראות Firebase
     private void registerForNotifications() {
         // אם יש לך userId מאוחסן — מעולה; אחרת NotificationApiService כבר ימשוך דרך UserSessionManager
         NotificationApiService.registerCurrentUserToken(appContext, new NotificationApiService.TokenCallback() {
@@ -117,7 +113,6 @@ public class AppManager {
         });
     }
 
-    // ביטול רישום להתראות Firebase
     private void unregisterFromNotifications() {
         if (getCurrentUserId() != null) {
             NotificationApiService.unregisterCurrentUserToken(appContext, new NotificationApiService.TokenCallback() {
@@ -132,7 +127,6 @@ public class AppManager {
     }
 
 
-    // פונקציה לקריאה ידנית לרישום (אם צריך)
     public void refreshNotificationRegistration() {
         if (isUserLoggedIn()) {
             registerForNotifications();

@@ -17,7 +17,6 @@ import java.util.List;
 
 public class ChooseUserAdapter extends RecyclerView.Adapter<ChooseUserAdapter.UserVH> {
 
-    /** מאזין לחיצה */
     public interface OnUserClickListener {
         void onUserClick(UserBoundary user);
     }

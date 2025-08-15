@@ -60,10 +60,10 @@ public class QuestionIntroAdapter extends RecyclerView.Adapter<RecyclerView.View
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == 0) { // אמריקאית
+        if (viewType == 0) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_question_multiple, parent, false);
             return new MultipleChoiceViewHolder(view);
-        } else { // פתוחה
+        } else {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_question_open, parent, false);
             return new OpenQuestionViewHolder(view);
         }
@@ -96,7 +96,7 @@ public class QuestionIntroAdapter extends RecyclerView.Adapter<RecyclerView.View
 
         void bind(QuestionsBoundary question) {
             questionText.setText(question.getQuestionText());
-            radioGroup.setOnCheckedChangeListener(null); // נטרל לרגע כדי לא להצית ליסינר בזמן פרה-פיל
+            radioGroup.setOnCheckedChangeListener(null);
             radioGroup.removeAllViews();
 
             List<String> options = question.getPossibleAnswers();
@@ -108,7 +108,6 @@ public class QuestionIntroAdapter extends RecyclerView.Adapter<RecyclerView.View
                 }
             }
 
-            // פרה-פיל בחירה קיימת אם יש
             String saved = (prefill != null) ? prefill.get(question.getId()) : null;
             if (saved != null) {
                 final int count = radioGroup.getChildCount();
@@ -149,21 +148,17 @@ public class QuestionIntroAdapter extends RecyclerView.Adapter<RecyclerView.View
         void bind(QuestionsBoundary question) {
             questionText.setText(question.getQuestionText());
 
-            // ננטרל מאזין קודם אם יש
             if (watcher != null) answerInput.removeTextChangedListener(watcher);
 
-            // פרה-פיל ערך קיים אם יש
             String saved = (prefill != null) ? prefill.get(question.getId()) : null;
             String current = answerInput.getText() != null ? answerInput.getText().toString() : "";
             if (saved != null && !saved.equals(current)) {
                 answerInput.setText(saved);
                 answerInput.setSelection(answerInput.getText().length());
             } else if (saved == null && !current.isEmpty()) {
-                // אם אין פרה-פיל ושדה ממוחזר מכיל ערך ישן – ננקה
                 answerInput.setText("");
             }
 
-            // מאזין חדש
             watcher = new TextWatcher() {
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {

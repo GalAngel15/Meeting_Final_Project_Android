@@ -53,7 +53,6 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
     protected NotificationManager notificationManager;
     protected String currentUserId;
 
-    // מיפוי של התפריט הצדדי
     private static final Map<Integer, Class<?>> drawerMap = new HashMap<>();
     private static final Map<Integer, Class<?>> bottomMap = new HashMap<>();
 
@@ -81,21 +80,18 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
         initBottomNavViews();
         initBottomNavLogic();
 
-        // רישום מוקדם למאזין
         if (notificationManager != null && currentUserId != null) {
             notificationManager.addListener(this);
         }
 
         initNotificationBadge();
         refreshHeaderTitle();
-        // טעינה מוקדמת של התראות
         loadNotificationsAndUpdateBadge();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        // ודא רישום מאזין וטעינת באדג'
         if (notificationManager != null && currentUserId != null) {
             notificationManager.addListener(this);
             updateNotificationBadge();
@@ -105,12 +101,10 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        // ודא שהמאזין עדיין רשום ועדכן באדג'
         if (notificationManager != null && currentUserId != null) {
             notificationManager.addListener(this);
             updateNotificationBadge();
             refreshHeaderTitle();
-            // טען מהשרת ברקע
             loadNotificationsAndUpdateBadge();
         }
     }
@@ -118,22 +112,18 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
     private void loadNotificationsAndUpdateBadge() {
         if (currentUserId == null || currentUserId.isEmpty()) return;
 
-        // עדכון מיידי מהמקומי
         updateNotificationBadge();
 
-        // טעינה מהשרת ברקע
         NotificationApiService.fetchUserNotifications(
                 this,
                 currentUserId,
                 new NotificationApiService.FetchCallback() {
                     @Override
                     public void onSuccess(List<Notification> serverList) {
-                        // הנתונים יתעדכנו אוטומטית דרך המאזין
                     }
 
                     @Override
                     public void onFailure(String error) {
-                        // נשאר עם הנתונים המקומיים
                     }
                 }
         );
@@ -142,13 +132,11 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
-        // שמור על המאזין למען הבאדג' - אל תסיר!
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // הסרת מאזין רק כשהאקטיביטי מושמד
         if (notificationManager != null) {
             notificationManager.removeListener(this);
         }
@@ -166,7 +154,6 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        //  ודאי שה-Header קיים: אם לא קיים, ננפח אותו ידנית
         if (navigationView != null) {
             View header;
             if (navigationView.getHeaderCount() > 0) {
@@ -177,7 +164,6 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
             headerTitle = header.findViewById(R.id.header_title);
         }
 
-        //  רענון שם ממש לפני פתיחת המגרה (כדי לתפוס שינויי User בזמן-אמת)
         menuButton.setOnClickListener(v -> {
             refreshHeaderTitle();
             drawerLayout.openDrawer(GravityCompat.START);
@@ -186,7 +172,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
     private void refreshHeaderTitle() {
         if (headerTitle == null) return;
 
-        String display = "שלום 👋"; // ברירת מחדל
+        String display = "שלום 👋";
         try {
             if (AppManager.getAppUser() != null) {
                 String first = AppManager.getAppUser().getFirstName();
@@ -207,7 +193,6 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
 
             if (id == R.id.nav_logout) {
                 drawerLayout.closeDrawer(GravityCompat.START);
-                // מריצים אחרי סגירת המגרה כדי להימנע מריצוד
                 drawerLayout.post(this::handleLogout);
                 return true;
             }
@@ -239,7 +224,6 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
         setButton(navChats, R.id.navigation_chats);
         setButton(navNotifications, R.id.navigation_notifications);
 
-        // ניהול ה־selected
         updateBottomSelection();
     }
 
@@ -292,7 +276,6 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
 
     protected void createMessageNotification(String fromUserId, String fromUserName,
                                              String fromUserImage, String chatId, String messageContent) {
-        // אם אני השולח/ת – לא יוצרים התראה לעצמי
         if (currentUserId != null && currentUserId.equals(fromUserId)) {
             return;
         }
@@ -313,12 +296,10 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
                                            String currentUserName, String currentUserImage) {
         if (currentUserId == null || matchUserId == null) return;
 
-        // שלח התראה לעצמי
         notificationManager.createNotificationFromMatch(
                 currentUserId, matchUserId, matchUserName, matchUserImage, matchId
         );
 
-        // שלח התראה לצד השני
         notificationManager.createNotificationFromMatch(
                 matchUserId, currentUserId, currentUserName, currentUserImage, matchId
         );
@@ -353,7 +334,6 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
     }
 
 
-    // פונקציות מופשטות שכל Activity יממש:
     protected abstract @LayoutRes int getLayoutResourceId();
     protected abstract @IdRes int getDrawerMenuItemId();
     protected abstract @IdRes int getBottomMenuItemId();

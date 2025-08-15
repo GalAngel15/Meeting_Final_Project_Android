@@ -40,7 +40,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         setHasStableIds(true);
     }
 
-    /** מחליף את הרשימה, מסנן כפילויות לפי id, ושומר על null-safety. */
     public void updateNotifications(List<Notification> newNotifications) {
         List<Notification> fresh = new ArrayList<>();
         if (newNotifications != null) {
@@ -77,21 +76,16 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
         Notification n = notifications.get(position);
 
-        // שם השולח אם יש, אחרת הכותרת המקורית
         String displayTitle = isNotEmpty(n.getFromUserName()) ? n.getFromUserName() : n.getTitle();
         holder.title.setText(displayTitle);
 
-        // תוכן ההתראה/תקציר
         holder.message.setText(n.getMessage());
         holder.time.setText(n.getTimeAgo());
 
-        // תמונת פרופיל של השולח (URL מההתראה). אם חסר — placeholder.
         loadUserImage(holder.userImage, n.getFromUserImage());
 
-        // אייקון לפי סוג
         setNotificationTypeIcon(holder, n.getType());
 
-        // נקרא/לא נקרא
         boolean unread = !n.isRead();
         holder.unreadIndicator.setVisibility(unread ? View.VISIBLE : View.GONE);
         holder.title.setTypeface(null, unread ? Typeface.BOLD : Typeface.NORMAL);
@@ -110,9 +104,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         return s != null && !s.trim().isEmpty() && !"null".equalsIgnoreCase(s);
     }
 
-    /** טעינת תמונה בטוחה ל-CircleImageView: דחייה ל־post כדי להבטיח שיש מידות, ו־Glide גם ל-placeholder. */
     private void loadUserImage(@NonNull CircleImageView imageView, String imageUrl) {
-        // נקה בקשות קודמות על אותו View
         Glide.with(imageView).clear(imageView);
 
         imageView.post(() -> {
@@ -196,7 +188,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
     }
 
-    /** סימון פריט כנקרא (UI בלבד). */
     public void markItemRead(String id) {
         if (notifications == null || id == null) return;
         for (int i = 0; i < notifications.size(); i++) {
@@ -211,7 +202,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
     }
 
-    /** סימון הכל כנקרא (UI בלבד). */
     public void markAllRead() {
         if (notifications == null) return;
         boolean changed = false;
@@ -221,7 +211,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         if (changed) notifyDataSetChanged();
     }
 
-    /** ניקוי כל הרשימה (UI). */
     public void clearAll() {
         if (notifications == null) notifications = new ArrayList<>();
         notifications.clear();

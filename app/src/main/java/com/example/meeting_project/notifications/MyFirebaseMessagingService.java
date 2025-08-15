@@ -25,24 +25,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         TokenUploader.sendTokenToServer(getApplicationContext(), token);
     }
 
-//    @Override
-//    public void onMessageReceived(@NonNull RemoteMessage msg) {
-//        // נתמך גם ברקע אם שלחת "data" בלבד; אם שלחת "notification", התנהגות משתנה לפי מצב.
-//        if (msg.getData() == null) return;
-//
-//        String type = msg.getData().get("type");
-//        if ("message".equals(type)) {
-//            String chatId = msg.getData().get("chatId");
-//            String from = msg.getData().get("fromName");
-//            String preview = msg.getData().getOrDefault("preview", "New message");
-//            NotificationHelper.showMessage(this, from, preview, chatId);
-//        } else if ("match".equals(type)) {
-//            String otherUserId = msg.getData().get("otherUserId");
-//            String otherName = msg.getData().get("otherName");
-//            NotificationHelper.showMatch(this, "It's a match!", "You and " + otherName + " matched 🎉", otherUserId);
-//        }
-//    }
-
     @Override
     public void onMessageReceived(@NonNull RemoteMessage msg) {
         final Context ctx = getApplicationContext();
