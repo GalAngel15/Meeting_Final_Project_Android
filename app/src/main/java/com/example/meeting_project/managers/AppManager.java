@@ -101,8 +101,7 @@ public class AppManager {
 
         // נקה את ההתראות של המשתמש הנוכחי
         NotificationManager.getInstance(appContext).clearAllNotifications();
-
-        // כל פעולות logout נוספות...
+        appUser = null;
     }
 
     // רישום לקבלת התראות Firebase

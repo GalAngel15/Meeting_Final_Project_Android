@@ -31,6 +31,7 @@ import com.example.meeting_project.notifications.TokenUploader;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.HashMap;
@@ -268,15 +269,16 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
     }
 
     private void handleLogout() {
-        // FirebaseAuth.getInstance().signOut();
-        // AppSession.getInstance().clear();
-        // getSharedPreferences("app_prefs", MODE_PRIVATE).edit().clear().apply();
         unregisterTokenToServer();
+        AppManager.getInstance().logoutUser();
+        FirebaseAuth.getInstance().signOut();
 
-        Intent intent = new Intent(this, WelcomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        getSharedPreferences("app_prefs", MODE_PRIVATE).edit().clear().apply();
 
-        startActivity(intent);
+        Intent i = new Intent(this, WelcomeActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(i);
+        finish();
     }
 
     private void unregisterTokenToServer() {
@@ -286,6 +288,8 @@ public abstract class BaseNavigationActivity extends AppCompatActivity
                 .addOnFailureListener(e -> Log.e("FCM", "getToken failed", e));
 
     }
+
+
     protected void createMessageNotification(String fromUserId, String fromUserName,
                                              String fromUserImage, String chatId, String messageContent) {
         // אם אני השולח/ת – לא יוצרים התראה לעצמי
