@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="QuickMatch"
-            android:textSize="24sp"
+            android:textSize="34sp"
             android:textColor="@color/dark_purple"
             android:textStyle="bold"
             android:layout_centerHorizontal="true"
@@ -27,9 +27,9 @@
         <!-- תיאור האפליקציה -->
         <TextView
             android:id="@+id/app_description"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Meeting in the head, falling in love in the heart\n Smart matching for a true relationship"
+            android:text="חיבור חכם, אהבה אמיתית"
             android:textSize="24sp"
             android:textColor="@color/purple"
             android:gravity="center"
