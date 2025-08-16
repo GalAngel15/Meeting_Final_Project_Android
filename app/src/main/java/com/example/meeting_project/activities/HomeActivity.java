@@ -40,6 +40,7 @@ import com.example.meeting_project.utilities.CardTransitionAnimator;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +58,7 @@ public class HomeActivity extends BaseNavigationActivity {
     private String mbtiCharacteristics;
     private ImageView ivAvatar, imageProfile ;
     private TextView welcome ;
-    private TextView textName, textPersonalityType, textMatchPercent;
+    private TextView textName, textPersonalityType, textMatchPercent, textAge;
     private LinearLayout detailsLayout, blurredContainer;
     private ImageView likeOverlay;
     private View cardProfile;
@@ -289,12 +290,23 @@ public class HomeActivity extends BaseNavigationActivity {
 
         displayProfileImage(match.getGalleryUrls());
         displayName(match.getFirstName(), match.getLastName());
+        displayAge(match.getDateOfBirth());
         displayMbtiType(match.getMbtiType());
         loadMbtiData(match.getId(), ivAvatar);
         displayMatchPercent(getMatchPercentForUser(match.getId()));
         Log.d("HomeActivity", "Displaying match: " + match);
         displayGallery(match.getGalleryUrls());
         fetchAndBindPersonalDetails(match.getId());
+    }
+
+    private void displayAge(Date dateOfBirth) {
+        if (dateOfBirth != null) {
+            long ageInMillis = System.currentTimeMillis() - dateOfBirth.getTime();
+            int age = (int) (ageInMillis / (1000L * 60 * 60 * 24 * 365));
+            textAge.setText(String.valueOf(age));
+        } else {
+            textAge.setText(" ");
+        }
     }
 
     private void displayProfileImage(List<String> galleryUrls) {
@@ -665,6 +677,7 @@ public class HomeActivity extends BaseNavigationActivity {
         buttonDislike = findViewById(R.id.buttonDislike);
         likeOverlay = findViewById(R.id.likeOverlay);
         cardProfile = findViewById(R.id.card_profile);
+        textAge = findViewById(R.id.textAge);
         animator = new CardTransitionAnimator(
                 cardProfile,
                 likeOverlay,

@@ -59,10 +59,6 @@ public class Activity_questionnaire extends AppCompatActivity {
             return;
         }
         setContentView(R.layout.activity_questionnaire);
-        String passedFlow = getIntent().getStringExtra(EXTRA_FLOW);
-        if (passedFlow != null && !passedFlow.trim().isEmpty()) {
-            flowSource = passedFlow;
-        }
         Log.d("INTRO_QUIZ", "Flow source: " + flowSource);
         findViews();
         fetchQuestions();
@@ -261,6 +257,11 @@ public class Activity_questionnaire extends AppCompatActivity {
 
         Toast.makeText(this, "Answers submitted", Toast.LENGTH_SHORT).show();
         Log.d("INTRO_QUIZ", "Answers: " + new Gson().toJson(answers));
+        String passedFlow = getIntent().getStringExtra(EXTRA_FLOW);
+        if (passedFlow != null && !passedFlow.trim().isEmpty()) {
+            flowSource = passedFlow;
+            getIntent().removeExtra(EXTRA_FLOW);
+        }
         if (FLOW_FROM_MBTI.equals(flowSource)) {
             // באנו מסיום שאלון MBTI -> עוברים לשאלון העדפות
             Intent intent = new Intent(Activity_questionnaire.this, activity_preferences.class);

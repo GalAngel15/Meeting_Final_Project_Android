@@ -301,6 +301,7 @@ public class Activity_quiz_mbti extends AppCompatActivity {
 
     private void navigateToQuizPage() {
         Intent intent = new Intent(Activity_quiz_mbti.this, Activity_questionnaire.class);
+        intent.putExtra(Activity_questionnaire.EXTRA_FLOW, Activity_questionnaire.FLOW_FROM_MBTI);
         startActivity(intent);
         finish();
     }
