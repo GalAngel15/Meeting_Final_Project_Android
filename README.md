@@ -108,3 +108,4 @@ To run the app properly, you must manually configure your local IP address in th
 5. Connect an Android device or start an emulator.
 6. Run the app from Android Studio.
 7. Follow the on-screen instructions to register, take the MBTI quiz, set preferences, and start matching with other users.
+
